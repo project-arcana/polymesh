@@ -8,9 +8,9 @@ struct Mesh;
 
 struct FaceHandle
 {
-    Mesh* const mesh;
-    FaceIndex const idx;
+    Mesh const* mesh;
+    FaceIndex idx;
 
-    FaceHandle(Mesh* mesh, FaceIndex idx) : mesh(mesh), idx(idx) {}
+    FaceHandle(Mesh const* mesh, FaceIndex idx) : mesh(mesh), idx(idx) {}
 };
 }

@@ -8,9 +8,9 @@ struct Mesh;
 
 struct EdgeHandle
 {
-    Mesh* const mesh;
-    EdgeIndex const idx;
+    Mesh const* mesh;
+    EdgeIndex idx;
 
-    EdgeHandle(Mesh* mesh, EdgeIndex idx) : mesh(mesh), idx(idx) {}
+    EdgeHandle(Mesh const* mesh, EdgeIndex idx) : mesh(mesh), idx(idx) {}
 };
 }

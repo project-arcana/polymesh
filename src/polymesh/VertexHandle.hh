@@ -8,9 +8,9 @@ struct Mesh;
 
 struct VertexHandle
 {
-    Mesh* const mesh;
-    VertexIndex const idx;
+    Mesh const* mesh;
+    VertexIndex idx;
 
-    VertexHandle(Mesh* mesh, VertexIndex idx) : mesh(mesh), idx(idx) {}
+    VertexHandle(Mesh const* mesh, VertexIndex idx) : mesh(mesh), idx(idx) {}
 };
 }
