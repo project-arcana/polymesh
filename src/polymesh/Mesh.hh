@@ -153,7 +153,10 @@ private:
     /// Adds a face consisting of N vertices
     /// The vertices must already be sorted in CCW order
     /// (note: trying to add already existing halfedges triggers assertions)
-    face_index add_face(vertex_handle const *vhandles, size_t vcnt);
+    face_index add_face(vertex_handle const *v_handles, size_t vcnt);
+    face_index add_face(vertex_index const *v_indices, size_t vcnt);
+    face_index add_face(halfedge_handle const *half_loop, size_t vcnt);
+    face_index add_face(halfedge_index const *half_loop, size_t vcnt);
 
     /// Adds an edge between two existing, distinct vertices
     /// if edge already exists, returns it
@@ -249,6 +252,8 @@ private:
     int mDeletedVertices = 0;
     int mDeletedHalfedges = 0;
 
+    std::vector<halfedge_index> mFaceInsertCache;
+
     // friends
 private:
     friend struct vertex_handle;
@@ -280,20 +285,54 @@ private:
 
 vertex_index Mesh::add_vertex()
 {
-    auto idx = (int)mVertices.size();
-    mVertices.push_back(vertex());
     /// TODO: properties
-    return vertex_index(idx);
+
+    auto idx = vertex_index((int)mVertices.size());
+    mVertices.push_back(vertex());
+    return idx;
 }
 
-face_index Mesh::add_face(const vertex_handle *vhandles, size_t vcnt)
+face_index Mesh::add_face(const vertex_handle *v_handles, size_t vcnt)
 {
-    auto fidx = (int)mFaces.size();
-    face f;
+    mFaceInsertCache.resize(vcnt);
+    for (auto i = 0u; i < vcnt; ++i)
+        mFaceInsertCache[i] = find_halfedge(v_handles[i].idx, v_handles[(i + 1) % vcnt].idx);
+    return add_face(mFaceInsertCache.data(), vcnt);
+}
+
+face_index Mesh::add_face(const vertex_index *v_indices, size_t vcnt)
+{
+    mFaceInsertCache.resize(vcnt);
+    for (auto i = 0u; i < vcnt; ++i)
+        mFaceInsertCache[i] = find_halfedge(v_indices[i], v_indices[(i + 1) % vcnt]);
+    return add_face(mFaceInsertCache.data(), vcnt);
+}
+
+face_index Mesh::add_face(const halfedge_handle *half_loop, size_t vcnt)
+{
+    mFaceInsertCache.resize(vcnt);
+    for (auto i = 0u; i < vcnt; ++i)
+        mFaceInsertCache[i] = half_loop[i].idx;
+    return add_face(mFaceInsertCache.data(), vcnt);
+}
+
+face_index Mesh::add_face(const halfedge_index *half_loop, size_t vcnt)
+{
+    assert(vcnt >= 3 && "no support for less-than-triangular faces");
     /// TODO: properties
-    assert(0 && "implement me"); /// TODO
+
+    auto fidx = face_index((int)mFaces.size());
+    face f;
+
+    // ensure that half-edges are in correct order
+    for (auto i = 0u; i <= vcnt; ++i)
+    {
+        /// TODO!
+    }
+
+    // finalize
     mFaces.push_back(f);
-    return face_index(fidx);
+    return fidx;
 }
 
 edge_index Mesh::add_or_get_edge(vertex_index v_from, vertex_index v_to)
@@ -643,32 +682,75 @@ void face_collection::reserve(int capacity) const
     mesh->reserve_faces(capacity);
 }
 
-face_handle face_collection::add_face(const vertex_handle *vhandles, size_t vcnt) const
+face_handle face_collection::add_face(const vertex_handle *v_handles, size_t vcnt) const
 {
-    return mesh->handle_of(mesh->add_face(vhandles, vcnt));
+    return mesh->handle_of(mesh->add_face(v_handles, vcnt));
+}
+
+face_handle face_collection::add_face(const halfedge_handle *half_loop, size_t vcnt) const
+{
+    return mesh->handle_of(mesh->add_face(half_loop, vcnt));
+}
+
+face_handle face_collection::add_face(std::vector<vertex_handle> const &v_handles) const
+{
+    return add_face(v_handles.data(), v_handles.size());
+}
+
+face_handle face_collection::add_face(std::vector<halfedge_handle> const &half_loop) const
+{
+    return add_face(half_loop.data(), half_loop.size());
 }
 
 face_handle face_collection::add_face(vertex_handle v0, vertex_handle v1, vertex_handle v2) const
 {
-    vertex_handle vs[3] = {v0, v1, v2};
-    return add_face(vs);
+    halfedge_index hs[3] = {
+        mesh->find_halfedge(v0.idx, v1.idx), //
+        mesh->find_halfedge(v1.idx, v2.idx), //
+        mesh->find_halfedge(v2.idx, v0.idx), //
+    };
+    return mesh->handle_of(mesh->add_face(hs, 3));
 }
 
 face_handle face_collection::add_face(vertex_handle v0, vertex_handle v1, vertex_handle v2, vertex_handle v3) const
 {
-    vertex_handle vs[4] = {v0, v1, v2, v3};
-    return add_face(vs);
+    halfedge_index hs[4] = {
+        mesh->find_halfedge(v0.idx, v1.idx), //
+        mesh->find_halfedge(v1.idx, v2.idx), //
+        mesh->find_halfedge(v2.idx, v3.idx), //
+        mesh->find_halfedge(v3.idx, v0.idx), //
+    };
+    return mesh->handle_of(mesh->add_face(hs, 4));
 }
 
-face_handle face_collection::add_face(std::vector<vertex_handle> const &vhandles) const
+face_handle face_collection::add_face(halfedge_handle h0, halfedge_handle h1, halfedge_handle h2) const
 {
-    return add_face(vhandles.data(), vhandles.size());
+    halfedge_index hs[3] = {h0.idx, h1.idx, h2.idx};
+    return mesh->handle_of(mesh->add_face(hs, 3));
+}
+
+face_handle face_collection::add_face(halfedge_handle h0, halfedge_handle h1, halfedge_handle h2, halfedge_handle h3) const
+{
+    halfedge_index hs[4] = {h0.idx, h1.idx, h2.idx, h3.idx};
+    return mesh->handle_of(mesh->add_face(hs, 4));
 }
 
 template <size_t N>
-face_handle face_collection::add_face(const vertex_handle (&vhandles)[N]) const
+face_handle face_collection::add_face(const vertex_handle (&v_handles)[N]) const
 {
-    return add_face(vhandles, N);
+    halfedge_index hs[N];
+    for (auto i = 0u; i < N; ++i)
+        hs[i] = mesh->find_halfedge(v_handles[i].idx, v_handles[(i + 1) % N].idx);
+    return mesh->handle_of(mesh->add_face(hs, N));
+}
+
+template <size_t N>
+face_handle face_collection::add_face(const halfedge_handle (&half_loop)[N]) const
+{
+    halfedge_index hs[N];
+    for (auto i = 0u; i < N; ++i)
+        hs[i] = half_loop[i].idx;
+    return mesh->handle_of(mesh->add_face(hs, N));
 }
 
 face_iterator face_collection::begin() const

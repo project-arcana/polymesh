@@ -62,11 +62,17 @@ struct face_collection
     /// The vertices must already be sorted in CCW order
     /// (note: trying to add already existing halfedges triggers assertions)
     template <size_t N>
-    face_handle add_face(const vertex_handle (&vhandles)[N]) const;
+    face_handle add_face(const vertex_handle (&v_handles)[N]) const;
     face_handle add_face(vertex_handle v0, vertex_handle v1, vertex_handle v2) const;
     face_handle add_face(vertex_handle v0, vertex_handle v1, vertex_handle v2, vertex_handle v3) const;
-    face_handle add_face(std::vector<vertex_handle> const &vhandles) const;
-    face_handle add_face(vertex_handle const *vhandles, size_t vcnt) const;
+    face_handle add_face(std::vector<vertex_handle> const& v_handles) const;
+    face_handle add_face(vertex_handle const* v_handles, size_t vcnt) const;
+    template <size_t N>
+    face_handle add_face(const halfedge_handle (&half_loop)[N]) const;
+    face_handle add_face(halfedge_handle h0, halfedge_handle h1, halfedge_handle h2) const;
+    face_handle add_face(halfedge_handle h0, halfedge_handle h1, halfedge_handle h2, halfedge_handle h3) const;
+    face_handle add_face(std::vector<halfedge_handle> const& half_loop) const;
+    face_handle add_face(halfedge_handle const* half_loop, size_t vcnt) const;
 
     // TODO: delete
 
@@ -165,5 +171,4 @@ struct valid_halfedge_collection
     valid_halfedge_iterator begin() const;
     valid_halfedge_iterator end() const;
 };
-
 }
