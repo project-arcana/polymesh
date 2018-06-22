@@ -12,33 +12,28 @@ namespace polymesh
 using SharedMesh = std::shared_ptr<Mesh>;
 
 /**
- * @brief Half-edge Mesh Datastructure
+ * @brief Half-edge Mesh Data Structure
  *
- * * Primitives are accessed via the smart collections mesh.<primitive>()
- *   (where <primitive> can be vertices, edges, faces, or halfedges)
+ *  * Primitives are accessed via the smart collections mesh.<primitive>()
+ *    (where <primitive> can be vertices, edges, faces, or halfedges)
  *
- * * Primitives can be added via <primitive>().add()
- *   (added primitives are at the end of the collection)
+ *  * Primitives can be added via <primitive>().add()
+ *    (added primitives are at the end of the collection)
  *
- * * Primitives can be deleted via <primitive>().delete(...)
- *   (deleted primitives are invalidated (flagged for removal). call compactify() to remove them)
+ *  * Primitives can be deleted via <primitive>().delete(...)
+ *    (deleted primitives are invalidated (flagged for removal). call compactify() to remove them)
  *
- * * `for (auto h : <primitive>())` iterates over _all_ primitives, including invalid ones
- *   (`for (auto h : valid_<primitive>())` skips over invalid ones)
+ *  * `for (auto h : <primitive>())` iterates over _all_ primitives, including invalid ones
+ *    (`for (auto h : valid_<primitive>())` skips over invalid ones)
+ *
+ * For more concept documents see:
+ *  * http://kaba.hilvi.org/homepage/blog/halfedge/halfedge.htm
+ *  * https://www.openmesh.org/media/Documentations/OpenMesh-Doc-Latest/a03930.html
  */
 struct Mesh
 {
     // accessors and iterators
 public:
-    /// TODO:
-    /// vertices(), faces(), ...
-
-    /// get handle from index
-    face_handle handle_of(face_index idx) const { return {this, idx}; }
-    edge_handle handle_of(edge_index idx) const { return {this, idx}; }
-    vertex_handle handle_of(vertex_index idx) const { return {this, idx}; }
-    halfedge_handle handle_of(halfedge_index idx) const { return {this, idx}; }
-
     /// smart collections for primitives INCLUDING deleted ones
     /// Also primary interfaces for querying size and adding primitives
     ///
@@ -63,6 +58,18 @@ public:
     valid_face_collection valid_faces() const { return {this}; }
     valid_edge_collection valid_edges() const { return {this}; }
     valid_halfedge_collection valid_halfedges() const { return {this}; }
+
+    /// get handle from index
+    face_handle handle_of(face_index idx) const { return {this, idx}; }
+    edge_handle handle_of(edge_index idx) const { return {this, idx}; }
+    vertex_handle handle_of(vertex_index idx) const { return {this, idx}; }
+    halfedge_handle handle_of(halfedge_index idx) const { return {this, idx}; }
+
+    /// get handle from index, subscript version
+    face_handle operator[](face_index idx) const { return handle_of(idx); }
+    edge_handle operator[](edge_index idx) const { return handle_of(idx); }
+    vertex_handle operator[](vertex_index idx) const { return handle_of(idx); }
+    halfedge_handle operator[](halfedge_index idx) const { return handle_of(idx); }
 
     // helper
 public:
@@ -118,15 +125,6 @@ private:
     face_index prev_valid_idx_from(face_index idx) const;
     halfedge_index prev_valid_idx_from(halfedge_index idx) const;
 
-    /// Adds a single non-connected vertex
-    /// Does NOT invalidate iterators!
-    vertex_handle add_vertex();
-
-    /// Adds a face consisting of N vertices
-    /// The vertices must already be sorted in CCW order
-    /// (note: trying to add already existing halfedges triggers assertions)
-    face_handle add_face(vertex_handle const *vhandles, size_t vcnt);
-
     // Iterators
     vertex_iterator vertices_begin() const { return {{this, vertex_index(0)}}; }
     vertex_iterator vertices_end() const { return {{this, vertex_index(mVertices.size())}}; }
@@ -148,6 +146,57 @@ private:
     valid_halfedge_iterator valid_halfedges_begin() const { return {{this, halfedge_index(0)}}; }
     valid_halfedge_iterator valid_halfedges_end() const { return {{this, halfedge_index(mHalfedges.size())}}; }
 
+    /// Adds a single non-connected vertex
+    /// Does NOT invalidate iterators!
+    vertex_index add_vertex();
+
+    /// Adds a face consisting of N vertices
+    /// The vertices must already be sorted in CCW order
+    /// (note: trying to add already existing halfedges triggers assertions)
+    face_index add_face(vertex_handle const *vhandles, size_t vcnt);
+
+    /// Adds an edge between two existing, distinct vertices
+    /// if edge already exists, returns it
+    edge_index add_or_get_edge(vertex_index v_from, vertex_index v_to);
+
+    /// same as add_or_get_edge but returns the appropriate half-edge
+    halfedge_index add_or_get_halfedge(vertex_index v_from, vertex_index v_to);
+
+    // Properties
+    bool is_boundary(vertex_index idx) const;
+    bool is_boundary(halfedge_index idx) const;
+
+    /// Returns the opposite of a given valid half-edge
+    halfedge_index opposite(halfedge_index he) const;
+
+    /// Makes two half-edges adjacent
+    /// Ensures:
+    ///     * he_in->next == he_out
+    ///     * he_out->prev == he_in
+    /// Requires:
+    ///     * he_in->is_free()
+    ///     * he_out->is_free()
+    bool make_adjacent(halfedge_index he_in, halfedge_index he_out);
+
+    /// finds the next free incoming half-edge around a certain vertex
+    /// starting from in_begin, EXCLUDING in_end (if in_begin == in_end, the whole vertex is searched)
+    /// returns invalid index if no edge is found
+    halfedge_index find_free_incident(halfedge_index in_begin, halfedge_index in_end) const;
+    /// finds a free incident incoming half-edge around a given vertex
+    halfedge_index find_free_incident(vertex_index v) const;
+
+    /// returns half-edge going from `from`, point to `to`
+    /// returns invalid index if not exists
+    halfedge_index find_halfedge(vertex_index from, vertex_index to) const;
+
+    /// returns edge index belonging to a half-edge
+    edge_index edge_of(halfedge_index idx) const { return edge_index(idx.value >> 1); }
+    /// returns a half-edge belonging to an edge
+    halfedge_index halfedge_of(edge_index idx, int zero_or_one) const
+    {
+        return halfedge_index((idx.value << 1) + zero_or_one);
+    }
+
     // internal datastructures
 private:
     struct face
@@ -164,21 +213,27 @@ private:
 
         /// a vertex can be valid even without outgoing halfedge
         bool is_valid() const { return outgoing_halfedge.value >= -1; }
+        bool is_isolated() const { return !outgoing_halfedge.is_valid(); }
         void set_deleted() { outgoing_halfedge = halfedge_index(-2); }
+        // is_boundary: check if outgoing_halfedge is boundary
     };
 
     struct halfedge
     {
-        vertex_index vertex;
+        vertex_index to_vertex;       ///< half-edge points towards this vertex
         face_index face;              ///< might be invalid if boundary
         halfedge_index next_halfedge; ///< CCW
         halfedge_index prev_halfedge; ///< CW
         // opposite half-edge idx is "idx ^ 1"
         // edge idx is "idx >> 1"
 
-        bool is_valid() const { return vertex.is_valid(); }
-        bool is_boundary() const { return !face.is_valid(); }
-        void set_deleted() { vertex = vertex_index::invalid(); }
+        bool is_valid() const { return to_vertex.is_valid(); }
+
+        /// a half-edge is free if it is a boundary, aka has no associated face
+        bool is_free() const { return !face.is_valid(); }
+
+        // CAUTION: delete both HE belonging to an edge
+        void set_deleted() { to_vertex = vertex_index::invalid(); }
     };
 
     // internal primitives
@@ -223,22 +278,199 @@ private:
 
 /// ======== IMPLEMENTATION ========
 
-vertex_handle Mesh::add_vertex()
+vertex_index Mesh::add_vertex()
 {
     auto idx = (int)mVertices.size();
     mVertices.push_back(vertex());
     /// TODO: properties
-    return handle_of(vertex_index(idx));
+    return vertex_index(idx);
 }
 
-face_handle Mesh::add_face(const vertex_handle *vhandles, size_t vcnt)
+face_index Mesh::add_face(const vertex_handle *vhandles, size_t vcnt)
 {
     auto fidx = (int)mFaces.size();
     face f;
     /// TODO: properties
     assert(0 && "implement me"); /// TODO
     mFaces.push_back(f);
-    return handle_of(face_index(fidx));
+    return face_index(fidx);
+}
+
+edge_index Mesh::add_or_get_edge(vertex_index v_from, vertex_index v_to)
+{
+    assert(v_from != v_to);
+
+    // already exists?
+    auto he = find_halfedge(v_from, v_to);
+    if (he.is_valid())
+        return edge_of(he);
+
+    auto &vd_from = mVertices[v_from.value];
+    auto &vd_to = mVertices[v_to.value];
+
+    // allocate new
+    auto he_size = (int)mHalfedges.size();
+    auto h_from_to_idx = halfedge_index(he_size + 0);
+    auto h_to_from_idx = halfedge_index(he_size + 1);
+    auto eidx = edge_index(he_size >> 1);
+    halfedge h_from_to;
+    halfedge h_to_from;
+
+    // setup data (self-connected edge)
+    h_from_to.to_vertex = v_to;
+    h_to_from.to_vertex = v_from;
+    h_from_to.next_halfedge = h_to_from_idx;
+    h_to_from.next_halfedge = h_from_to_idx;
+
+    // link from vertex
+    if (vd_from.is_isolated())
+        vd_from.outgoing_halfedge = h_from_to_idx;
+    else
+    {
+        auto from_in_idx = find_free_incident(v_from);
+        assert(from_in_idx.is_valid() && "vertex is already fully connected");
+        auto &from_in = mHalfedges[from_in_idx.value];
+        auto from_out_idx = from_in.next_halfedge;
+        auto &from_out = mHalfedges[from_out_idx.value];
+
+        from_in.next_halfedge = h_from_to_idx;
+        h_from_to.prev_halfedge = from_in_idx;
+
+        h_to_from.next_halfedge = from_out_idx;
+        from_out.prev_halfedge = h_to_from_idx;
+    }
+
+    // link to vertex
+    if (vd_to.is_isolated())
+        vd_to.outgoing_halfedge = h_from_to_idx;
+    else
+    {
+        auto to_in_idx = find_free_incident(v_to);
+        assert(to_in_idx.is_valid() && "vertex is already fully connected");
+        auto &to_in = mHalfedges[to_in_idx.value];
+        auto to_out_idx = to_in.next_halfedge;
+        auto &to_out = mHalfedges[to_out_idx.value];
+
+        to_in.next_halfedge = h_to_from_idx;
+        h_to_from.prev_halfedge = to_in_idx;
+
+        h_from_to.next_halfedge = to_out_idx;
+        to_out.prev_halfedge = h_from_to_idx;
+    }
+
+    // finalize
+    mHalfedges.push_back(h_from_to);
+    mHalfedges.push_back(h_to_from);
+    return eidx;
+}
+
+halfedge_index Mesh::add_or_get_halfedge(vertex_index v_from, vertex_index v_to)
+{
+    auto e = add_or_get_edge(v_from, v_to);
+    auto h0 = halfedge_of(e, 0);
+    auto h1 = halfedge_of(e, 1);
+    return mHalfedges[h0.value].to_vertex == v_to ? h0 : h1;
+}
+
+bool Mesh::make_adjacent(halfedge_index he_in, halfedge_index he_out)
+{
+    // see http://kaba.hilvi.org/homepage/blog/halfedge/halfedge.htm ::makeAdjacent
+    auto &in = mHalfedges[he_in.value];
+    auto &out = mHalfedges[he_out.value];
+
+    auto he_b = in.next_halfedge;
+    auto he_d = out.prev_halfedge;
+
+    // already correct
+    if (he_b == he_out)
+        return true;
+
+    // find free half-edge after `out` but before `in`
+    auto he_g = find_free_incident(opposite(he_out), he_in);
+    if (!he_g.is_valid())
+        return false; // unable to make adjacent
+
+    auto &b = mHalfedges[he_b.value];
+    auto &d = mHalfedges[he_d.value];
+    auto &g = mHalfedges[he_g.value];
+
+    auto he_h = g.next_halfedge;
+    auto &h = mHalfedges[he_d.value];
+
+    // properly rewire
+    in.next_halfedge = he_out;
+    out.prev_halfedge = he_in;
+
+    g.next_halfedge = he_b;
+    b.prev_halfedge = he_g;
+
+    d.next_halfedge = he_h;
+    h.prev_halfedge = he_d;
+
+    return true;
+}
+
+halfedge_index Mesh::find_free_incident(halfedge_index in_begin, halfedge_index in_end) const
+{
+    assert(mHalfedges[in_begin.value].to_vertex == mHalfedges[in_end.value].to_vertex);
+
+    auto he = in_begin;
+    do
+    {
+        auto const &h = mHalfedges[he.value];
+        assert(h.to_vertex == mHalfedges[in_end.value].to_vertex);
+
+        // free? found one!
+        if (h.is_free())
+            return he;
+
+        // next half-edge of vertex
+        he = opposite(h.next_halfedge);
+    } while (he != in_end);
+
+    return halfedge_index::invalid();
+}
+
+halfedge_index Mesh::find_free_incident(vertex_index v) const
+{
+    auto in_begin = opposite(mVertices[v.value].outgoing_halfedge);
+    return find_free_incident(in_begin, in_begin);
+}
+
+halfedge_index Mesh::find_halfedge(vertex_index from, vertex_index to) const
+{
+    auto he_begin = mVertices[from.value].outgoing_halfedge;
+    auto he = he_begin;
+    do
+    {
+        auto const &h = mHalfedges[he.value];
+
+        // found?
+        if (h.to_vertex == to)
+            return he;
+
+        // advance
+        he = opposite(h.next_halfedge);
+
+    } while (he != he_begin);
+
+    return halfedge_index::invalid(); // not found
+}
+
+bool Mesh::is_boundary(vertex_index idx) const
+{
+    auto const &v = mVertices[idx.value];
+    return v.outgoing_halfedge.is_valid() && is_boundary(v.outgoing_halfedge);
+}
+
+bool Mesh::is_boundary(halfedge_index idx) const
+{
+    return mHalfedges[idx.value].is_free();
+}
+
+halfedge_index Mesh::opposite(halfedge_index he) const
+{
+    return halfedge_index(he.value ^ 1);
 }
 
 vertex_index Mesh::next_valid_idx_from(vertex_index idx) const
@@ -371,7 +603,7 @@ void vertex_collection::reserve(int capacity) const
 
 vertex_handle vertex_collection::add() const
 {
-    return mesh->add_vertex();
+    return mesh->handle_of(mesh->add_vertex());
 }
 
 vertex_iterator vertex_collection::begin() const
@@ -413,7 +645,7 @@ void face_collection::reserve(int capacity) const
 
 face_handle face_collection::add_face(const vertex_handle *vhandles, size_t vcnt) const
 {
-    return mesh->add_face(vhandles, vcnt);
+    return mesh->handle_of(mesh->add_face(vhandles, vcnt));
 }
 
 face_handle face_collection::add_face(vertex_handle v0, vertex_handle v1, vertex_handle v2) const
@@ -476,6 +708,11 @@ void edge_collection::reserve(int capacity) const
     mesh->reserve_edges(capacity);
 }
 
+edge_handle edge_collection::add_or_get(vertex_handle v_from, vertex_handle v_to)
+{
+    return mesh->handle_of(mesh->add_or_get_edge(v_from.idx, v_to.idx));
+}
+
 edge_iterator edge_collection::begin() const
 {
     return mesh->edges_begin();
@@ -511,6 +748,11 @@ int halfedge_collection::size() const
 void halfedge_collection::reserve(int capacity) const
 {
     mesh->reserve_halfedges(capacity);
+}
+
+halfedge_handle halfedge_collection::add_or_get(vertex_handle v_from, vertex_handle v_to)
+{
+    return mesh->handle_of(mesh->add_or_get_halfedge(v_from.idx, v_to.idx));
 }
 
 halfedge_iterator halfedge_collection::begin() const

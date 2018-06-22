@@ -114,5 +114,12 @@ struct halfedge_handle
     bool operator!=(halfedge_index const& rhs) const { return idx != rhs; }
     bool operator==(halfedge_handle const& rhs) const { return mesh == rhs.mesh && idx == rhs.idx; }
     bool operator!=(halfedge_handle const& rhs) const { return mesh != rhs.mesh || idx != rhs.idx; }
+
+    // TODO:
+    // vertex_to
+    // vertex_from
+    // face
+    // opposite_face
+    // opposite
 };
 }

@@ -103,6 +103,10 @@ struct edge_collection
     /// Ensures that a given number of edges can be stored without reallocation
     void reserve(int capacity) const;
 
+    /// Adds an edge between two existing, distinct vertices
+    /// if edge already exists, returns it
+    edge_handle add_or_get(vertex_handle v_from, vertex_handle v_to);
+
     // Iteration:
     edge_iterator begin() const;
     edge_iterator end() const;
@@ -135,6 +139,11 @@ struct halfedge_collection
     int size() const;
     /// Ensures that a given number of half-edges can be stored without reallocation
     void reserve(int capacity) const;
+
+    /// Adds an half-edge between two existing, distinct vertices
+    /// if half-edge already exists, returns it
+    /// (always adds opposite half-edge as well)
+    halfedge_handle add_or_get(vertex_handle v_from, vertex_handle v_to);
 
     // Iteration:
     halfedge_iterator begin() const;
