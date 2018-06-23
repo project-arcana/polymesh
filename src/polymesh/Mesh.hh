@@ -179,7 +179,8 @@ private:
     /// Requires:
     ///     * he_in->is_free()
     ///     * he_out->is_free()
-    bool make_adjacent(halfedge_index he_in, halfedge_index he_out);
+    /// Only works if a free incident half-edge is available
+    void make_adjacent(halfedge_index he_in, halfedge_index he_out);
 
     /// finds the next free incoming half-edge around a certain vertex
     /// starting from in_begin, EXCLUDING in_end (if in_begin == in_end, the whole vertex is searched)
@@ -195,10 +196,12 @@ private:
     /// returns edge index belonging to a half-edge
     edge_index edge_of(halfedge_index idx) const { return edge_index(idx.value >> 1); }
     /// returns a half-edge belonging to an edge
-    halfedge_index halfedge_of(edge_index idx, int zero_or_one) const
-    {
-        return halfedge_index((idx.value << 1) + zero_or_one);
-    }
+    halfedge_index halfedge_of(edge_index idx, int i) const { return halfedge_index((idx.value << 1) + i); }
+
+    /// returns the vertex that this half-edge is pointing to
+    vertex_index to_vertex_of(halfedge_index idx) const { return mHalfedges[idx.value].to_vertex; }
+    /// returns the vertex that this half-edge is leaving from
+    vertex_index from_vertex_of(halfedge_index idx) const { return mHalfedges[opposite(idx).value].to_vertex; }
 
     // internal datastructures
 private:
@@ -322,16 +325,30 @@ face_index Mesh::add_face(const halfedge_index *half_loop, size_t vcnt)
     /// TODO: properties
 
     auto fidx = face_index((int)mFaces.size());
-    face f;
 
-    // ensure that half-edges are in correct order
+    // ensure that half-edges are adjacent at each vertex
     for (auto i = 0u; i <= vcnt; ++i)
     {
-        /// TODO!
+        auto h0 = half_loop[i];
+        auto h1 = half_loop[(i + 1) % vcnt];
+
+        // half-edge must form a chain
+        assert(to_vertex_of(h0) == from_vertex_of(h1));
+        // half-edge must be free, i.e. allow a new polygon
+        assert(mHalfedges[h0.value].is_free());
+
+        // make them adjacent
+        make_adjacent(h0, h1);
+
+        // link face
+        mHalfedges[h0.value].face = fidx;
     }
 
-    // finalize
+    // set up face data
+    face f;
+    f.halfedge = half_loop[0];
     mFaces.push_back(f);
+
     return fidx;
 }
 
@@ -411,7 +428,7 @@ halfedge_index Mesh::add_or_get_halfedge(vertex_index v_from, vertex_index v_to)
     return mHalfedges[h0.value].to_vertex == v_to ? h0 : h1;
 }
 
-bool Mesh::make_adjacent(halfedge_index he_in, halfedge_index he_out)
+void Mesh::make_adjacent(halfedge_index he_in, halfedge_index he_out)
 {
     // see http://kaba.hilvi.org/homepage/blog/halfedge/halfedge.htm ::makeAdjacent
     auto &in = mHalfedges[he_in.value];
@@ -422,12 +439,11 @@ bool Mesh::make_adjacent(halfedge_index he_in, halfedge_index he_out)
 
     // already correct
     if (he_b == he_out)
-        return true;
+        return;
 
     // find free half-edge after `out` but before `in`
     auto he_g = find_free_incident(opposite(he_out), he_in);
-    if (!he_g.is_valid())
-        return false; // unable to make adjacent
+    assert(he_g.is_valid()); // unable to make adjacent
 
     auto &b = mHalfedges[he_b.value];
     auto &d = mHalfedges[he_d.value];
@@ -445,8 +461,6 @@ bool Mesh::make_adjacent(halfedge_index he_in, halfedge_index he_out)
 
     d.next_halfedge = he_h;
     h.prev_halfedge = he_d;
-
-    return true;
 }
 
 halfedge_index Mesh::find_free_incident(halfedge_index in_begin, halfedge_index in_end) const
