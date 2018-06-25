@@ -109,15 +109,15 @@ private:
     void reserve_edges(size_t capacity) { mHalfedges.reserve(capacity * 2); }
     void reserve_halfedges(size_t capacity) { mHalfedges.reserve(capacity); }
 
-    int size_faces() const { return mFaces.size(); }
-    int size_vertices() const { return mVertices.size(); }
-    int size_edges() const { return mHalfedges.size() >> 1; }
-    int size_halfedges() const { return mHalfedges.size(); }
+    int size_faces() const { return (int)mFaces.size(); }
+    int size_vertices() const { return (int)mVertices.size(); }
+    int size_edges() const { return (int)mHalfedges.size() >> 1; }
+    int size_halfedges() const { return (int)mHalfedges.size(); }
 
-    int size_valid_faces() const { return mFaces.size() - mDeletedFaces; }
-    int size_valid_vertices() const { return mVertices.size() - mDeletedVertices; }
-    int size_valid_edges() const { return (mHalfedges.size() - mDeletedHalfedges) >> 1; }
-    int size_valid_halfedges() const { return mHalfedges.size() - mDeletedHalfedges; }
+    int size_valid_faces() const { return (int)mFaces.size() - mDeletedFaces; }
+    int size_valid_vertices() const { return (int)mVertices.size() - mDeletedVertices; }
+    int size_valid_edges() const { return ((int)mHalfedges.size() - mDeletedHalfedges) >> 1; }
+    int size_valid_halfedges() const { return (int)mHalfedges.size() - mDeletedHalfedges; }
 
     // returns the next valid idx (returns the given one if valid)
     // NOTE: the result can be invalid if no valid one was found
@@ -133,24 +133,24 @@ private:
 
     // Iterators
     vertex_iterator vertices_begin() const { return {{this, vertex_index(0)}}; }
-    vertex_iterator vertices_end() const { return {{this, vertex_index(mVertices.size())}}; }
+    vertex_iterator vertices_end() const { return {{this, vertex_index(size_vertices())}}; }
     valid_vertex_iterator valid_vertices_begin() const { return {{this, vertex_index(0)}}; }
-    valid_vertex_iterator valid_vertices_end() const { return {{this, vertex_index(mVertices.size())}}; }
+    valid_vertex_iterator valid_vertices_end() const { return {{this, vertex_index(size_vertices())}}; }
 
     face_iterator faces_begin() const { return {{this, face_index(0)}}; }
-    face_iterator faces_end() const { return {{this, face_index(mFaces.size())}}; }
+    face_iterator faces_end() const { return {{this, face_index(size_faces())}}; }
     valid_face_iterator valid_faces_begin() const { return {{this, face_index(0)}}; }
-    valid_face_iterator valid_faces_end() const { return {{this, face_index(mFaces.size())}}; }
+    valid_face_iterator valid_faces_end() const { return {{this, face_index(size_faces())}}; }
 
     edge_iterator edges_begin() const { return {{this, edge_index(0)}}; }
-    edge_iterator edges_end() const { return {{this, edge_index(mHalfedges.size() >> 1)}}; }
+    edge_iterator edges_end() const { return {{this, edge_index(size_edges())}}; }
     valid_edge_iterator valid_edges_begin() const { return {{this, edge_index(0)}}; }
-    valid_edge_iterator valid_edges_end() const { return {{this, edge_index(mHalfedges.size() >> 1)}}; }
+    valid_edge_iterator valid_edges_end() const { return {{this, edge_index(size_edges())}}; }
 
     halfedge_iterator halfedges_begin() const { return {{this, halfedge_index(0)}}; }
-    halfedge_iterator halfedges_end() const { return {{this, halfedge_index(mHalfedges.size())}}; }
+    halfedge_iterator halfedges_end() const { return {{this, halfedge_index(size_halfedges())}}; }
     valid_halfedge_iterator valid_halfedges_begin() const { return {{this, halfedge_index(0)}}; }
-    valid_halfedge_iterator valid_halfedges_end() const { return {{this, halfedge_index(mHalfedges.size())}}; }
+    valid_halfedge_iterator valid_halfedges_end() const { return {{this, halfedge_index(size_halfedges())}}; }
 
     /// Adds a single non-connected vertex
     /// Does NOT invalidate iterators!
@@ -595,7 +595,7 @@ inline vertex_index Mesh::next_valid_idx_from(vertex_index idx) const
     for (auto i = idx.value; i < (int)mVertices.size(); ++i)
         if (mVertices[i].is_valid())
             return vertex_index(i);
-    return vertex_index(mVertices.size()); // end index
+    return vertex_index(size_vertices()); // end index
 }
 
 inline vertex_index Mesh::prev_valid_idx_from(vertex_index idx) const
@@ -611,7 +611,7 @@ inline edge_index Mesh::next_valid_idx_from(edge_index idx) const
     for (auto i = idx.value << 1; i < (int)mHalfedges.size(); i += 2)
         if (mHalfedges[i].is_valid())
             return edge_index(i >> 1);
-    return edge_index(mHalfedges.size() >> 1); // end index
+    return edge_index(size_edges()); // end index
 }
 
 inline edge_index Mesh::prev_valid_idx_from(edge_index idx) const
@@ -627,7 +627,7 @@ inline face_index Mesh::next_valid_idx_from(face_index idx) const
     for (auto i = idx.value; i < (int)mFaces.size(); ++i)
         if (mFaces[i].is_valid())
             return face_index(i);
-    return face_index(mFaces.size()); // end index
+    return face_index(size_faces()); // end index
 }
 
 inline face_index Mesh::prev_valid_idx_from(face_index idx) const
@@ -643,7 +643,7 @@ inline halfedge_index Mesh::next_valid_idx_from(halfedge_index idx) const
     for (auto i = idx.value; i < (int)mHalfedges.size(); ++i)
         if (mHalfedges[i].is_valid())
             return halfedge_index(i);
-    return halfedge_index(mHalfedges.size()); // end index
+    return halfedge_index(size_halfedges()); // end index
 }
 
 inline halfedge_index Mesh::prev_valid_idx_from(halfedge_index idx) const
