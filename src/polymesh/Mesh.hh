@@ -47,6 +47,11 @@ public:
     face_collection faces() { return {this}; }
     edge_collection edges() { return {this}; }
     halfedge_collection halfedges() { return {this}; }
+    // const versions:
+    const_vertex_collection vertices() const { return {this}; }
+    const_face_collection faces() const { return {this}; }
+    const_edge_collection edges() const { return {this}; }
+    const_halfedge_collection halfedges() const { return {this}; }
 
     /// smart collections for VALID primitives (EXCLUDING deleted ones)
     ///
@@ -264,24 +269,28 @@ private:
     friend struct vertex_iterator;
     friend struct valid_vertex_iterator;
     friend struct valid_vertex_collection;
+    friend struct const_vertex_collection;
 
     friend struct face_handle;
     friend struct face_collection;
     friend struct face_iterator;
     friend struct valid_face_iterator;
     friend struct valid_face_collection;
+    friend struct const_face_collection;
 
     friend struct edge_handle;
     friend struct edge_collection;
     friend struct edge_iterator;
     friend struct valid_edge_iterator;
     friend struct valid_edge_collection;
+    friend struct const_edge_collection;
 
     friend struct halfedge_handle;
     friend struct halfedge_collection;
     friend struct halfedge_iterator;
     friend struct valid_halfedge_iterator;
     friend struct valid_halfedge_collection;
+    friend struct const_halfedge_collection;
 };
 
 /// ======== IMPLEMENTATION ========
@@ -672,6 +681,21 @@ inline vertex_iterator vertex_collection::end() const
     return mesh->vertices_end();
 }
 
+inline int const_vertex_collection::size() const
+{
+    return mesh->size_vertices();
+}
+
+inline vertex_iterator const_vertex_collection::begin() const
+{
+    return mesh->vertices_begin();
+}
+
+inline vertex_iterator const_vertex_collection::end() const
+{
+    return mesh->vertices_end();
+}
+
 inline int valid_vertex_collection::size() const
 {
     return mesh->size_valid_vertices();
@@ -780,6 +804,21 @@ inline face_iterator face_collection::end() const
     return mesh->faces_end();
 }
 
+inline int const_face_collection::size() const
+{
+    return mesh->size_faces();
+}
+
+inline face_iterator const_face_collection::begin() const
+{
+    return mesh->faces_begin();
+}
+
+inline face_iterator const_face_collection::end() const
+{
+    return mesh->faces_end();
+}
+
 inline int valid_face_collection::size() const
 {
     return mesh->size_valid_faces();
@@ -818,6 +857,21 @@ inline edge_iterator edge_collection::begin() const
 }
 
 inline edge_iterator edge_collection::end() const
+{
+    return mesh->edges_end();
+}
+
+inline int const_edge_collection::size() const
+{
+    return mesh->size_edges();
+}
+
+inline edge_iterator const_edge_collection::begin() const
+{
+    return mesh->edges_begin();
+}
+
+inline edge_iterator const_edge_collection::end() const
 {
     return mesh->edges_end();
 }
@@ -864,6 +918,21 @@ inline halfedge_iterator halfedge_collection::end() const
     return mesh->halfedges_end();
 }
 
+inline int const_halfedge_collection::size() const
+{
+    return mesh->size_halfedges();
+}
+
+inline halfedge_iterator const_halfedge_collection::begin() const
+{
+    return mesh->halfedges_begin();
+}
+
+inline halfedge_iterator const_halfedge_collection::end() const
+{
+    return mesh->halfedges_end();
+}
+
 inline int valid_halfedge_collection::size() const
 {
     return mesh->size_valid_halfedges();
@@ -878,4 +947,47 @@ inline valid_halfedge_iterator valid_halfedge_collection::end() const
 {
     return mesh->valid_halfedges_end();
 }
+
+/// ======== HANDLES IMPLEMENTATION ========
+
+inline bool vertex_handle::is_valid() const
+{
+    return idx.is_valid() && mesh->mVertices[idx.value].is_valid();
+}
+
+inline bool vertex_handle::is_deleted() const
+{
+    return !idx.is_valid() || !mesh->mVertices[idx.value].is_valid();
+}
+
+inline bool face_handle::is_valid() const
+{
+    return idx.is_valid() && mesh->mFaces[idx.value].is_valid();
+}
+
+inline bool face_handle::is_deleted() const
+{
+    return !idx.is_valid() || !mesh->mFaces[idx.value].is_valid();
+}
+
+inline bool edge_handle::is_valid() const
+{
+    return idx.is_valid() && mesh->mHalfedges[idx.value >> 1].is_valid();
+}
+
+inline bool edge_handle::is_deleted() const
+{
+    return !idx.is_valid() || !mesh->mHalfedges[idx.value >> 1].is_valid();
+}
+
+inline bool halfedge_handle::is_valid() const
+{
+    return idx.is_valid() && mesh->mHalfedges[idx.value].is_valid();
+}
+
+inline bool halfedge_handle::is_deleted() const
+{
+    return !idx.is_valid() || !mesh->mHalfedges[idx.value].is_valid();
+}
+
 }

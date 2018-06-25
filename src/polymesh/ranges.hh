@@ -30,6 +30,20 @@ struct vertex_collection
     vertex_iterator end() const;
 };
 
+/// same as vertex_collection but const
+struct const_vertex_collection
+{
+    Mesh const* mesh;
+
+    /// Number of vertices, INCLUDING deleted/invalid ones
+    /// O(1) computation
+    int size() const;
+
+    // Iteration:
+    vertex_iterator begin() const;
+    vertex_iterator end() const;
+};
+
 /// Same as vertex_collection but only including valid, non-deleted vertices
 /// (a bit slower than the normal collection)
 /// (if mesh->is_compact(), identical to vertex_collection)
@@ -81,6 +95,20 @@ struct face_collection
     face_iterator end() const;
 };
 
+/// same as face_collection but const
+struct const_face_collection
+{
+    Mesh const* mesh;
+
+    /// Number of faces, INCLUDING deleted/invalid ones
+    /// O(1) computation
+    int size() const;
+
+    // Iteration:
+    face_iterator begin() const;
+    face_iterator end() const;
+};
+
 /// Same as face_collection but only including valid, non-deleted faces
 /// (a bit slower than the normal collection)
 /// (if mesh->is_compact(), identical to face_collection)
@@ -112,6 +140,20 @@ struct edge_collection
     /// Adds an edge between two existing, distinct vertices
     /// if edge already exists, returns it
     edge_handle add_or_get(vertex_handle v_from, vertex_handle v_to);
+
+    // Iteration:
+    edge_iterator begin() const;
+    edge_iterator end() const;
+};
+
+/// same as edge_collection but const
+struct const_edge_collection
+{
+    Mesh const* mesh;
+
+    /// Number of edges, INCLUDING deleted/invalid ones
+    /// O(1) computation
+    int size() const;
 
     // Iteration:
     edge_iterator begin() const;
@@ -150,6 +192,20 @@ struct halfedge_collection
     /// if half-edge already exists, returns it
     /// (always adds opposite half-edge as well)
     halfedge_handle add_or_get(vertex_handle v_from, vertex_handle v_to);
+
+    // Iteration:
+    halfedge_iterator begin() const;
+    halfedge_iterator end() const;
+};
+
+/// same as halfedge_collection but const
+struct const_halfedge_collection
+{
+    Mesh const* mesh;
+
+    /// Number of halfedges, INCLUDING deleted/invalid ones
+    /// O(1) computation
+    int size() const;
 
     // Iteration:
     halfedge_iterator begin() const;

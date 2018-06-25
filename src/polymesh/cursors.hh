@@ -75,6 +75,9 @@ struct face_handle
     bool operator!=(face_index const& rhs) const { return idx != rhs; }
     bool operator==(face_handle const& rhs) const { return mesh == rhs.mesh && idx == rhs.idx; }
     bool operator!=(face_handle const& rhs) const { return mesh != rhs.mesh || idx != rhs.idx; }
+
+    bool is_valid() const;   ///< valid idx and not deleted
+    bool is_deleted() const; ///< marked for deletion (or invalid idx)
 };
 
 struct vertex_handle
@@ -88,6 +91,9 @@ struct vertex_handle
     bool operator!=(vertex_index const& rhs) const { return idx != rhs; }
     bool operator==(vertex_handle const& rhs) const { return mesh == rhs.mesh && idx == rhs.idx; }
     bool operator!=(vertex_handle const& rhs) const { return mesh != rhs.mesh || idx != rhs.idx; }
+
+    bool is_valid() const;   ///< valid idx and not deleted
+    bool is_deleted() const; ///< marked for deletion (or invalid idx)
 };
 
 struct edge_handle
@@ -101,6 +107,9 @@ struct edge_handle
     bool operator!=(edge_index const& rhs) const { return idx != rhs; }
     bool operator==(edge_handle const& rhs) const { return mesh == rhs.mesh && idx == rhs.idx; }
     bool operator!=(edge_handle const& rhs) const { return mesh != rhs.mesh || idx != rhs.idx; }
+
+    bool is_valid() const;   ///< valid idx and not deleted
+    bool is_deleted() const; ///< marked for deletion (or invalid idx)
 };
 
 struct halfedge_handle
@@ -115,6 +124,9 @@ struct halfedge_handle
     bool operator==(halfedge_handle const& rhs) const { return mesh == rhs.mesh && idx == rhs.idx; }
     bool operator!=(halfedge_handle const& rhs) const { return mesh != rhs.mesh || idx != rhs.idx; }
 
+    bool is_valid() const;   ///< valid idx and not deleted
+    bool is_deleted() const; ///< marked for deletion (or invalid idx)
+
     // TODO:
     // vertex_to
     // vertex_from
@@ -122,4 +134,5 @@ struct halfedge_handle
     // opposite_face
     // opposite
 };
+
 }
