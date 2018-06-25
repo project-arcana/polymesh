@@ -327,7 +327,7 @@ face_index Mesh::add_face(const halfedge_index *half_loop, size_t vcnt)
     auto fidx = face_index((int)mFaces.size());
 
     // ensure that half-edges are adjacent at each vertex
-    for (auto i = 0u; i <= vcnt; ++i)
+    for (auto i = 0u; i < vcnt; ++i)
     {
         auto h0 = half_loop[i];
         auto h1 = half_loop[(i + 1) % vcnt];
@@ -493,6 +493,9 @@ halfedge_index Mesh::find_free_incident(vertex_index v) const
 halfedge_index Mesh::find_halfedge(vertex_index from, vertex_index to) const
 {
     auto he_begin = mVertices[from.value].outgoing_halfedge;
+    if (!he_begin.is_valid())
+        return halfedge_index::invalid(); // isolated vertex
+
     auto he = he_begin;
     do
     {
@@ -696,61 +699,61 @@ void face_collection::reserve(int capacity) const
     mesh->reserve_faces(capacity);
 }
 
-face_handle face_collection::add_face(const vertex_handle *v_handles, size_t vcnt) const
+face_handle face_collection::add(const vertex_handle *v_handles, size_t vcnt) const
 {
     return mesh->handle_of(mesh->add_face(v_handles, vcnt));
 }
 
-face_handle face_collection::add_face(const halfedge_handle *half_loop, size_t vcnt) const
+face_handle face_collection::add(const halfedge_handle *half_loop, size_t vcnt) const
 {
     return mesh->handle_of(mesh->add_face(half_loop, vcnt));
 }
 
-face_handle face_collection::add_face(std::vector<vertex_handle> const &v_handles) const
+face_handle face_collection::add(std::vector<vertex_handle> const &v_handles) const
 {
-    return add_face(v_handles.data(), v_handles.size());
+    return add(v_handles.data(), v_handles.size());
 }
 
-face_handle face_collection::add_face(std::vector<halfedge_handle> const &half_loop) const
+face_handle face_collection::add(std::vector<halfedge_handle> const &half_loop) const
 {
-    return add_face(half_loop.data(), half_loop.size());
+    return add(half_loop.data(), half_loop.size());
 }
 
-face_handle face_collection::add_face(vertex_handle v0, vertex_handle v1, vertex_handle v2) const
+face_handle face_collection::add(vertex_handle v0, vertex_handle v1, vertex_handle v2) const
 {
     halfedge_index hs[3] = {
-        mesh->find_halfedge(v0.idx, v1.idx), //
-        mesh->find_halfedge(v1.idx, v2.idx), //
-        mesh->find_halfedge(v2.idx, v0.idx), //
+        mesh->add_or_get_halfedge(v0.idx, v1.idx), //
+        mesh->add_or_get_halfedge(v1.idx, v2.idx), //
+        mesh->add_or_get_halfedge(v2.idx, v0.idx), //
     };
     return mesh->handle_of(mesh->add_face(hs, 3));
 }
 
-face_handle face_collection::add_face(vertex_handle v0, vertex_handle v1, vertex_handle v2, vertex_handle v3) const
+face_handle face_collection::add(vertex_handle v0, vertex_handle v1, vertex_handle v2, vertex_handle v3) const
 {
     halfedge_index hs[4] = {
-        mesh->find_halfedge(v0.idx, v1.idx), //
-        mesh->find_halfedge(v1.idx, v2.idx), //
-        mesh->find_halfedge(v2.idx, v3.idx), //
-        mesh->find_halfedge(v3.idx, v0.idx), //
+        mesh->add_or_get_halfedge(v0.idx, v1.idx), //
+        mesh->add_or_get_halfedge(v1.idx, v2.idx), //
+        mesh->add_or_get_halfedge(v2.idx, v3.idx), //
+        mesh->add_or_get_halfedge(v3.idx, v0.idx), //
     };
     return mesh->handle_of(mesh->add_face(hs, 4));
 }
 
-face_handle face_collection::add_face(halfedge_handle h0, halfedge_handle h1, halfedge_handle h2) const
+face_handle face_collection::add(halfedge_handle h0, halfedge_handle h1, halfedge_handle h2) const
 {
     halfedge_index hs[3] = {h0.idx, h1.idx, h2.idx};
     return mesh->handle_of(mesh->add_face(hs, 3));
 }
 
-face_handle face_collection::add_face(halfedge_handle h0, halfedge_handle h1, halfedge_handle h2, halfedge_handle h3) const
+face_handle face_collection::add(halfedge_handle h0, halfedge_handle h1, halfedge_handle h2, halfedge_handle h3) const
 {
     halfedge_index hs[4] = {h0.idx, h1.idx, h2.idx, h3.idx};
     return mesh->handle_of(mesh->add_face(hs, 4));
 }
 
 template <size_t N>
-face_handle face_collection::add_face(const vertex_handle (&v_handles)[N]) const
+face_handle face_collection::add(const vertex_handle (&v_handles)[N]) const
 {
     halfedge_index hs[N];
     for (auto i = 0u; i < N; ++i)
@@ -759,7 +762,7 @@ face_handle face_collection::add_face(const vertex_handle (&v_handles)[N]) const
 }
 
 template <size_t N>
-face_handle face_collection::add_face(const halfedge_handle (&half_loop)[N]) const
+face_handle face_collection::add(const halfedge_handle (&half_loop)[N]) const
 {
     halfedge_index hs[N];
     for (auto i = 0u; i < N; ++i)
