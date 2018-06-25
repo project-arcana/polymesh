@@ -26,7 +26,7 @@ struct vertex_collection
     // TODO: delete
 
     /// Creates a new vertex property
-    template<typename PropT>
+    template <typename PropT>
     vertex_property<PropT> make_property(PropT const& def_value = PropT());
 
     // Iteration:
@@ -95,7 +95,7 @@ struct face_collection
     // TODO: delete
 
     /// Creates a new face property
-    template<typename PropT>
+    template <typename PropT>
     face_property<PropT> make_property(PropT const& def_value = PropT());
 
     // Iteration:
@@ -152,7 +152,7 @@ struct edge_collection
     // TODO: delete
 
     /// Creates a new edge property
-    template<typename PropT>
+    template <typename PropT>
     edge_property<PropT> make_property(PropT const& def_value = PropT());
 
     // Iteration:
@@ -208,7 +208,7 @@ struct halfedge_collection
     halfedge_handle add_or_get(vertex_handle v_from, vertex_handle v_to);
 
     /// Creates a new half-edge property
-    template<typename PropT>
+    template <typename PropT>
     halfedge_property<PropT> make_property(PropT const& def_value = PropT());
 
     // Iteration:
@@ -246,4 +246,31 @@ struct valid_halfedge_collection
     valid_halfedge_iterator end() const;
 };
 
+/// all vertices belonging to a face
+struct face_vertex_ring
+{
+    face_handle face;
+
+    /// Number of vertices
+    /// O(result) computation
+    int size() const;
+
+    // Iteration:
+    face_vertex_circulator begin() const { return {face, false}; }
+    face_vertex_circulator end() const { return {face, true}; }
+};
+
+
+/// ======== IMPLEMENTATION ========
+
+inline int face_vertex_ring::size() const
+{
+    auto cnt = 0;
+    for (auto v : *this)
+    {
+        (void)v; // unused
+        cnt++;
+    }
+    return cnt;
+}
 }

@@ -1042,6 +1042,76 @@ inline bool halfedge_handle::is_deleted() const
     return !idx.is_valid() || !mesh->halfedge(idx).is_valid();
 }
 
+inline vertex_handle halfedge_handle::vertex_to() const
+{
+    return mesh->handle_of(mesh->halfedge(idx).to_vertex);
+}
+
+inline vertex_handle halfedge_handle::vertex_from() const
+{
+    return mesh->handle_of(mesh->halfedge(mesh->opposite(idx)).to_vertex);
+}
+
+inline face_handle halfedge_handle::face() const
+{
+    return mesh->handle_of(mesh->halfedge(idx).face);
+}
+
+inline halfedge_handle halfedge_handle::next() const
+{
+    return mesh->handle_of(mesh->halfedge(idx).next_halfedge);
+}
+
+inline halfedge_handle halfedge_handle::prev() const
+{
+    return mesh->handle_of(mesh->halfedge(idx).prev_halfedge);
+}
+
+inline halfedge_handle halfedge_handle::opposite() const
+{
+    return mesh->handle_of(mesh->opposite(idx));
+}
+
+inline face_handle halfedge_handle::opposite_face() const
+{
+    return mesh->handle_of(mesh->halfedge(mesh->opposite(idx)).face);
+}
+
+inline halfedge_handle edge_handle::halfedgeA() const
+{
+    return mesh->handle_of(mesh->halfedge_of(idx, 0));
+}
+
+inline halfedge_handle edge_handle::halfedgeB() const
+{
+    return mesh->handle_of(mesh->halfedge_of(idx, 1));
+}
+
+inline face_handle vertex_handle::any_face() const
+{
+    return mesh->handle_of(mesh->halfedge(mesh->vertex(idx).outgoing_halfedge).face);
+}
+
+inline halfedge_handle vertex_handle::any_halfedge() const
+{
+    return mesh->handle_of(mesh->vertex(idx).outgoing_halfedge);
+}
+
+inline vertex_handle face_handle::any_vertex() const
+{
+    return mesh->handle_of(mesh->halfedge(mesh->face(idx).halfedge).to_vertex);
+}
+
+inline halfedge_handle face_handle::any_halfedge() const
+{
+    return mesh->handle_of(mesh->face(idx).halfedge);
+}
+
+inline face_vertex_ring face_handle::vertices() const
+{
+    return {*this};
+}
+
 /// ======== PROPERTIES IMPLEMENTATION ========
 
 template <typename PropT>

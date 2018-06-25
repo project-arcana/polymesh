@@ -224,4 +224,38 @@ struct halfedge_iterator
 private:
     halfedge_handle handle;
 };
+
+/// Iterates over all vertices of a given face
+struct face_vertex_circulator
+{
+    face_vertex_circulator() = default;
+    face_vertex_circulator(face_handle handle, bool not_at_begin) : handle(handle.any_halfedge()), not_at_begin(not_at_begin) {}
+
+    vertex_handle operator*() const { return handle.vertex_to(); }
+    face_vertex_circulator& operator++()
+    {
+        handle = handle.next();
+        not_at_begin = true;
+        return *this;
+    }
+    face_vertex_circulator operator++(int)
+    {
+        auto i = *this;
+        return ++i;
+    }
+    bool operator==(face_vertex_circulator const& rhs) const
+    {
+        assert(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
+        return not_at_begin == rhs.not_at_begin && handle.idx == rhs.handle.idx;
+    }
+    bool operator!=(face_vertex_circulator const& rhs) const
+    {
+        assert(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
+        return not_at_begin != rhs.not_at_begin || handle.idx != rhs.handle.idx;
+    }
+
+private:
+    halfedge_handle handle;
+    bool not_at_begin;
+};
 }

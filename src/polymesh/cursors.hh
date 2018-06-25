@@ -13,6 +13,13 @@ struct edge_property;
 template <typename PropT>
 struct halfedge_property;
 
+struct vertex_handle;
+struct face_handle;
+struct edge_handle;
+struct halfedge_handle;
+
+struct face_vertex_ring;
+
 // ======================== INDICES ========================
 
 struct face_index
@@ -112,6 +119,17 @@ struct face_handle
 
     bool is_valid() const;   ///< valid idx and not deleted
     bool is_deleted() const; ///< marked for deletion (or invalid idx)
+
+    vertex_handle any_vertex() const;
+    halfedge_handle any_halfedge() const;
+
+    face_vertex_ring vertices() const;
+
+    // TODO:
+    // faces (1-ring)
+    // edges
+    // halfedges
+    // vertices
 };
 
 struct vertex_handle
@@ -133,6 +151,9 @@ struct vertex_handle
 
     bool is_valid() const;   ///< valid idx and not deleted
     bool is_deleted() const; ///< marked for deletion (or invalid idx)
+
+    face_handle any_face() const;
+    halfedge_handle any_halfedge() const;
 };
 
 struct edge_handle
@@ -154,6 +175,9 @@ struct edge_handle
 
     bool is_valid() const;   ///< valid idx and not deleted
     bool is_deleted() const; ///< marked for deletion (or invalid idx)
+
+    halfedge_handle halfedgeA() const;
+    halfedge_handle halfedgeB() const;
 };
 
 struct halfedge_handle
@@ -176,12 +200,13 @@ struct halfedge_handle
     bool is_valid() const;   ///< valid idx and not deleted
     bool is_deleted() const; ///< marked for deletion (or invalid idx)
 
-    // TODO:
-    // vertex_to
-    // vertex_from
-    // face
-    // opposite_face
-    // opposite
+    vertex_handle vertex_to() const;
+    vertex_handle vertex_from() const;
+    face_handle face() const;
+    halfedge_handle next() const;
+    halfedge_handle prev() const;
+    halfedge_handle opposite() const;
+    face_handle opposite_face() const;
 };
 
 }
