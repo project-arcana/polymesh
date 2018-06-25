@@ -25,6 +25,10 @@ struct vertex_collection
 
     // TODO: delete
 
+    /// Creates a new vertex property
+    template<typename PropT>
+    vertex_property<PropT> make_property(PropT const& def_value = PropT());
+
     // Iteration:
     vertex_iterator begin() const;
     vertex_iterator end() const;
@@ -90,6 +94,10 @@ struct face_collection
 
     // TODO: delete
 
+    /// Creates a new face property
+    template<typename PropT>
+    face_property<PropT> make_property(PropT const& def_value = PropT());
+
     // Iteration:
     face_iterator begin() const;
     face_iterator end() const;
@@ -140,6 +148,12 @@ struct edge_collection
     /// Adds an edge between two existing, distinct vertices
     /// if edge already exists, returns it
     edge_handle add_or_get(vertex_handle v_from, vertex_handle v_to);
+
+    // TODO: delete
+
+    /// Creates a new edge property
+    template<typename PropT>
+    edge_property<PropT> make_property(PropT const& def_value = PropT());
 
     // Iteration:
     edge_iterator begin() const;
@@ -193,6 +207,10 @@ struct halfedge_collection
     /// (always adds opposite half-edge as well)
     halfedge_handle add_or_get(vertex_handle v_from, vertex_handle v_to);
 
+    /// Creates a new half-edge property
+    template<typename PropT>
+    halfedge_property<PropT> make_property(PropT const& def_value = PropT());
+
     // Iteration:
     halfedge_iterator begin() const;
     halfedge_iterator end() const;
@@ -227,4 +245,5 @@ struct valid_halfedge_collection
     valid_halfedge_iterator begin() const;
     valid_halfedge_iterator end() const;
 };
+
 }

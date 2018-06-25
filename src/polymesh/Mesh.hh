@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "cursors.hh"
+#include "properties.hh"
 #include "ranges.hh"
 
 namespace polymesh
@@ -30,7 +31,7 @@ using SharedMesh = std::shared_ptr<Mesh>;
  *  * http://kaba.hilvi.org/homepage/blog/halfedge/halfedge.htm
  *  * https://www.openmesh.org/media/Documentations/OpenMesh-Doc-Latest/a03930.html
  */
-struct Mesh
+class Mesh
 {
     // accessors and iterators
 public:
@@ -210,6 +211,7 @@ private:
 
     // internal datastructures
 private:
+    // 4 byte per face
     struct face_info
     {
         halfedge_index halfedge; ///< one half-edge bounding this face
@@ -218,6 +220,7 @@ private:
         void set_deleted() { halfedge = halfedge_index::invalid(); }
     };
 
+    // 4 byte per vertex
     struct vertex_info
     {
         halfedge_index outgoing_halfedge;
@@ -229,6 +232,7 @@ private:
         // is_boundary: check if outgoing_halfedge is boundary
     };
 
+    // 32 byte per edge
     struct halfedge_info
     {
         vertex_index to_vertex;       ///< half-edge points towards this vertex
@@ -271,6 +275,23 @@ private:
 
     std::vector<halfedge_index> mFaceInsertCache;
 
+    // properties
+private:
+    // linked lists of all properties
+    mutable vertex_property_base *mVertexProps = nullptr;
+    mutable face_property_base *mFaceProps = nullptr;
+    mutable edge_property_base *mEdgeProps = nullptr;
+    mutable halfedge_property_base *mHalfedgeProps = nullptr;
+
+    void register_prop(vertex_property_base *prop) const;
+    void deregister_prop(vertex_property_base *prop) const;
+    void register_prop(face_property_base *prop) const;
+    void deregister_prop(face_property_base *prop) const;
+    void register_prop(edge_property_base *prop) const;
+    void deregister_prop(edge_property_base *prop) const;
+    void register_prop(halfedge_property_base *prop) const;
+    void deregister_prop(halfedge_property_base *prop) const;
+
     // friends
 private:
     friend struct vertex_handle;
@@ -279,6 +300,7 @@ private:
     friend struct valid_vertex_iterator;
     friend struct valid_vertex_collection;
     friend struct const_vertex_collection;
+    friend struct vertex_property_base;
 
     friend struct face_handle;
     friend struct face_collection;
@@ -286,6 +308,7 @@ private:
     friend struct valid_face_iterator;
     friend struct valid_face_collection;
     friend struct const_face_collection;
+    friend struct face_property_base;
 
     friend struct edge_handle;
     friend struct edge_collection;
@@ -293,6 +316,7 @@ private:
     friend struct valid_edge_iterator;
     friend struct valid_edge_collection;
     friend struct const_edge_collection;
+    friend struct edge_property_base;
 
     friend struct halfedge_handle;
     friend struct halfedge_collection;
@@ -300,16 +324,21 @@ private:
     friend struct valid_halfedge_iterator;
     friend struct valid_halfedge_collection;
     friend struct const_halfedge_collection;
+    friend struct halfedge_property_base;
 };
 
 /// ======== IMPLEMENTATION ========
 
 inline vertex_index Mesh::add_vertex()
 {
-    /// TODO: properties
-
     auto idx = vertex_index((int)mVertices.size());
     mVertices.push_back(vertex_info());
+
+    // notify properties
+    auto vCnt = mVertices.size();
+    for (auto p = mVertexProps; p; p = p->mNextProperty)
+        p->resize(vCnt);
+
     return idx;
 }
 
@@ -366,6 +395,11 @@ inline face_index Mesh::add_face(const halfedge_index *half_loop, size_t vcnt)
     face_info f;
     f.halfedge = half_loop[0];
     mFaces.push_back(f);
+
+    // notify properties
+    auto fCnt = mFaces.size();
+    for (auto p = mFaceProps; p; p = p->mNextProperty)
+        p->resize(fCnt);
 
     return fidx;
 }
@@ -435,6 +469,15 @@ inline edge_index Mesh::add_or_get_edge(vertex_index v_from, vertex_index v_to)
     // finalize
     mHalfedges.push_back(h_from_to);
     mHalfedges.push_back(h_to_from);
+
+    // notify properties
+    auto hCnt = mHalfedges.size();
+    auto eCnt = hCnt >> 1;
+    for (auto p = mHalfedgeProps; p; p = p->mNextProperty)
+        p->resize(hCnt);
+    for (auto p = mEdgeProps; p; p = p->mNextProperty)
+        p->resize(eCnt);
+
     return eidx;
 }
 
@@ -997,5 +1040,291 @@ inline bool halfedge_handle::is_valid() const
 inline bool halfedge_handle::is_deleted() const
 {
     return !idx.is_valid() || !mesh->halfedge(idx).is_valid();
+}
+
+/// ======== PROPERTIES IMPLEMENTATION ========
+
+template <typename PropT>
+vertex_property<PropT> vertex_collection::make_property(const PropT &def_value)
+{
+    return vertex_property<PropT>(mesh, def_value);
+}
+
+template <typename PropT>
+face_property<PropT> face_collection::make_property(const PropT &def_value)
+{
+    return face_property<PropT>(mesh, def_value);
+}
+
+template <typename PropT>
+edge_property<PropT> edge_collection::make_property(const PropT &def_value)
+{
+    return edge_property<PropT>(mesh, def_value);
+}
+
+template <typename PropT>
+halfedge_property<PropT> halfedge_collection::make_property(const PropT &def_value)
+{
+    return halfedge_property<PropT>(mesh, def_value);
+}
+
+inline void Mesh::register_prop(vertex_property_base *prop) const
+{
+    // insert in front
+    auto nextProps = mVertexProps;
+    mVertexProps = prop;
+    prop->mNextProperty = nextProps;
+    if (nextProps)
+        nextProps->mPrevProperty = prop;
+
+    // resize prop
+    prop->resize(vertices().size());
+}
+
+inline void Mesh::deregister_prop(vertex_property_base *prop) const
+{
+    if (prop->mPrevProperty)
+        prop->mPrevProperty->mNextProperty = prop->mNextProperty;
+
+    if (prop->mNextProperty)
+        prop->mNextProperty = prop->mPrevProperty;
+
+    if (mVertexProps == prop)
+        mVertexProps = prop->mNextProperty;
+}
+
+inline void Mesh::register_prop(face_property_base *prop) const
+{
+    // insert in front
+    auto nextProps = mFaceProps;
+    mFaceProps = prop;
+    prop->mNextProperty = nextProps;
+    if (nextProps)
+        nextProps->mPrevProperty = prop;
+
+    // resize prop
+    prop->resize(faces().size());
+}
+
+inline void Mesh::deregister_prop(face_property_base *prop) const
+{
+    if (prop->mPrevProperty)
+        prop->mPrevProperty->mNextProperty = prop->mNextProperty;
+
+    if (prop->mNextProperty)
+        prop->mNextProperty = prop->mPrevProperty;
+
+    if (mFaceProps == prop)
+        mFaceProps = prop->mNextProperty;
+}
+
+inline void Mesh::register_prop(edge_property_base *prop) const
+{
+    // insert in front
+    auto nextProps = mEdgeProps;
+    mEdgeProps = prop;
+    prop->mNextProperty = nextProps;
+    if (nextProps)
+        nextProps->mPrevProperty = prop;
+
+    // resize prop
+    prop->resize(edges().size());
+}
+
+inline void Mesh::deregister_prop(edge_property_base *prop) const
+{
+    if (prop->mPrevProperty)
+        prop->mPrevProperty->mNextProperty = prop->mNextProperty;
+
+    if (prop->mNextProperty)
+        prop->mNextProperty = prop->mPrevProperty;
+
+    if (mEdgeProps == prop)
+        mEdgeProps = prop->mNextProperty;
+}
+
+inline void Mesh::register_prop(halfedge_property_base *prop) const
+{
+    // insert in front
+    auto nextProps = mHalfedgeProps;
+    mHalfedgeProps = prop;
+    prop->mNextProperty = nextProps;
+    if (nextProps)
+        nextProps->mPrevProperty = prop;
+
+    // resize prop
+    prop->resize(halfedges().size());
+}
+
+inline void Mesh::deregister_prop(halfedge_property_base *prop) const
+{
+    if (prop->mPrevProperty)
+        prop->mPrevProperty->mNextProperty = prop->mNextProperty;
+
+    if (prop->mNextProperty)
+        prop->mNextProperty = prop->mPrevProperty;
+
+    if (mHalfedgeProps == prop)
+        mHalfedgeProps = prop->mNextProperty;
+}
+
+inline vertex_property_base::vertex_property_base(const Mesh *mesh) : mMesh(mesh)
+{
+    // mMesh->register_prop(this); TOO EARLY!
+}
+
+inline face_property_base::face_property_base(const Mesh *mesh) : mMesh(mesh)
+{
+    // mMesh->register_prop(this); TOO EARLY!
+}
+
+inline edge_property_base::edge_property_base(const Mesh *mesh) : mMesh(mesh)
+{
+    // mMesh->register_prop(this); TOO EARLY!
+}
+
+inline halfedge_property_base::halfedge_property_base(const Mesh *mesh) : mMesh(mesh)
+{
+    // mMesh->register_prop(this); TOO EARLY!
+}
+
+inline vertex_property_base::~vertex_property_base()
+{
+    mMesh->deregister_prop(this);
+}
+
+inline face_property_base::~face_property_base()
+{
+    mMesh->deregister_prop(this);
+}
+
+inline edge_property_base::~edge_property_base()
+{
+    mMesh->deregister_prop(this);
+}
+
+inline halfedge_property_base::~halfedge_property_base()
+{
+    mMesh->deregister_prop(this);
+}
+
+inline void vertex_property_base::register_prop()
+{
+    mMesh->register_prop(this);
+}
+
+inline void face_property_base::register_prop()
+{
+    mMesh->register_prop(this);
+}
+
+inline void edge_property_base::register_prop()
+{
+    mMesh->register_prop(this);
+}
+
+inline void halfedge_property_base::register_prop()
+{
+    mMesh->register_prop(this);
+}
+
+template <typename PropT>
+vertex_property<PropT>::vertex_property(const Mesh *mesh, const PropT &def_value)
+  : vertex_property_base(mesh), mDefaultValue(def_value)
+{
+    register_prop();
+}
+
+template <typename PropT>
+face_property<PropT>::face_property(const Mesh *mesh, const PropT &def_value)
+  : face_property_base(mesh), mDefaultValue(def_value)
+{
+    register_prop();
+}
+
+template <typename PropT>
+edge_property<PropT>::edge_property(const Mesh *mesh, const PropT &def_value)
+  : edge_property_base(mesh), mDefaultValue(def_value)
+{
+    register_prop();
+}
+
+template <typename PropT>
+halfedge_property<PropT>::halfedge_property(const Mesh *mesh, const PropT &def_value)
+  : halfedge_property_base(mesh), mDefaultValue(def_value)
+{
+    register_prop();
+}
+
+template <typename PropT>
+size_t vertex_property<PropT>::size() const
+{
+    return mMesh->vertices().size();
+}
+
+template <typename PropT>
+void vertex_property<PropT>::clear(PropT const &value)
+{
+    mData.clear();
+    mData.resize(mMesh->vertices().size(), value);
+}
+template <typename PropT>
+void vertex_property<PropT>::clear()
+{
+    clear(mDefaultValue);
+}
+
+template <typename PropT>
+size_t face_property<PropT>::size() const
+{
+    return mMesh->vertices().size();
+}
+
+template <typename PropT>
+void face_property<PropT>::clear(PropT const &value)
+{
+    mData.clear();
+    mData.resize(mMesh->vertices().size(), value);
+}
+template <typename PropT>
+void face_property<PropT>::clear()
+{
+    clear(mDefaultValue);
+}
+
+template <typename PropT>
+size_t edge_property<PropT>::size() const
+{
+    return mMesh->vertices().size();
+}
+
+template <typename PropT>
+void edge_property<PropT>::clear(PropT const &value)
+{
+    mData.clear();
+    mData.resize(mMesh->vertices().size(), value);
+}
+template <typename PropT>
+void edge_property<PropT>::clear()
+{
+    clear(mDefaultValue);
+}
+
+template <typename PropT>
+size_t halfedge_property<PropT>::size() const
+{
+    return mMesh->vertices().size();
+}
+
+template <typename PropT>
+void halfedge_property<PropT>::clear(PropT const &value)
+{
+    mData.clear();
+    mData.resize(mMesh->vertices().size(), value);
+}
+template <typename PropT>
+void halfedge_property<PropT>::clear()
+{
+    clear(mDefaultValue);
 }
 }
