@@ -21,8 +21,8 @@ using SharedMesh = std::shared_ptr<Mesh>;
  *  * Primitives can be added via <primitive>().add()
  *    (added primitives are at the end of the collection)
  *
- *  * Primitives can be deleted via <primitive>().delete(...)
- *    (deleted primitives are invalidated (flagged for removal). call compactify() to remove them)
+ *  * Primitives can be removed via <primitive>().remove(...)
+ *    (removed primitives are invalidated (flagged for removal). call compactify() to remove them)
  *
  *  * `for (auto h : <primitive>())` iterates over _all_ primitives, including invalid ones
  *    (`for (auto h : valid_<primitive>())` skips over invalid ones)
@@ -35,12 +35,12 @@ class Mesh
 {
     // accessors and iterators
 public:
-    /// smart collections for primitives INCLUDING deleted ones
+    /// smart collections for primitives INCLUDING removed ones
     /// Also primary interfaces for querying size and adding primitives
     ///
-    /// CAUTION: includes deleted ones!
-    ///   use compactify() to ensure that no deleted ones exist
-    ///   use valid_<primitive>() to skip deleted ones during iteration (slower)
+    /// CAUTION: includes removed ones!
+    ///   use compactify() to ensure that no removed ones exist
+    ///   use valid_<primitive>() to skip removed ones during iteration (slower)
     ///
     /// NOTE: adding primitives does NOT invalidate ranges. (newly added ones are NOT processed though)
     ///       deleting primitives does NOT invalidate ranges.
@@ -54,7 +54,7 @@ public:
     const_edge_collection edges() const { return {this}; }
     const_halfedge_collection halfedges() const { return {this}; }
 
-    /// smart collections for VALID primitives (EXCLUDING deleted ones)
+    /// smart collections for VALID primitives (EXCLUDING removed ones)
     ///
     /// NOTE: if mesh.is_compact() is guaranteed, <primitive>() is faster than valid_<primitive>()
     ///
@@ -81,7 +81,7 @@ public:
 public:
     /// Returns true if the mesh is guaranteed compact, otherwise call compactify() to be sure
     bool is_compact() const { return mCompact; }
-    /// Removes all invalid/deleted primitives
+    /// Removes all invalid/removed primitives
     /// NOTE: cheap no-op if already compact
     void compactify();
 
@@ -114,10 +114,10 @@ private:
     int size_edges() const { return (int)mHalfedges.size() >> 1; }
     int size_halfedges() const { return (int)mHalfedges.size(); }
 
-    int size_valid_faces() const { return (int)mFaces.size() - mDeletedFaces; }
-    int size_valid_vertices() const { return (int)mVertices.size() - mDeletedVertices; }
-    int size_valid_edges() const { return ((int)mHalfedges.size() - mDeletedHalfedges) >> 1; }
-    int size_valid_halfedges() const { return (int)mHalfedges.size() - mDeletedHalfedges; }
+    int size_valid_faces() const { return (int)mFaces.size() - mremovedFaces; }
+    int size_valid_vertices() const { return (int)mVertices.size() - mremovedVertices; }
+    int size_valid_edges() const { return ((int)mHalfedges.size() - mremovedHalfedges) >> 1; }
+    int size_valid_halfedges() const { return (int)mHalfedges.size() - mremovedHalfedges; }
 
     // returns the next valid idx (returns the given one if valid)
     // NOTE: the result can be invalid if no valid one was found
@@ -171,6 +171,14 @@ private:
     /// same as add_or_get_edge but returns the appropriate half-edge
     halfedge_index add_or_get_halfedge(vertex_index v_from, vertex_index v_to);
 
+    /// removes a face (actually sets the removed status)
+    /// modifies all adjacent vertices so that they correctly report is_boundary true
+    void remove_face(face_index f_idx);
+    /// removes both adjacent faces, then removes both half edges
+    void remove_edge(edge_index e_idx);
+    /// removes all adjacent edges, then the vertex
+    void remove_vertex(vertex_index v_idx);
+
     // attributes
     bool is_boundary(vertex_index idx) const;
     bool is_boundary(halfedge_index idx) const;
@@ -217,7 +225,7 @@ private:
         halfedge_index halfedge; ///< one half-edge bounding this face
 
         bool is_valid() const { return halfedge.is_valid(); }
-        void set_deleted() { halfedge = halfedge_index::invalid(); }
+        void set_removed() { halfedge = halfedge_index::invalid(); }
     };
 
     // 4 byte per vertex
@@ -228,7 +236,7 @@ private:
         /// a vertex can be valid even without outgoing halfedge
         bool is_valid() const { return outgoing_halfedge.value >= -1; }
         bool is_isolated() const { return !outgoing_halfedge.is_valid(); }
-        void set_deleted() { outgoing_halfedge = halfedge_index(-2); }
+        void set_removed() { outgoing_halfedge = halfedge_index(-2); }
         // is_boundary: check if outgoing_halfedge is boundary
     };
 
@@ -247,8 +255,8 @@ private:
         /// a half-edge is free if it is a boundary, aka has no associated face
         bool is_free() const { return !face.is_valid(); }
 
-        // CAUTION: delete both HE belonging to an edge
-        void set_deleted() { to_vertex = vertex_index::invalid(); }
+        // CAUTION: remove both HE belonging to an edge
+        void set_removed() { to_vertex = vertex_index::invalid(); }
     };
 
     // internal primitives
@@ -269,9 +277,9 @@ private:
     // internal state
 private:
     bool mCompact = true;
-    int mDeletedFaces = 0;
-    int mDeletedVertices = 0;
-    int mDeletedHalfedges = 0;
+    int mremovedFaces = 0;
+    int mremovedVertices = 0;
+    int mremovedHalfedges = 0;
 
     std::vector<halfedge_index> mFaceInsertCache;
 
@@ -522,6 +530,67 @@ inline void Mesh::make_adjacent(halfedge_index he_in, halfedge_index he_out)
 
     d.next_halfedge = he_h;
     h.prev_halfedge = he_d;
+}
+
+inline void Mesh::remove_face(face_index f_idx)
+{
+    auto& f = face(f_idx);
+    f.set_removed(); //< mark removed
+
+    auto he_begin = f.halfedge;
+    auto he = he_begin;
+    do
+    {
+        auto& h = halfedge(he);
+        assert(h.face == f_idx);
+
+        // set half-edge face to invalid
+        h.face = face_index::invalid();
+
+        // outgoing vertex half-edge
+        // (vertex correctly reports is_boundary)
+        vertex(from_vertex_of(he)).outgoing_halfedge = he;
+
+        // advance
+        he = h.next_halfedge;
+    } while (he != he_begin);
+}
+
+inline void Mesh::remove_edge(edge_index e_idx)
+{
+    auto &h0 = halfedge(halfedge_of(e_idx, 0));
+    auto &h1 = halfedge(halfedge_of(e_idx, 1));
+
+    auto f0 = h0.face;
+    auto f1 = h1.face;
+
+    // remove adjacent faces
+    if (f0.is_valid())
+        remove_face(f0);
+    if (f1.is_valid())
+        remove_face(f1);
+
+    // remove half-edges
+    h0.set_removed();
+    h1.set_removed();
+
+    // rewire vertices
+    auto &v0_to = vertex(h0.to_vertex);
+    auto &v1_to = vertex(h1.to_vertex);
+
+    // TODO
+}
+
+inline void Mesh::remove_vertex(vertex_index v_idx)
+{
+    auto& v = vertex(v_idx);
+
+    // remove all outgoing edges
+    while (!v.is_isolated())
+        remove_edge(edge_of(v.outgoing_halfedge));
+
+    // mark removed
+    v.set_removed();
 }
 
 inline halfedge_index Mesh::find_free_incident(halfedge_index in_begin, halfedge_index in_end) const
@@ -1007,7 +1076,7 @@ inline bool vertex_handle::is_valid() const
     return idx.is_valid() && mesh->vertex(idx).is_valid();
 }
 
-inline bool vertex_handle::is_deleted() const
+inline bool vertex_handle::is_removed() const
 {
     return !idx.is_valid() || !mesh->vertex(idx).is_valid();
 }
@@ -1017,7 +1086,7 @@ inline bool face_handle::is_valid() const
     return idx.is_valid() && mesh->face(idx).is_valid();
 }
 
-inline bool face_handle::is_deleted() const
+inline bool face_handle::is_removed() const
 {
     return !idx.is_valid() || !mesh->face(idx).is_valid();
 }
@@ -1027,7 +1096,7 @@ inline bool edge_handle::is_valid() const
     return idx.is_valid() && mesh->halfedge(idx, 0).is_valid();
 }
 
-inline bool edge_handle::is_deleted() const
+inline bool edge_handle::is_removed() const
 {
     return !idx.is_valid() || !mesh->halfedge(idx, 0).is_valid();
 }
@@ -1037,7 +1106,7 @@ inline bool halfedge_handle::is_valid() const
     return idx.is_valid() && mesh->halfedge(idx).is_valid();
 }
 
-inline bool halfedge_handle::is_deleted() const
+inline bool halfedge_handle::is_removed() const
 {
     return !idx.is_valid() || !mesh->halfedge(idx).is_valid();
 }

@@ -118,7 +118,7 @@ struct face_handle
     PropT const& operator[](face_attribute<PropT> const& prop) const;
 
     bool is_valid() const;   ///< valid idx and not deleted
-    bool is_deleted() const; ///< marked for deletion (or invalid idx)
+    bool is_removed() const; ///< marked for deletion (or invalid idx)
 
     vertex_handle any_vertex() const;
     halfedge_handle any_halfedge() const;
@@ -150,7 +150,7 @@ struct vertex_handle
     PropT const& operator[](vertex_attribute<PropT> const& prop) const;
 
     bool is_valid() const;   ///< valid idx and not deleted
-    bool is_deleted() const; ///< marked for deletion (or invalid idx)
+    bool is_removed() const; ///< marked for deletion (or invalid idx)
 
     face_handle any_face() const;
     halfedge_handle any_halfedge() const;
@@ -174,7 +174,7 @@ struct edge_handle
     PropT const& operator[](edge_attribute<PropT> const& prop) const;
 
     bool is_valid() const;   ///< valid idx and not deleted
-    bool is_deleted() const; ///< marked for deletion (or invalid idx)
+    bool is_removed() const; ///< marked for deletion (or invalid idx)
 
     halfedge_handle halfedgeA() const;
     halfedge_handle halfedgeB() const;
@@ -198,7 +198,7 @@ struct halfedge_handle
     PropT const& operator[](halfedge_attribute<PropT> const& prop) const;
 
     bool is_valid() const;   ///< valid idx and not deleted
-    bool is_deleted() const; ///< marked for deletion (or invalid idx)
+    bool is_removed() const; ///< marked for deletion (or invalid idx)
 
     vertex_handle vertex_to() const;
     vertex_handle vertex_from() const;
