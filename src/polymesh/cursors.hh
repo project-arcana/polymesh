@@ -5,13 +5,13 @@ namespace polymesh
 class Mesh;
 
 template <typename PropT>
-struct vertex_property;
+struct vertex_attribute;
 template <typename PropT>
-struct face_property;
+struct face_attribute;
 template <typename PropT>
-struct edge_property;
+struct edge_attribute;
 template <typename PropT>
-struct halfedge_property;
+struct halfedge_attribute;
 
 struct vertex_handle;
 struct face_handle;
@@ -36,9 +36,9 @@ struct face_index
     bool operator!=(face_index const& rhs) const { return value != rhs.value; }
 
     template <typename PropT>
-    PropT& operator[](face_property<PropT>& prop) const;
+    PropT& operator[](face_attribute<PropT>& prop) const;
     template <typename PropT>
-    PropT const& operator[](face_property<PropT> const& prop) const;
+    PropT const& operator[](face_attribute<PropT> const& prop) const;
 };
 
 struct vertex_index
@@ -55,9 +55,9 @@ struct vertex_index
     bool operator!=(vertex_index const& rhs) const { return value != rhs.value; }
 
     template <typename PropT>
-    PropT& operator[](vertex_property<PropT>& prop) const;
+    PropT& operator[](vertex_attribute<PropT>& prop) const;
     template <typename PropT>
-    PropT const& operator[](vertex_property<PropT> const& prop) const;
+    PropT const& operator[](vertex_attribute<PropT> const& prop) const;
 };
 
 struct edge_index
@@ -74,9 +74,9 @@ struct edge_index
     bool operator!=(edge_index const& rhs) const { return value != rhs.value; }
 
     template <typename PropT>
-    PropT& operator[](edge_property<PropT>& prop) const;
+    PropT& operator[](edge_attribute<PropT>& prop) const;
     template <typename PropT>
-    PropT const& operator[](edge_property<PropT> const& prop) const;
+    PropT const& operator[](edge_attribute<PropT> const& prop) const;
 };
 
 struct halfedge_index
@@ -93,9 +93,9 @@ struct halfedge_index
     bool operator!=(halfedge_index const& rhs) const { return value != rhs.value; }
 
     template <typename PropT>
-    PropT& operator[](halfedge_property<PropT>& prop) const;
+    PropT& operator[](halfedge_attribute<PropT>& prop) const;
     template <typename PropT>
-    PropT const& operator[](halfedge_property<PropT> const& prop) const;
+    PropT const& operator[](halfedge_attribute<PropT> const& prop) const;
 };
 
 // ======================== HANDLES ========================
@@ -113,9 +113,9 @@ struct face_handle
     bool operator!=(face_handle const& rhs) const { return mesh != rhs.mesh || idx != rhs.idx; }
 
     template <typename PropT>
-    PropT& operator[](face_property<PropT>& prop) const;
+    PropT& operator[](face_attribute<PropT>& prop) const;
     template <typename PropT>
-    PropT const& operator[](face_property<PropT> const& prop) const;
+    PropT const& operator[](face_attribute<PropT> const& prop) const;
 
     bool is_valid() const;   ///< valid idx and not deleted
     bool is_deleted() const; ///< marked for deletion (or invalid idx)
@@ -145,9 +145,9 @@ struct vertex_handle
     bool operator!=(vertex_handle const& rhs) const { return mesh != rhs.mesh || idx != rhs.idx; }
 
     template <typename PropT>
-    PropT& operator[](vertex_property<PropT>& prop) const;
+    PropT& operator[](vertex_attribute<PropT>& prop) const;
     template <typename PropT>
-    PropT const& operator[](vertex_property<PropT> const& prop) const;
+    PropT const& operator[](vertex_attribute<PropT> const& prop) const;
 
     bool is_valid() const;   ///< valid idx and not deleted
     bool is_deleted() const; ///< marked for deletion (or invalid idx)
@@ -169,9 +169,9 @@ struct edge_handle
     bool operator!=(edge_handle const& rhs) const { return mesh != rhs.mesh || idx != rhs.idx; }
 
     template <typename PropT>
-    PropT& operator[](edge_property<PropT>& prop) const;
+    PropT& operator[](edge_attribute<PropT>& prop) const;
     template <typename PropT>
-    PropT const& operator[](edge_property<PropT> const& prop) const;
+    PropT const& operator[](edge_attribute<PropT> const& prop) const;
 
     bool is_valid() const;   ///< valid idx and not deleted
     bool is_deleted() const; ///< marked for deletion (or invalid idx)
@@ -193,9 +193,9 @@ struct halfedge_handle
     bool operator!=(halfedge_handle const& rhs) const { return mesh != rhs.mesh || idx != rhs.idx; }
 
     template <typename PropT>
-    PropT& operator[](halfedge_property<PropT>& prop) const;
+    PropT& operator[](halfedge_attribute<PropT>& prop) const;
     template <typename PropT>
-    PropT const& operator[](halfedge_property<PropT> const& prop) const;
+    PropT const& operator[](halfedge_attribute<PropT> const& prop) const;
 
     bool is_valid() const;   ///< valid idx and not deleted
     bool is_deleted() const; ///< marked for deletion (or invalid idx)

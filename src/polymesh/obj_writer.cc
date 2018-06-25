@@ -28,9 +28,9 @@ void obj_writer::write_object_name(std::string object_name)
 }
 
 void obj_writer::write_mesh(const Mesh &mesh,
-                            vertex_property<glm::vec3> const &position,
-                            vertex_property<glm::vec2> const *tex_coord,
-                            vertex_property<glm::vec3> const *normal)
+                            vertex_attribute<glm::vec3> const &position,
+                            vertex_attribute<glm::vec2> const *tex_coord,
+                            vertex_attribute<glm::vec3> const *normal)
 {
     auto base_v = vertex_idx;
     auto base_t = texture_idx;

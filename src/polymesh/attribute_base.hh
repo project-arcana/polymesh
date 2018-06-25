@@ -2,17 +2,17 @@
 
 #include <cstddef>
 
-// Helper for mesh-based property bookkeeping
+// Helper for mesh-based attribute bookkeeping
 
 namespace polymesh
 {
 class Mesh;
 
-struct vertex_property_base
+struct vertex_attribute_base
 {
 private:
-    vertex_property_base* mNextProperty = nullptr;
-    vertex_property_base* mPrevProperty = nullptr;
+    vertex_attribute_base* mNextAttribute = nullptr;
+    vertex_attribute_base* mPrevAttribute = nullptr;
     size_t mDataSize = 0;
 
     void resize(size_t newSize)
@@ -26,18 +26,18 @@ private:
 
 protected:
     Mesh const* mMesh;
-    vertex_property_base(Mesh const* mesh);
-    virtual ~vertex_property_base();
+    vertex_attribute_base(Mesh const* mesh);
+    virtual ~vertex_attribute_base();
     virtual void on_resize(size_t newSize) = 0;
     void register_prop();
     friend class Mesh;
 };
 
-struct face_property_base
+struct face_attribute_base
 {
 private:
-    face_property_base* mNextProperty = nullptr;
-    face_property_base* mPrevProperty = nullptr;
+    face_attribute_base* mNextAttribute = nullptr;
+    face_attribute_base* mPrevAttribute = nullptr;
     size_t mDataSize = 0;
 
     void resize(size_t newSize)
@@ -51,18 +51,18 @@ private:
 
 protected:
     Mesh const* mMesh;
-    face_property_base(Mesh const* mesh);
-    virtual ~face_property_base();
+    face_attribute_base(Mesh const* mesh);
+    virtual ~face_attribute_base();
     virtual void on_resize(size_t newSize) = 0;
     void register_prop();
     friend class Mesh;
 };
 
-struct edge_property_base
+struct edge_attribute_base
 {
 private:
-    edge_property_base* mNextProperty = nullptr;
-    edge_property_base* mPrevProperty = nullptr;
+    edge_attribute_base* mNextAttribute = nullptr;
+    edge_attribute_base* mPrevAttribute = nullptr;
     size_t mDataSize = 0;
 
     void resize(size_t newSize)
@@ -76,18 +76,18 @@ private:
 
 protected:
     Mesh const* mMesh;
-    edge_property_base(Mesh const* mesh);
-    virtual ~edge_property_base();
+    edge_attribute_base(Mesh const* mesh);
+    virtual ~edge_attribute_base();
     virtual void on_resize(size_t newSize) = 0;
     void register_prop();
     friend class Mesh;
 };
 
-struct halfedge_property_base
+struct halfedge_attribute_base
 {
 private:
-    halfedge_property_base* mNextProperty = nullptr;
-    halfedge_property_base* mPrevProperty = nullptr;
+    halfedge_attribute_base* mNextAttribute = nullptr;
+    halfedge_attribute_base* mPrevAttribute = nullptr;
     size_t mDataSize = 0;
 
     void resize(size_t newSize)
@@ -101,8 +101,8 @@ private:
 
 protected:
     Mesh const* mMesh;
-    halfedge_property_base(Mesh const* mesh);
-    virtual ~halfedge_property_base();
+    halfedge_attribute_base(Mesh const* mesh);
+    virtual ~halfedge_attribute_base();
     virtual void on_resize(size_t newSize) = 0;
     void register_prop();
     friend class Mesh;

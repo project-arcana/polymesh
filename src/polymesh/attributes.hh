@@ -4,15 +4,15 @@
 #include <vector>
 
 #include "cursors.hh"
-#include "property_base.hh"
+#include "attribute_base.hh"
 
 /** Properties
  *
  * Golden rule:
- *  - the Mesh must always outlive the property!
+ *  - the Mesh must always outlive the attribute!
  *
  * Create properties:
- *   auto myProp = mesh.vertices().make_property(0.0f);
+ *   auto myProp = mesh.vertices().make_attribute(0.0f);
  *
  * Access properties:
  *   vertex_handle v; // or _index
@@ -25,7 +25,7 @@
 namespace polymesh
 {
 template <typename PropT>
-struct vertex_property : vertex_property_base
+struct vertex_attribute : vertex_attribute_base
 {
     // data access
 public:
@@ -52,12 +52,12 @@ private:
 
     // ctor
 private:
-    vertex_property(Mesh const* mesh, PropT const& def_value);
-    friend class vertex_collection;
+    vertex_attribute(Mesh const* mesh, PropT const& def_value);
+    friend struct vertex_collection;
 };
 
 template <typename PropT>
-struct face_property : face_property_base
+struct face_attribute : face_attribute_base
 {
     // data access
 public:
@@ -84,12 +84,12 @@ private:
 
     // ctor
 private:
-    face_property(Mesh const* mesh, PropT const& def_value);
-    friend class face_collection;
+    face_attribute(Mesh const* mesh, PropT const& def_value);
+    friend struct face_collection;
 };
 
 template <typename PropT>
-struct edge_property : edge_property_base
+struct edge_attribute : edge_attribute_base
 {
     // data access
 public:
@@ -116,12 +116,12 @@ private:
 
     // ctor
 private:
-    edge_property(Mesh const* mesh, PropT const& def_value);
-    friend class edge_collection;
+    edge_attribute(Mesh const* mesh, PropT const& def_value);
+    friend struct edge_collection;
 };
 
 template <typename PropT>
-struct halfedge_property : halfedge_property_base
+struct halfedge_attribute : halfedge_attribute_base
 {
     // data access
 public:
@@ -148,8 +148,8 @@ private:
 
     // ctor
 private:
-    halfedge_property(Mesh const* mesh, PropT const& def_value);
-    friend class halfedge_collection;
+    halfedge_attribute(Mesh const* mesh, PropT const& def_value);
+    friend struct halfedge_collection;
 };
 
 /// ======== IMPLEMENTATION ========
@@ -158,85 +158,85 @@ private:
 /// ======== CURSOR IMPLEMENTATION ========
 
 template <typename PropT>
-PropT& face_index::operator[](face_property<PropT>& prop) const
+PropT& face_index::operator[](face_attribute<PropT>& prop) const
 {
     return prop[*this];
 }
 template <typename PropT>
-PropT const& face_index::operator[](face_property<PropT> const& prop) const
+PropT const& face_index::operator[](face_attribute<PropT> const& prop) const
 {
     return prop[*this];
 }
 template <typename PropT>
-PropT& face_handle::operator[](face_property<PropT>& prop) const
+PropT& face_handle::operator[](face_attribute<PropT>& prop) const
 {
     return prop[*this];
 }
 template <typename PropT>
-PropT const& face_handle::operator[](face_property<PropT> const& prop) const
-{
-    return prop[*this];
-}
-
-template <typename PropT>
-PropT& vertex_index::operator[](vertex_property<PropT>& prop) const
-{
-    return prop[*this];
-}
-template <typename PropT>
-PropT const& vertex_index::operator[](vertex_property<PropT> const& prop) const
-{
-    return prop[*this];
-}
-template <typename PropT>
-PropT& vertex_handle::operator[](vertex_property<PropT>& prop) const
-{
-    return prop[*this];
-}
-template <typename PropT>
-PropT const& vertex_handle::operator[](vertex_property<PropT> const& prop) const
+PropT const& face_handle::operator[](face_attribute<PropT> const& prop) const
 {
     return prop[*this];
 }
 
 template <typename PropT>
-PropT& edge_index::operator[](edge_property<PropT>& prop) const
+PropT& vertex_index::operator[](vertex_attribute<PropT>& prop) const
 {
     return prop[*this];
 }
 template <typename PropT>
-PropT const& edge_index::operator[](edge_property<PropT> const& prop) const
+PropT const& vertex_index::operator[](vertex_attribute<PropT> const& prop) const
 {
     return prop[*this];
 }
 template <typename PropT>
-PropT& edge_handle::operator[](edge_property<PropT>& prop) const
+PropT& vertex_handle::operator[](vertex_attribute<PropT>& prop) const
 {
     return prop[*this];
 }
 template <typename PropT>
-PropT const& edge_handle::operator[](edge_property<PropT> const& prop) const
+PropT const& vertex_handle::operator[](vertex_attribute<PropT> const& prop) const
 {
     return prop[*this];
 }
 
 template <typename PropT>
-PropT& halfedge_index::operator[](halfedge_property<PropT>& prop) const
+PropT& edge_index::operator[](edge_attribute<PropT>& prop) const
 {
     return prop[*this];
 }
 template <typename PropT>
-PropT const& halfedge_index::operator[](halfedge_property<PropT> const& prop) const
+PropT const& edge_index::operator[](edge_attribute<PropT> const& prop) const
 {
     return prop[*this];
 }
 template <typename PropT>
-PropT& halfedge_handle::operator[](halfedge_property<PropT>& prop) const
+PropT& edge_handle::operator[](edge_attribute<PropT>& prop) const
 {
     return prop[*this];
 }
 template <typename PropT>
-PropT const& halfedge_handle::operator[](halfedge_property<PropT> const& prop) const
+PropT const& edge_handle::operator[](edge_attribute<PropT> const& prop) const
+{
+    return prop[*this];
+}
+
+template <typename PropT>
+PropT& halfedge_index::operator[](halfedge_attribute<PropT>& prop) const
+{
+    return prop[*this];
+}
+template <typename PropT>
+PropT const& halfedge_index::operator[](halfedge_attribute<PropT> const& prop) const
+{
+    return prop[*this];
+}
+template <typename PropT>
+PropT& halfedge_handle::operator[](halfedge_attribute<PropT>& prop) const
+{
+    return prop[*this];
+}
+template <typename PropT>
+PropT const& halfedge_handle::operator[](halfedge_attribute<PropT> const& prop) const
 {
     return prop[*this];
 }

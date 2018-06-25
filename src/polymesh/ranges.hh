@@ -25,9 +25,9 @@ struct vertex_collection
 
     // TODO: delete
 
-    /// Creates a new vertex property
+    /// Creates a new vertex attribute
     template <typename PropT>
-    vertex_property<PropT> make_property(PropT const& def_value = PropT());
+    vertex_attribute<PropT> make_attribute(PropT const& def_value = PropT());
 
     // Iteration:
     vertex_iterator begin() const;
@@ -42,6 +42,10 @@ struct const_vertex_collection
     /// Number of vertices, INCLUDING deleted/invalid ones
     /// O(1) computation
     int size() const;
+
+    /// Creates a new vertex attribute
+    template <typename PropT>
+    vertex_attribute<PropT> make_attribute(PropT const& def_value = PropT());
 
     // Iteration:
     vertex_iterator begin() const;
@@ -94,9 +98,9 @@ struct face_collection
 
     // TODO: delete
 
-    /// Creates a new face property
+    /// Creates a new face attribute
     template <typename PropT>
-    face_property<PropT> make_property(PropT const& def_value = PropT());
+    face_attribute<PropT> make_attribute(PropT const& def_value = PropT());
 
     // Iteration:
     face_iterator begin() const;
@@ -111,6 +115,10 @@ struct const_face_collection
     /// Number of faces, INCLUDING deleted/invalid ones
     /// O(1) computation
     int size() const;
+
+    /// Creates a new face attribute
+    template <typename PropT>
+    face_attribute<PropT> make_attribute(PropT const& def_value = PropT());
 
     // Iteration:
     face_iterator begin() const;
@@ -151,9 +159,9 @@ struct edge_collection
 
     // TODO: delete
 
-    /// Creates a new edge property
+    /// Creates a new edge attribute
     template <typename PropT>
-    edge_property<PropT> make_property(PropT const& def_value = PropT());
+    edge_attribute<PropT> make_attribute(PropT const& def_value = PropT());
 
     // Iteration:
     edge_iterator begin() const;
@@ -168,6 +176,10 @@ struct const_edge_collection
     /// Number of edges, INCLUDING deleted/invalid ones
     /// O(1) computation
     int size() const;
+
+    /// Creates a new edge attribute
+    template <typename PropT>
+    edge_attribute<PropT> make_attribute(PropT const& def_value = PropT());
 
     // Iteration:
     edge_iterator begin() const;
@@ -207,9 +219,9 @@ struct halfedge_collection
     /// (always adds opposite half-edge as well)
     halfedge_handle add_or_get(vertex_handle v_from, vertex_handle v_to);
 
-    /// Creates a new half-edge property
+    /// Creates a new half-edge attribute
     template <typename PropT>
-    halfedge_property<PropT> make_property(PropT const& def_value = PropT());
+    halfedge_attribute<PropT> make_attribute(PropT const& def_value = PropT());
 
     // Iteration:
     halfedge_iterator begin() const;
@@ -224,6 +236,10 @@ struct const_halfedge_collection
     /// Number of halfedges, INCLUDING deleted/invalid ones
     /// O(1) computation
     int size() const;
+
+    /// Creates a new half-edge attribute
+    template <typename PropT>
+    halfedge_attribute<PropT> make_attribute(PropT const& def_value = PropT());
 
     // Iteration:
     halfedge_iterator begin() const;
