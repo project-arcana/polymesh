@@ -1121,7 +1121,19 @@ vertex_property<PropT> vertex_collection::make_property(const PropT &def_value)
 }
 
 template <typename PropT>
+vertex_property<PropT> const_vertex_collection::make_property(const PropT &def_value)
+{
+    return vertex_property<PropT>(mesh, def_value);
+}
+
+template <typename PropT>
 face_property<PropT> face_collection::make_property(const PropT &def_value)
+{
+    return face_property<PropT>(mesh, def_value);
+}
+
+template <typename PropT>
+face_property<PropT> const_face_collection::make_property(const PropT &def_value)
 {
     return face_property<PropT>(mesh, def_value);
 }
@@ -1133,7 +1145,19 @@ edge_property<PropT> edge_collection::make_property(const PropT &def_value)
 }
 
 template <typename PropT>
+edge_property<PropT> const_edge_collection::make_property(const PropT &def_value)
+{
+    return edge_property<PropT>(mesh, def_value);
+}
+
+template <typename PropT>
 halfedge_property<PropT> halfedge_collection::make_property(const PropT &def_value)
+{
+    return halfedge_property<PropT>(mesh, def_value);
+}
+
+template <typename PropT>
+halfedge_property<PropT> const_halfedge_collection::make_property(const PropT &def_value)
 {
     return halfedge_property<PropT>(mesh, def_value);
 }
