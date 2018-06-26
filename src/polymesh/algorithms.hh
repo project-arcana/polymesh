@@ -2,13 +2,19 @@
 
 // TODO: include "algorithm/..."s
 
-// TODO:
-// - face centroid
+// Derived mesh properties, including:
+// - valences
+// - edge angles
+// - face angles
+// - face centroids
 // - face area
 // - mesh volume
 // - face normal
-// - vertex normal (diff weights)
+// - vertex normal
 // - curvature
+#include "algorithms/properties.hh"
+
+// TODO:
 // - decimation
 // - subdivision
 // - smoothing
@@ -18,6 +24,4 @@
 // - triangulation
 // - geodesics
 // - topological information (as free functions)
-// - angle to next/prev
-// - valence_of, valences
 // - subdivision-to-acute
