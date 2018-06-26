@@ -42,28 +42,28 @@ void Mesh::assert_consistency() const
         for (auto h : vertices())
         {
             ++vertex_cnt;
-            if (h.is_deleted())
+            if (h.is_removed())
                 ++invalid_vertex_cnt;
         }
 
         for (auto h : faces())
         {
             ++face_cnt;
-            if (h.is_deleted())
+            if (h.is_removed())
                 ++invalid_face_cnt;
         }
 
         for (auto h : edges())
         {
             ++edge_cnt;
-            if (h.is_deleted())
+            if (h.is_removed())
                 ++invalid_edge_cnt;
         }
 
         for (auto h : halfedges())
         {
             ++halfedge_cnt;
-            if (h.is_deleted())
+            if (h.is_removed())
                 ++invalid_halfedge_cnt;
         }
 
@@ -103,9 +103,9 @@ void Mesh::assert_consistency() const
         assert(edge_cnt == valid_edge_cnt + invalid_edge_cnt);
         assert(halfedge_cnt == valid_halfedge_cnt + invalid_halfedge_cnt);
 
-        assert(mDeletedFaces == invalid_face_cnt);
-        assert(mDeletedVertices == invalid_vertex_cnt);
-        assert(mDeletedHalfedges == invalid_halfedge_cnt);
+        assert(mRemovedFaces == invalid_face_cnt);
+        assert(mRemovedVertices == invalid_vertex_cnt);
+        assert(mRemovedHalfedges == invalid_halfedge_cnt);
         assert(invalid_edge_cnt * 2 == invalid_halfedge_cnt);
         assert(valid_edge_cnt * 2 == valid_halfedge_cnt);
         assert(edge_cnt * 2 == halfedge_cnt);

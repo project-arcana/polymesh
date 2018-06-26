@@ -6,9 +6,9 @@
 
 namespace polymesh
 {
-vertex_property<float> geodesic_fast_marching_linear(Mesh const& m, vertex_property<glm::vec3> const& position)
+vertex_attribute<float> geodesic_fast_marching_linear(Mesh const& m, vertex_attribute<glm::vec3> const& position)
 {
-    auto dis = m.vertices().make_property<float>(-1);
+    auto dis = m.vertices().make_attribute<float>(-1);
 
     // TODO
 

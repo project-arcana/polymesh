@@ -4,8 +4,8 @@
 #include <memory>
 #include <vector>
 
-#include "cursors.hh"
 #include "attributes.hh"
+#include "cursors.hh"
 #include "ranges.hh"
 
 namespace polymesh
@@ -35,7 +35,7 @@ class Mesh
 {
     // accessors and iterators
 public:
-    /// smart collections for primitives INCLUDING removed ones
+    /// smart collections for primitives INCLUDING (flagged-to-)removed ones
     /// Also primary interfaces for querying size and adding primitives
     ///
     /// CAUTION: includes removed ones!
@@ -114,10 +114,10 @@ private:
     int size_edges() const { return (int)mHalfedges.size() >> 1; }
     int size_halfedges() const { return (int)mHalfedges.size(); }
 
-    int size_valid_faces() const { return (int)mFaces.size() - mremovedFaces; }
-    int size_valid_vertices() const { return (int)mVertices.size() - mremovedVertices; }
-    int size_valid_edges() const { return ((int)mHalfedges.size() - mremovedHalfedges) >> 1; }
-    int size_valid_halfedges() const { return (int)mHalfedges.size() - mremovedHalfedges; }
+    int size_valid_faces() const { return (int)mFaces.size() - mRemovedFaces; }
+    int size_valid_vertices() const { return (int)mVertices.size() - mRemovedVertices; }
+    int size_valid_edges() const { return ((int)mHalfedges.size() - mRemovedHalfedges) >> 1; }
+    int size_valid_halfedges() const { return (int)mHalfedges.size() - mRemovedHalfedges; }
 
     // returns the next valid idx (returns the given one if valid)
     // NOTE: the result can be invalid if no valid one was found
@@ -277,9 +277,9 @@ private:
     // internal state
 private:
     bool mCompact = true;
-    int mremovedFaces = 0;
-    int mremovedVertices = 0;
-    int mremovedHalfedges = 0;
+    int mRemovedFaces = 0;
+    int mRemovedVertices = 0;
+    int mRemovedHalfedges = 0;
 
     std::vector<halfedge_index> mFaceInsertCache;
 
@@ -534,14 +534,14 @@ inline void Mesh::make_adjacent(halfedge_index he_in, halfedge_index he_out)
 
 inline void Mesh::remove_face(face_index f_idx)
 {
-    auto& f = face(f_idx);
+    auto &f = face(f_idx);
     f.set_removed(); //< mark removed
 
     auto he_begin = f.halfedge;
     auto he = he_begin;
     do
     {
-        auto& h = halfedge(he);
+        auto &h = halfedge(he);
         assert(h.face == f_idx);
 
         // set half-edge face to invalid
@@ -558,11 +558,14 @@ inline void Mesh::remove_face(face_index f_idx)
 
 inline void Mesh::remove_edge(edge_index e_idx)
 {
-    auto &h0 = halfedge(halfedge_of(e_idx, 0));
-    auto &h1 = halfedge(halfedge_of(e_idx, 1));
+    auto hi_in = halfedge_of(e_idx, 0);
+    auto hi_out = halfedge_of(e_idx, 1);
 
-    auto f0 = h0.face;
-    auto f1 = h1.face;
+    auto &h_in = halfedge(hi_in);
+    auto &h_out = halfedge(hi_out);
+
+    auto f0 = h_in.face;
+    auto f1 = h_out.face;
 
     // remove adjacent faces
     if (f0.is_valid())
@@ -571,19 +574,47 @@ inline void Mesh::remove_edge(edge_index e_idx)
         remove_face(f1);
 
     // remove half-edges
-    h0.set_removed();
-    h1.set_removed();
+    h_in.set_removed();
+    h_out.set_removed();
 
     // rewire vertices
-    auto &v0_to = vertex(h0.to_vertex);
-    auto &v1_to = vertex(h1.to_vertex);
+    auto &v_in_to = vertex(h_in.to_vertex);
+    auto &v_out_to = vertex(h_out.to_vertex);
 
-    // TODO
+    auto hi_out_prev = h_out.prev_halfedge;
+    auto hi_out_next = h_out.next_halfedge;
+
+    auto hi_in_prev = h_in.prev_halfedge;
+    auto hi_in_next = h_in.next_halfedge;
+
+    if (hi_in_next == hi_out) // v_in_to becomes isolated
+    {
+        v_in_to.outgoing_halfedge = halfedge_index::invalid();
+    }
+    else
+    {
+        halfedge(hi_out_prev).next_halfedge = hi_in_next;
+        halfedge(hi_in_next).prev_halfedge = hi_out_prev;
+
+        v_in_to.outgoing_halfedge = hi_in_next;
+    }
+
+    if (hi_out_next == hi_in) // v_out_to becomes isolated
+    {
+        v_out_to.outgoing_halfedge = halfedge_index::invalid();
+    }
+    else
+    {
+        halfedge(hi_in_prev).next_halfedge = hi_out_next;
+        halfedge(hi_out_next).prev_halfedge = hi_in_prev;
+
+        v_out_to.outgoing_halfedge = hi_out_next;
+    }
 }
 
 inline void Mesh::remove_vertex(vertex_index v_idx)
 {
-    auto& v = vertex(v_idx);
+    auto &v = vertex(v_idx);
 
     // remove all outgoing edges
     while (!v.is_isolated())
