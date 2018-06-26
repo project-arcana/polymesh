@@ -168,7 +168,7 @@ private:
     /// if edge already exists, returns it
     edge_index add_or_get_edge(vertex_index v_from, vertex_index v_to);
 
-    /// same as add_or_get_edge but returns the appropriate half-edge
+    /// same as add_or_get_edge but returns the apattrriate half-edge
     halfedge_index add_or_get_halfedge(vertex_index v_from, vertex_index v_to);
 
     /// removes a face (actually sets the removed status)
@@ -286,19 +286,19 @@ private:
     // attributes
 private:
     // linked lists of all attributes
-    mutable vertex_attribute_base *mVertexProps = nullptr;
-    mutable face_attribute_base *mFaceProps = nullptr;
-    mutable edge_attribute_base *mEdgeProps = nullptr;
-    mutable halfedge_attribute_base *mHalfedgeProps = nullptr;
+    mutable vertex_attribute_base *mVertexAttrs = nullptr;
+    mutable face_attribute_base *mFaceAttrs = nullptr;
+    mutable edge_attribute_base *mEdgeAttrs = nullptr;
+    mutable halfedge_attribute_base *mHalfedgeAttrs = nullptr;
 
-    void register_prop(vertex_attribute_base *prop) const;
-    void deregister_prop(vertex_attribute_base *prop) const;
-    void register_prop(face_attribute_base *prop) const;
-    void deregister_prop(face_attribute_base *prop) const;
-    void register_prop(edge_attribute_base *prop) const;
-    void deregister_prop(edge_attribute_base *prop) const;
-    void register_prop(halfedge_attribute_base *prop) const;
-    void deregister_prop(halfedge_attribute_base *prop) const;
+    void register_attr(vertex_attribute_base *attr) const;
+    void deregister_attr(vertex_attribute_base *attr) const;
+    void register_attr(face_attribute_base *attr) const;
+    void deregister_attr(face_attribute_base *attr) const;
+    void register_attr(edge_attribute_base *attr) const;
+    void deregister_attr(edge_attribute_base *attr) const;
+    void register_attr(halfedge_attribute_base *attr) const;
+    void deregister_attr(halfedge_attribute_base *attr) const;
 
     // friends
 private:
@@ -344,7 +344,7 @@ inline vertex_index Mesh::add_vertex()
 
     // notify attributes
     auto vCnt = mVertices.size();
-    for (auto p = mVertexProps; p; p = p->mNextAttribute)
+    for (auto p = mVertexAttrs; p; p = p->mNextAttribute)
         p->resize(vCnt);
 
     return idx;
@@ -406,7 +406,7 @@ inline face_index Mesh::add_face(const halfedge_index *half_loop, size_t vcnt)
 
     // notify attributes
     auto fCnt = mFaces.size();
-    for (auto p = mFaceProps; p; p = p->mNextAttribute)
+    for (auto p = mFaceAttrs; p; p = p->mNextAttribute)
         p->resize(fCnt);
 
     return fidx;
@@ -481,9 +481,9 @@ inline edge_index Mesh::add_or_get_edge(vertex_index v_from, vertex_index v_to)
     // notify attributes
     auto hCnt = mHalfedges.size();
     auto eCnt = hCnt >> 1;
-    for (auto p = mHalfedgeProps; p; p = p->mNextAttribute)
+    for (auto p = mHalfedgeAttrs; p; p = p->mNextAttribute)
         p->resize(hCnt);
-    for (auto p = mEdgeProps; p; p = p->mNextAttribute)
+    for (auto p = mEdgeAttrs; p; p = p->mNextAttribute)
         p->resize(eCnt);
 
     return eidx;
@@ -521,7 +521,7 @@ inline void Mesh::make_adjacent(halfedge_index he_in, halfedge_index he_out)
     auto he_h = g.next_halfedge;
     auto &h = halfedge(he_d);
 
-    // properly rewire
+    // attrerly rewire
     in.next_halfedge = he_out;
     out.prev_halfedge = he_in;
 
@@ -1100,6 +1100,124 @@ inline valid_halfedge_iterator valid_halfedge_collection::end() const
     return mesh->valid_halfedges_end();
 }
 
+inline void vertex_collection::remove(vertex_handle v) const
+{
+    mesh->remove_vertex(v.idx);
+}
+
+inline void face_collection::remove(face_handle f) const
+{
+    mesh->remove_face(f.idx);
+}
+
+inline void edge_collection::remove(edge_handle e) const
+{
+    mesh->remove_edge(e.idx);
+}
+
+inline void halfedge_collection::remove_edge(halfedge_handle h) const
+{
+    mesh->remove_edge(mesh->edge_of(h.idx));
+}
+
+/// ======== COMPACTIFY IMPLEMENTATION ========
+
+inline void Mesh::compactify()
+{
+    if (is_compact())
+        return;
+
+    // calculate remappings
+    int v_cnt = size_vertices();
+    int f_cnt = size_faces();
+    int e_cnt = size_edges();
+    int h_cnt = size_halfedges();
+    std::vector<int> v_new_to_old;
+    std::vector<int> f_new_to_old;
+    std::vector<int> e_new_to_old;
+    std::vector<int> h_new_to_old;
+    v_new_to_old.reserve(v_cnt);
+    f_new_to_old.reserve(f_cnt);
+    e_new_to_old.reserve(e_cnt);
+    h_new_to_old.reserve(h_cnt);
+    std::vector<int> h_old_to_new(h_cnt, -1);
+    std::vector<int> v_old_to_new(v_cnt, -1);
+    std::vector<int> f_old_to_new(f_cnt, -1);
+
+    for (auto i = 0; i < v_cnt; ++i)
+        if (mVertices[i].is_valid())
+        {
+            v_old_to_new[i] = v_new_to_old.size();
+            v_new_to_old.push_back(i);
+        }
+    for (auto i = 0; i < f_cnt; ++i)
+        if (mFaces[i].is_valid())
+        {
+            f_old_to_new[i] = f_new_to_old.size();
+            f_new_to_old.push_back(i);
+        }
+    for (auto i = 0; i < e_cnt; ++i)
+        if (mHalfedges[i << 1].is_valid())
+            e_new_to_old.push_back(i);
+    for (auto i = 0; i < h_cnt; ++i)
+        if (mHalfedges[i].is_valid())
+        {
+            h_old_to_new[i] = h_new_to_old.size();
+            h_new_to_old.push_back(i);
+        }
+
+    // apply remappings (map[new_prim_id] = old_prim_id)
+
+    for (auto i = 0u; i < v_new_to_old.size(); ++i)
+        mVertices[i] = mVertices[v_new_to_old[i]];
+    for (auto i = 0u; i < f_new_to_old.size(); ++i)
+        mFaces[i] = mFaces[f_new_to_old[i]];
+    for (auto i = 0u; i < h_new_to_old.size(); ++i)
+        mHalfedges[i] = mHalfedges[h_new_to_old[i]];
+
+    mVertices.resize(v_new_to_old.size());
+    mFaces.resize(f_new_to_old.size());
+    mHalfedges.resize(h_new_to_old.size());
+
+    for (auto &v : mVertices)
+    {
+        if (v.outgoing_halfedge.value >= 0)
+            v.outgoing_halfedge.value = h_old_to_new[v.outgoing_halfedge.value];
+    }
+
+    for (auto &f : mFaces)
+    {
+        if (f.halfedge.value >= 0)
+            f.halfedge.value = h_old_to_new[f.halfedge.value];
+    }
+
+    for (auto &h : mHalfedges)
+    {
+        if (h.next_halfedge.value >= 0)
+            h.next_halfedge.value = h_old_to_new[h.next_halfedge.value];
+        if (h.prev_halfedge.value >= 0)
+            h.prev_halfedge.value = h_old_to_new[h.prev_halfedge.value];
+        if (h.face.value >= 0)
+            h.face.value = f_old_to_new[h.face.value];
+        if (h.to_vertex.value >= 0)
+            h.to_vertex.value = v_old_to_new[h.to_vertex.value];
+    }
+
+    for (auto a = mVertexAttrs; a; a = a->mNextAttribute)
+        a->apply_remapping(v_new_to_old);
+    for (auto a = mFaceAttrs; a; a = a->mNextAttribute)
+        a->apply_remapping(f_new_to_old);
+    for (auto a = mEdgeAttrs; a; a = a->mNextAttribute)
+        a->apply_remapping(e_new_to_old);
+    for (auto a = mHalfedgeAttrs; a; a = a->mNextAttribute)
+        a->apply_remapping(h_new_to_old);
+
+    mRemovedFaces = 0;
+    mRemovedHalfedges = 0;
+    mRemovedVertices = 0;
+    mCompact = true;
+}
+
 /// ======== HANDLES IMPLEMENTATION ========
 
 inline bool vertex_handle::is_valid() const
@@ -1152,6 +1270,11 @@ inline vertex_handle halfedge_handle::vertex_from() const
     return mesh->handle_of(mesh->halfedge(mesh->opposite(idx)).to_vertex);
 }
 
+inline edge_handle halfedge_handle::edge() const
+{
+    return mesh->handle_of(mesh->edge_of(idx));
+}
+
 inline face_handle halfedge_handle::face() const
 {
     return mesh->handle_of(mesh->halfedge(idx).face);
@@ -1187,14 +1310,39 @@ inline halfedge_handle edge_handle::halfedgeB() const
     return mesh->handle_of(mesh->halfedge_of(idx, 1));
 }
 
+inline vertex_handle edge_handle::vertexA() const
+{
+    return mesh->handle_of(mesh->halfedge(mesh->halfedge_of(idx, 0)).to_vertex);
+}
+
+inline vertex_handle edge_handle::vertexB() const
+{
+    return mesh->handle_of(mesh->halfedge(mesh->halfedge_of(idx, 1)).to_vertex);
+}
+
+inline face_handle edge_handle::faceA() const
+{
+    return mesh->handle_of(mesh->halfedge(mesh->halfedge_of(idx, 0)).face);
+}
+
+inline face_handle edge_handle::faceB() const
+{
+    return mesh->handle_of(mesh->halfedge(mesh->halfedge_of(idx, 1)).face);
+}
+
 inline face_handle vertex_handle::any_face() const
 {
     return mesh->handle_of(mesh->halfedge(mesh->vertex(idx).outgoing_halfedge).face);
 }
 
-inline halfedge_handle vertex_handle::any_halfedge() const
+inline halfedge_handle vertex_handle::any_outgoing_halfedge() const
 {
     return mesh->handle_of(mesh->vertex(idx).outgoing_halfedge);
+}
+
+inline halfedge_handle vertex_handle::any_incoming_halfedge() const
+{
+    return mesh->handle_of(mesh->opposite(mesh->vertex(idx).outgoing_halfedge));
 }
 
 inline vertex_handle face_handle::any_vertex() const
@@ -1212,312 +1360,352 @@ inline face_vertex_ring face_handle::vertices() const
     return {*this};
 }
 
+inline face_edge_ring face_handle::edges() const
+{
+    return {*this};
+}
+
+inline face_halfedge_ring face_handle::halfedges() const
+{
+    return {*this};
+}
+
+inline face_face_ring face_handle::adjacent_faces() const
+{
+    return {*this};
+}
+
+inline vertex_halfedge_in_ring vertex_handle::incoming_halfedges() const
+{
+    return {*this};
+}
+
+inline vertex_halfedge_out_ring vertex_handle::outcoming_halfedges() const
+{
+    return {*this};
+}
+
+inline vertex_edge_ring vertex_handle::edges() const
+{
+    return {*this};
+}
+
+inline vertex_face_ring vertex_handle::faces() const
+{
+    return {*this};
+}
+
+inline vertex_vertex_ring vertex_handle::adjacent_vertices() const
+{
+    return {*this};
+}
+
 /// ======== attributes IMPLEMENTATION ========
 
-template <typename PropT>
-vertex_attribute<PropT> vertex_collection::make_attribute(const PropT &def_value)
+template <typename AttrT>
+vertex_attribute<AttrT> vertex_collection::make_attribute(const AttrT &def_value)
 {
-    return vertex_attribute<PropT>(mesh, def_value);
+    return vertex_attribute<AttrT>(mesh, def_value);
 }
 
-template <typename PropT>
-vertex_attribute<PropT> const_vertex_collection::make_attribute(const PropT &def_value)
+template <typename AttrT>
+vertex_attribute<AttrT> const_vertex_collection::make_attribute(const AttrT &def_value)
 {
-    return vertex_attribute<PropT>(mesh, def_value);
+    return vertex_attribute<AttrT>(mesh, def_value);
 }
 
-template <typename PropT>
-face_attribute<PropT> face_collection::make_attribute(const PropT &def_value)
+template <typename AttrT>
+face_attribute<AttrT> face_collection::make_attribute(const AttrT &def_value)
 {
-    return face_attribute<PropT>(mesh, def_value);
+    return face_attribute<AttrT>(mesh, def_value);
 }
 
-template <typename PropT>
-face_attribute<PropT> const_face_collection::make_attribute(const PropT &def_value)
+template <typename AttrT>
+face_attribute<AttrT> const_face_collection::make_attribute(const AttrT &def_value)
 {
-    return face_attribute<PropT>(mesh, def_value);
+    return face_attribute<AttrT>(mesh, def_value);
 }
 
-template <typename PropT>
-edge_attribute<PropT> edge_collection::make_attribute(const PropT &def_value)
+template <typename AttrT>
+edge_attribute<AttrT> edge_collection::make_attribute(const AttrT &def_value)
 {
-    return edge_attribute<PropT>(mesh, def_value);
+    return edge_attribute<AttrT>(mesh, def_value);
 }
 
-template <typename PropT>
-edge_attribute<PropT> const_edge_collection::make_attribute(const PropT &def_value)
+template <typename AttrT>
+edge_attribute<AttrT> const_edge_collection::make_attribute(const AttrT &def_value)
 {
-    return edge_attribute<PropT>(mesh, def_value);
+    return edge_attribute<AttrT>(mesh, def_value);
 }
 
-template <typename PropT>
-halfedge_attribute<PropT> halfedge_collection::make_attribute(const PropT &def_value)
+template <typename AttrT>
+halfedge_attribute<AttrT> halfedge_collection::make_attribute(const AttrT &def_value)
 {
-    return halfedge_attribute<PropT>(mesh, def_value);
+    return halfedge_attribute<AttrT>(mesh, def_value);
 }
 
-template <typename PropT>
-halfedge_attribute<PropT> const_halfedge_collection::make_attribute(const PropT &def_value)
+template <typename AttrT>
+halfedge_attribute<AttrT> const_halfedge_collection::make_attribute(const AttrT &def_value)
 {
-    return halfedge_attribute<PropT>(mesh, def_value);
+    return halfedge_attribute<AttrT>(mesh, def_value);
 }
 
-inline void Mesh::register_prop(vertex_attribute_base *prop) const
+inline void Mesh::register_attr(vertex_attribute_base *attr) const
 {
     // insert in front
-    auto nextProps = mVertexProps;
-    mVertexProps = prop;
-    prop->mNextAttribute = nextProps;
-    if (nextProps)
-        nextProps->mPrevAttribute = prop;
+    auto nextAttrs = mVertexAttrs;
+    mVertexAttrs = attr;
+    attr->mNextAttribute = nextAttrs;
+    if (nextAttrs)
+        nextAttrs->mPrevAttribute = attr;
 
-    // resize prop
-    prop->resize(vertices().size());
+    // resize attr
+    attr->resize(vertices().size());
 }
 
-inline void Mesh::deregister_prop(vertex_attribute_base *prop) const
+inline void Mesh::deregister_attr(vertex_attribute_base *attr) const
 {
-    if (prop->mPrevAttribute)
-        prop->mPrevAttribute->mNextAttribute = prop->mNextAttribute;
+    if (attr->mPrevAttribute)
+        attr->mPrevAttribute->mNextAttribute = attr->mNextAttribute;
 
-    if (prop->mNextAttribute)
-        prop->mNextAttribute = prop->mPrevAttribute;
+    if (attr->mNextAttribute)
+        attr->mNextAttribute = attr->mPrevAttribute;
 
-    if (mVertexProps == prop)
-        mVertexProps = prop->mNextAttribute;
+    if (mVertexAttrs == attr)
+        mVertexAttrs = attr->mNextAttribute;
 }
 
-inline void Mesh::register_prop(face_attribute_base *prop) const
-{
-    // insert in front
-    auto nextProps = mFaceProps;
-    mFaceProps = prop;
-    prop->mNextAttribute = nextProps;
-    if (nextProps)
-        nextProps->mPrevAttribute = prop;
-
-    // resize prop
-    prop->resize(faces().size());
-}
-
-inline void Mesh::deregister_prop(face_attribute_base *prop) const
-{
-    if (prop->mPrevAttribute)
-        prop->mPrevAttribute->mNextAttribute = prop->mNextAttribute;
-
-    if (prop->mNextAttribute)
-        prop->mNextAttribute = prop->mPrevAttribute;
-
-    if (mFaceProps == prop)
-        mFaceProps = prop->mNextAttribute;
-}
-
-inline void Mesh::register_prop(edge_attribute_base *prop) const
+inline void Mesh::register_attr(face_attribute_base *attr) const
 {
     // insert in front
-    auto nextProps = mEdgeProps;
-    mEdgeProps = prop;
-    prop->mNextAttribute = nextProps;
-    if (nextProps)
-        nextProps->mPrevAttribute = prop;
+    auto nextAttrs = mFaceAttrs;
+    mFaceAttrs = attr;
+    attr->mNextAttribute = nextAttrs;
+    if (nextAttrs)
+        nextAttrs->mPrevAttribute = attr;
 
-    // resize prop
-    prop->resize(edges().size());
+    // resize attr
+    attr->resize(faces().size());
 }
 
-inline void Mesh::deregister_prop(edge_attribute_base *prop) const
+inline void Mesh::deregister_attr(face_attribute_base *attr) const
 {
-    if (prop->mPrevAttribute)
-        prop->mPrevAttribute->mNextAttribute = prop->mNextAttribute;
+    if (attr->mPrevAttribute)
+        attr->mPrevAttribute->mNextAttribute = attr->mNextAttribute;
 
-    if (prop->mNextAttribute)
-        prop->mNextAttribute = prop->mPrevAttribute;
+    if (attr->mNextAttribute)
+        attr->mNextAttribute = attr->mPrevAttribute;
 
-    if (mEdgeProps == prop)
-        mEdgeProps = prop->mNextAttribute;
+    if (mFaceAttrs == attr)
+        mFaceAttrs = attr->mNextAttribute;
 }
 
-inline void Mesh::register_prop(halfedge_attribute_base *prop) const
+inline void Mesh::register_attr(edge_attribute_base *attr) const
 {
     // insert in front
-    auto nextProps = mHalfedgeProps;
-    mHalfedgeProps = prop;
-    prop->mNextAttribute = nextProps;
-    if (nextProps)
-        nextProps->mPrevAttribute = prop;
+    auto nextAttrs = mEdgeAttrs;
+    mEdgeAttrs = attr;
+    attr->mNextAttribute = nextAttrs;
+    if (nextAttrs)
+        nextAttrs->mPrevAttribute = attr;
 
-    // resize prop
-    prop->resize(halfedges().size());
+    // resize attr
+    attr->resize(edges().size());
 }
 
-inline void Mesh::deregister_prop(halfedge_attribute_base *prop) const
+inline void Mesh::deregister_attr(edge_attribute_base *attr) const
 {
-    if (prop->mPrevAttribute)
-        prop->mPrevAttribute->mNextAttribute = prop->mNextAttribute;
+    if (attr->mPrevAttribute)
+        attr->mPrevAttribute->mNextAttribute = attr->mNextAttribute;
 
-    if (prop->mNextAttribute)
-        prop->mNextAttribute = prop->mPrevAttribute;
+    if (attr->mNextAttribute)
+        attr->mNextAttribute = attr->mPrevAttribute;
 
-    if (mHalfedgeProps == prop)
-        mHalfedgeProps = prop->mNextAttribute;
+    if (mEdgeAttrs == attr)
+        mEdgeAttrs = attr->mNextAttribute;
+}
+
+inline void Mesh::register_attr(halfedge_attribute_base *attr) const
+{
+    // insert in front
+    auto nextAttrs = mHalfedgeAttrs;
+    mHalfedgeAttrs = attr;
+    attr->mNextAttribute = nextAttrs;
+    if (nextAttrs)
+        nextAttrs->mPrevAttribute = attr;
+
+    // resize attr
+    attr->resize(halfedges().size());
+}
+
+inline void Mesh::deregister_attr(halfedge_attribute_base *attr) const
+{
+    if (attr->mPrevAttribute)
+        attr->mPrevAttribute->mNextAttribute = attr->mNextAttribute;
+
+    if (attr->mNextAttribute)
+        attr->mNextAttribute = attr->mPrevAttribute;
+
+    if (mHalfedgeAttrs == attr)
+        mHalfedgeAttrs = attr->mNextAttribute;
 }
 
 inline vertex_attribute_base::vertex_attribute_base(const Mesh *mesh) : mMesh(mesh)
 {
-    // mMesh->register_prop(this); TOO EARLY!
+    // mMesh->register_attr(this); TOO EARLY!
 }
 
 inline face_attribute_base::face_attribute_base(const Mesh *mesh) : mMesh(mesh)
 {
-    // mMesh->register_prop(this); TOO EARLY!
+    // mMesh->register_attr(this); TOO EARLY!
 }
 
 inline edge_attribute_base::edge_attribute_base(const Mesh *mesh) : mMesh(mesh)
 {
-    // mMesh->register_prop(this); TOO EARLY!
+    // mMesh->register_attr(this); TOO EARLY!
 }
 
 inline halfedge_attribute_base::halfedge_attribute_base(const Mesh *mesh) : mMesh(mesh)
 {
-    // mMesh->register_prop(this); TOO EARLY!
+    // mMesh->register_attr(this); TOO EARLY!
 }
 
 inline vertex_attribute_base::~vertex_attribute_base()
 {
-    mMesh->deregister_prop(this);
+    mMesh->deregister_attr(this);
 }
 
 inline face_attribute_base::~face_attribute_base()
 {
-    mMesh->deregister_prop(this);
+    mMesh->deregister_attr(this);
 }
 
 inline edge_attribute_base::~edge_attribute_base()
 {
-    mMesh->deregister_prop(this);
+    mMesh->deregister_attr(this);
 }
 
 inline halfedge_attribute_base::~halfedge_attribute_base()
 {
-    mMesh->deregister_prop(this);
+    mMesh->deregister_attr(this);
 }
 
-inline void vertex_attribute_base::register_prop()
+inline void vertex_attribute_base::register_attr()
 {
-    mMesh->register_prop(this);
+    mMesh->register_attr(this);
 }
 
-inline void face_attribute_base::register_prop()
+inline void face_attribute_base::register_attr()
 {
-    mMesh->register_prop(this);
+    mMesh->register_attr(this);
 }
 
-inline void edge_attribute_base::register_prop()
+inline void edge_attribute_base::register_attr()
 {
-    mMesh->register_prop(this);
+    mMesh->register_attr(this);
 }
 
-inline void halfedge_attribute_base::register_prop()
+inline void halfedge_attribute_base::register_attr()
 {
-    mMesh->register_prop(this);
+    mMesh->register_attr(this);
 }
 
-template <typename PropT>
-vertex_attribute<PropT>::vertex_attribute(const Mesh *mesh, const PropT &def_value)
+template <typename AttrT>
+vertex_attribute<AttrT>::vertex_attribute(const Mesh *mesh, const AttrT &def_value)
   : vertex_attribute_base(mesh), mDefaultValue(def_value)
 {
-    register_prop();
+    register_attr();
 }
 
-template <typename PropT>
-face_attribute<PropT>::face_attribute(const Mesh *mesh, const PropT &def_value)
+template <typename AttrT>
+face_attribute<AttrT>::face_attribute(const Mesh *mesh, const AttrT &def_value)
   : face_attribute_base(mesh), mDefaultValue(def_value)
 {
-    register_prop();
+    register_attr();
 }
 
-template <typename PropT>
-edge_attribute<PropT>::edge_attribute(const Mesh *mesh, const PropT &def_value)
+template <typename AttrT>
+edge_attribute<AttrT>::edge_attribute(const Mesh *mesh, const AttrT &def_value)
   : edge_attribute_base(mesh), mDefaultValue(def_value)
 {
-    register_prop();
+    register_attr();
 }
 
-template <typename PropT>
-halfedge_attribute<PropT>::halfedge_attribute(const Mesh *mesh, const PropT &def_value)
+template <typename AttrT>
+halfedge_attribute<AttrT>::halfedge_attribute(const Mesh *mesh, const AttrT &def_value)
   : halfedge_attribute_base(mesh), mDefaultValue(def_value)
 {
-    register_prop();
+    register_attr();
 }
 
-template <typename PropT>
-size_t vertex_attribute<PropT>::size() const
+template <typename AttrT>
+size_t vertex_attribute<AttrT>::size() const
 {
     return mMesh->vertices().size();
 }
 
-template <typename PropT>
-void vertex_attribute<PropT>::clear(PropT const &value)
+template <typename AttrT>
+void vertex_attribute<AttrT>::clear(AttrT const &value)
 {
     mData.clear();
     mData.resize(mMesh->vertices().size(), value);
 }
-template <typename PropT>
-void vertex_attribute<PropT>::clear()
+template <typename AttrT>
+void vertex_attribute<AttrT>::clear()
 {
     clear(mDefaultValue);
 }
 
-template <typename PropT>
-size_t face_attribute<PropT>::size() const
+template <typename AttrT>
+size_t face_attribute<AttrT>::size() const
 {
     return mMesh->vertices().size();
 }
 
-template <typename PropT>
-void face_attribute<PropT>::clear(PropT const &value)
+template <typename AttrT>
+void face_attribute<AttrT>::clear(AttrT const &value)
 {
     mData.clear();
     mData.resize(mMesh->vertices().size(), value);
 }
-template <typename PropT>
-void face_attribute<PropT>::clear()
+template <typename AttrT>
+void face_attribute<AttrT>::clear()
 {
     clear(mDefaultValue);
 }
 
-template <typename PropT>
-size_t edge_attribute<PropT>::size() const
+template <typename AttrT>
+size_t edge_attribute<AttrT>::size() const
 {
     return mMesh->vertices().size();
 }
 
-template <typename PropT>
-void edge_attribute<PropT>::clear(PropT const &value)
+template <typename AttrT>
+void edge_attribute<AttrT>::clear(AttrT const &value)
 {
     mData.clear();
     mData.resize(mMesh->vertices().size(), value);
 }
-template <typename PropT>
-void edge_attribute<PropT>::clear()
+template <typename AttrT>
+void edge_attribute<AttrT>::clear()
 {
     clear(mDefaultValue);
 }
 
-template <typename PropT>
-size_t halfedge_attribute<PropT>::size() const
+template <typename AttrT>
+size_t halfedge_attribute<AttrT>::size() const
 {
     return mMesh->vertices().size();
 }
 
-template <typename PropT>
-void halfedge_attribute<PropT>::clear(PropT const &value)
+template <typename AttrT>
+void halfedge_attribute<AttrT>::clear(AttrT const &value)
 {
     mData.clear();
     mData.resize(mMesh->vertices().size(), value);
 }
-template <typename PropT>
-void halfedge_attribute<PropT>::clear()
+template <typename AttrT>
+void halfedge_attribute<AttrT>::clear()
 {
     clear(mDefaultValue);
 }

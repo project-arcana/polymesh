@@ -19,6 +19,15 @@ struct edge_handle;
 struct halfedge_handle;
 
 struct face_vertex_ring;
+struct face_edge_ring;
+struct face_halfedge_ring;
+struct face_face_ring;
+
+struct vertex_halfedge_out_ring;
+struct vertex_halfedge_in_ring;
+struct vertex_face_ring;
+struct vertex_edge_ring;
+struct vertex_vertex_ring;
 
 // ======================== INDICES ========================
 
@@ -124,12 +133,9 @@ struct face_handle
     halfedge_handle any_halfedge() const;
 
     face_vertex_ring vertices() const;
-
-    // TODO:
-    // faces (1-ring)
-    // edges
-    // halfedges
-    // vertices
+    face_edge_ring edges() const;
+    face_halfedge_ring halfedges() const;
+    face_face_ring adjacent_faces() const;
 };
 
 struct vertex_handle
@@ -153,7 +159,14 @@ struct vertex_handle
     bool is_removed() const; ///< marked for deletion (or invalid idx)
 
     face_handle any_face() const;
-    halfedge_handle any_halfedge() const;
+    halfedge_handle any_outgoing_halfedge() const;
+    halfedge_handle any_incoming_halfedge() const;
+
+    vertex_halfedge_in_ring incoming_halfedges() const;
+    vertex_halfedge_out_ring outcoming_halfedges() const;
+    vertex_edge_ring edges() const;
+    vertex_face_ring faces() const; ///< includes invalid ones for boundaries!
+    vertex_vertex_ring adjacent_vertices() const;
 };
 
 struct edge_handle
@@ -178,6 +191,10 @@ struct edge_handle
 
     halfedge_handle halfedgeA() const;
     halfedge_handle halfedgeB() const;
+    vertex_handle vertexA() const;
+    vertex_handle vertexB() const;
+    face_handle faceA() const;
+    face_handle faceB() const;
 };
 
 struct halfedge_handle
@@ -202,6 +219,7 @@ struct halfedge_handle
 
     vertex_handle vertex_to() const;
     vertex_handle vertex_from() const;
+    edge_handle edge() const;
     face_handle face() const;
     halfedge_handle next() const;
     halfedge_handle prev() const;

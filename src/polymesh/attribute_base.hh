@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include <cstddef>
 
 // Helper for mesh-based attribute bookkeeping
@@ -29,7 +30,8 @@ protected:
     vertex_attribute_base(Mesh const* mesh);
     virtual ~vertex_attribute_base();
     virtual void on_resize(size_t newSize) = 0;
-    void register_prop();
+    virtual void apply_remapping(std::vector<int> const& map) = 0;
+    void register_attr();
     friend class Mesh;
 };
 
@@ -54,7 +56,8 @@ protected:
     face_attribute_base(Mesh const* mesh);
     virtual ~face_attribute_base();
     virtual void on_resize(size_t newSize) = 0;
-    void register_prop();
+    virtual void apply_remapping(std::vector<int> const& map) = 0;
+    void register_attr();
     friend class Mesh;
 };
 
@@ -79,7 +82,8 @@ protected:
     edge_attribute_base(Mesh const* mesh);
     virtual ~edge_attribute_base();
     virtual void on_resize(size_t newSize) = 0;
-    void register_prop();
+    virtual void apply_remapping(std::vector<int> const& map) = 0;
+    void register_attr();
     friend class Mesh;
 };
 
@@ -104,7 +108,8 @@ protected:
     halfedge_attribute_base(Mesh const* mesh);
     virtual ~halfedge_attribute_base();
     virtual void on_resize(size_t newSize) = 0;
-    void register_prop();
+    virtual void apply_remapping(std::vector<int> const& map) = 0;
+    void register_attr();
     friend class Mesh;
 };
 }

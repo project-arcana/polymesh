@@ -18,3 +18,6 @@
 // - triangulation
 // - geodesics
 // - topological information (as free functions)
+// - angle to next/prev
+// - valence_of, valences
+// - subdivision-to-acute

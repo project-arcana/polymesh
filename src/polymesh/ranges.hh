@@ -23,7 +23,9 @@ struct vertex_collection
     /// Does NOT invalidate any iterator!
     vertex_handle add() const;
 
-    // TODO: delete
+    /// Removes a vertex (and all adjacent faces and edges)
+    /// (marks them as removed, compactify mesh to actually remove them)
+    void remove(vertex_handle v) const;
 
     /// Creates a new vertex attribute
     template <typename PropT>
@@ -96,7 +98,9 @@ struct face_collection
     face_handle add(std::vector<halfedge_handle> const& half_loop) const;
     face_handle add(halfedge_handle const* half_loop, size_t vcnt) const;
 
-    // TODO: delete
+    /// Removes a face (adjacent edges and vertices are NOT removed)
+    /// (marks it as removed, compactify mesh to actually remove it)
+    void remove(face_handle f) const;
 
     /// Creates a new face attribute
     template <typename PropT>
@@ -157,7 +161,9 @@ struct edge_collection
     /// if edge already exists, returns it
     edge_handle add_or_get(vertex_handle v_from, vertex_handle v_to);
 
-    // TODO: delete
+    /// Removes an edge (and both adjacent faces, vertices are NOT removed)
+    /// (marks them as removed, compactify mesh to actually remove them)
+    void remove(edge_handle e) const;
 
     /// Creates a new edge attribute
     template <typename PropT>
@@ -219,6 +225,10 @@ struct halfedge_collection
     /// (always adds opposite half-edge as well)
     halfedge_handle add_or_get(vertex_handle v_from, vertex_handle v_to);
 
+    /// Removes the edge and both half-edges belonging to it (and both adjacent faces, vertices are NOT removed)
+    /// (marks them as removed, compactify mesh to actually remove them)
+    void remove_edge(halfedge_handle h) const;
+
     /// Creates a new half-edge attribute
     template <typename PropT>
     halfedge_attribute<PropT> make_attribute(PropT const& def_value = PropT());
@@ -276,10 +286,207 @@ struct face_vertex_ring
     face_vertex_circulator end() const { return {face, true}; }
 };
 
+/// all halfedges belonging to a face
+struct face_halfedge_ring
+{
+    face_handle face;
+
+    /// Number of vertices
+    /// O(result) computation
+    int size() const;
+
+    // Iteration:
+    face_halfedge_circulator begin() const { return {face, false}; }
+    face_halfedge_circulator end() const { return {face, true}; }
+};
+
+/// all edges belonging to a face
+struct face_edge_ring
+{
+    face_handle face;
+
+    /// Number of vertices
+    /// O(result) computation
+    int size() const;
+
+    // Iteration:
+    face_edge_circulator begin() const { return {face, false}; }
+    face_edge_circulator end() const { return {face, true}; }
+};
+
+/// all adjacent faces belonging to a face
+struct face_face_ring
+{
+    face_handle face;
+
+    /// Number of vertices
+    /// O(result) computation
+    int size() const;
+
+    // Iteration:
+    face_face_circulator begin() const { return {face, false}; }
+    face_face_circulator end() const { return {face, true}; }
+};
+
+/// all outgoing half-edges from a vertex
+struct vertex_halfedge_out_ring
+{
+    vertex_handle vertex;
+
+    /// Number of vertices
+    /// O(result) computation
+    int size() const;
+
+    // Iteration:
+    vertex_halfedge_out_circulator begin() const { return {vertex, false}; }
+    vertex_halfedge_out_circulator end() const { return {vertex, true}; }
+};
+
+/// all incoming half-edges from a vertex
+struct vertex_halfedge_in_ring
+{
+    vertex_handle vertex;
+
+    /// Number of vertices
+    /// O(result) computation
+    int size() const;
+
+    // Iteration:
+    vertex_halfedge_in_circulator begin() const { return {vertex, false}; }
+    vertex_halfedge_in_circulator end() const { return {vertex, true}; }
+};
+
+/// all adjacent vertices of a vertex
+struct vertex_vertex_ring
+{
+    vertex_handle vertex;
+
+    /// Number of vertices
+    /// O(result) computation
+    int size() const;
+
+    // Iteration:
+    vertex_vertex_circulator begin() const { return {vertex, false}; }
+    vertex_vertex_circulator end() const { return {vertex, true}; }
+};
+
+/// all adjacent edges of a vertex
+struct vertex_edge_ring
+{
+    vertex_handle vertex;
+
+    /// Number of vertices
+    /// O(result) computation
+    int size() const;
+
+    // Iteration:
+    vertex_edge_circulator begin() const { return {vertex, false}; }
+    vertex_edge_circulator end() const { return {vertex, true}; }
+};
+
+/// all adjacent faces of a vertex (INCLUDES invalid ones for boundaries)
+struct vertex_face_ring
+{
+    vertex_handle vertex;
+
+    /// Number of vertices
+    /// O(result) computation
+    int size() const;
+
+    // Iteration:
+    vertex_face_circulator begin() const { return {vertex, false}; }
+    vertex_face_circulator end() const { return {vertex, true}; }
+};
+
 
 /// ======== IMPLEMENTATION ========
 
 inline int face_vertex_ring::size() const
+{
+    auto cnt = 0;
+    for (auto v : *this)
+    {
+        (void)v; // unused
+        cnt++;
+    }
+    return cnt;
+}
+inline int face_edge_ring::size() const
+{
+    auto cnt = 0;
+    for (auto v : *this)
+    {
+        (void)v; // unused
+        cnt++;
+    }
+    return cnt;
+}
+inline int face_halfedge_ring::size() const
+{
+    auto cnt = 0;
+    for (auto v : *this)
+    {
+        (void)v; // unused
+        cnt++;
+    }
+    return cnt;
+}
+inline int face_face_ring::size() const
+{
+    auto cnt = 0;
+    for (auto v : *this)
+    {
+        (void)v; // unused
+        cnt++;
+    }
+    return cnt;
+}
+
+inline int vertex_halfedge_out_ring::size() const
+{
+    auto cnt = 0;
+    for (auto v : *this)
+    {
+        (void)v; // unused
+        cnt++;
+    }
+    return cnt;
+}
+
+inline int vertex_halfedge_in_ring::size() const
+{
+    auto cnt = 0;
+    for (auto v : *this)
+    {
+        (void)v; // unused
+        cnt++;
+    }
+    return cnt;
+}
+
+inline int vertex_vertex_ring::size() const
+{
+    auto cnt = 0;
+    for (auto v : *this)
+    {
+        (void)v; // unused
+        cnt++;
+    }
+    return cnt;
+}
+
+inline int vertex_edge_ring::size() const
+{
+    auto cnt = 0;
+    for (auto v : *this)
+    {
+        (void)v; // unused
+        cnt++;
+    }
+    return cnt;
+}
+
+inline int vertex_face_ring::size() const
 {
     auto cnt = 0;
     for (auto v : *this)
