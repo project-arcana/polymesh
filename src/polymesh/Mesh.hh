@@ -591,7 +591,7 @@ inline void Mesh::make_adjacent(halfedge_index he_in, halfedge_index he_out)
 inline void Mesh::remove_face(face_index f_idx)
 {
     auto &f = face(f_idx);
-    f.set_removed(); //< mark removed
+    assert(f.halfedge.is_valid());
 
     auto he_begin = f.halfedge;
     auto he = he_begin;
@@ -616,6 +616,13 @@ inline void Mesh::remove_face(face_index f_idx)
         // advance
         he = h.next_halfedge;
     } while (he != he_begin);
+
+    // mark removed
+    // (at the end!)
+    f.set_removed();
+
+    // bookkeeping
+    mRemovedFaces++;
 }
 
 inline void Mesh::remove_edge(edge_index e_idx)
@@ -625,6 +632,9 @@ inline void Mesh::remove_edge(edge_index e_idx)
 
     auto &h_in = halfedge(hi_in);
     auto &h_out = halfedge(hi_out);
+
+    assert(h_in.is_valid());
+    assert(h_out.is_valid());
 
     auto f0 = h_in.face;
     auto f1 = h_out.face;
@@ -672,11 +682,16 @@ inline void Mesh::remove_edge(edge_index e_idx)
     // remove half-edges
     h_in.set_removed();
     h_out.set_removed();
+
+    // bookkeeping
+    mRemovedHalfedges++;
+    mRemovedHalfedges++;
 }
 
 inline void Mesh::remove_vertex(vertex_index v_idx)
 {
     auto &v = vertex(v_idx);
+    assert(v.is_valid());
 
     // remove all outgoing edges
     while (!v.is_isolated())
@@ -684,6 +699,9 @@ inline void Mesh::remove_vertex(vertex_index v_idx)
 
     // mark removed
     v.set_removed();
+
+    // bookkeeping
+    mRemovedVertices++;
 }
 
 inline void Mesh::fix_boundary_state_of(vertex_index v_idx)
