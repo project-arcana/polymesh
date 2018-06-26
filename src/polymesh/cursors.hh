@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 namespace polymesh
 {
 class Mesh;
@@ -115,9 +117,10 @@ struct halfedge_index
 
 struct face_handle
 {
-    Mesh const* mesh;
+    Mesh const* mesh = nullptr;
     face_index idx;
 
+    face_handle() = default;
     face_handle(Mesh const* mesh, face_index idx) : mesh(mesh), idx(idx) {}
 
     bool operator==(face_index const& rhs) const { return idx == rhs; }
@@ -147,9 +150,10 @@ struct face_handle
 
 struct vertex_handle
 {
-    Mesh const* mesh;
+    Mesh const* mesh = nullptr;
     vertex_index idx;
 
+    vertex_handle() = default;
     vertex_handle(Mesh const* mesh, vertex_index idx) : mesh(mesh), idx(idx) {}
 
     bool operator==(vertex_index const& rhs) const { return idx == rhs; }
@@ -184,9 +188,10 @@ struct vertex_handle
 
 struct edge_handle
 {
-    Mesh const* mesh;
+    Mesh const* mesh = nullptr;
     edge_index idx;
 
+    edge_handle() = default;
     edge_handle(Mesh const* mesh, edge_index idx) : mesh(mesh), idx(idx) {}
 
     bool operator==(edge_index const& rhs) const { return idx == rhs; }
@@ -216,9 +221,10 @@ struct edge_handle
 
 struct halfedge_handle
 {
-    Mesh const* mesh;
+    Mesh const* mesh = nullptr;
     halfedge_index idx;
 
+    halfedge_handle() = default;
     halfedge_handle(Mesh const* mesh, halfedge_index idx) : mesh(mesh), idx(idx) {}
 
     bool operator==(halfedge_index const& rhs) const { return idx == rhs; }
@@ -246,4 +252,56 @@ struct halfedge_handle
     halfedge_handle opposite() const;
     face_handle opposite_face() const; ///< invalid if opposite boundary
 };
+
+/// ======== IMPLEMENTATION ========
+
+inline std::ostream& operator<<(std::ostream& out, vertex_index v)
+{
+    out << "vertex " << v.value;
+    if (v.is_invalid())
+        out << " (invalid)";
+    return out;
+}
+inline std::ostream& operator<<(std::ostream& out, face_index f)
+{
+    out << "face " << f.value;
+    if (f.is_invalid())
+        out << " (invalid)";
+    return out;
+}
+inline std::ostream& operator<<(std::ostream& out, edge_index e)
+{
+    out << "edge " << e.value;
+    if (e.is_invalid())
+        out << " (invalid)";
+    return out;
+}
+inline std::ostream& operator<<(std::ostream& out, halfedge_index h)
+{
+    out << "half-edge " << h.value;
+    if (h.is_invalid())
+        out << " (invalid)";
+    return out;
+}
+
+inline std::ostream& operator<<(std::ostream& out, vertex_handle v)
+{
+    out << v.idx;
+    return out;
+}
+inline std::ostream& operator<<(std::ostream& out, face_handle f)
+{
+    out << f.idx;
+    return out;
+}
+inline std::ostream& operator<<(std::ostream& out, edge_handle e)
+{
+    out << e.idx;
+    return out;
+}
+inline std::ostream& operator<<(std::ostream& out, halfedge_handle h)
+{
+    out << h.idx;
+    return out;
+}
 }

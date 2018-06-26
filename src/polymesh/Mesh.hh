@@ -305,12 +305,12 @@ private:
     struct halfedge_info &halfedge(edge_index i, int h)
     {
         assert(i.is_valid());
-        return mHalfedges[(i.value >> 1) + h];
+        return mHalfedges[(i.value << 1) + h];
     }
     struct halfedge_info const &halfedge(edge_index i, int h) const
     {
         assert(i.is_valid());
-        return mHalfedges[(i.value >> 1) + h];
+        return mHalfedges[(i.value << 1) + h];
     }
 
     // internal state
@@ -416,7 +416,6 @@ inline face_index Mesh::add_face(const halfedge_handle *half_loop, size_t vcnt)
 inline face_index Mesh::add_face(const halfedge_index *half_loop, size_t vcnt)
 {
     assert(vcnt >= 3 && "no support for less-than-triangular faces");
-    /// TODO: attributes
 
     auto fidx = face_index((int)mFaces.size());
 
@@ -576,9 +575,9 @@ inline void Mesh::make_adjacent(halfedge_index he_in, halfedge_index he_out)
     auto &g = halfedge(he_g);
 
     auto he_h = g.next_halfedge;
-    auto &h = halfedge(he_d);
+    auto &h = halfedge(he_h);
 
-    // attrerly rewire
+    // properly rewire
     in.next_halfedge = he_out;
     out.prev_halfedge = he_in;
 

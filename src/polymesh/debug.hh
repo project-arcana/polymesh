@@ -7,7 +7,7 @@
 
 namespace polymesh
 {
-void print_debug(Mesh const& m)
+inline void print_debug(Mesh const& m)
 {
     using namespace std;
 
@@ -38,7 +38,7 @@ void print_debug(Mesh const& m)
     cout << endl;
 }
 
-void write_dot_graph(Mesh const& m, std::ostream& out)
+inline void write_dot_graph(Mesh const& m, std::ostream& out)
 {
     out << "strict digraph {\n";
     for (auto v : m.vertices())
@@ -51,7 +51,8 @@ void write_dot_graph(Mesh const& m, std::ostream& out)
     }
     out << "}\n";
 }
-void write_dot_graph(Mesh const& m, std::string const& filename)
+
+inline void write_dot_graph(Mesh const& m, std::string const& filename)
 {
     std::ofstream file(filename);
     write_dot_graph(m, file);
