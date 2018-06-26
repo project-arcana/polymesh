@@ -573,10 +573,6 @@ inline void Mesh::remove_edge(edge_index e_idx)
     if (f1.is_valid())
         remove_face(f1);
 
-    // remove half-edges
-    h_in.set_removed();
-    h_out.set_removed();
-
     // rewire vertices
     auto &v_in_to = vertex(h_in.to_vertex);
     auto &v_out_to = vertex(h_out.to_vertex);
@@ -587,29 +583,33 @@ inline void Mesh::remove_edge(edge_index e_idx)
     auto hi_in_prev = h_in.prev_halfedge;
     auto hi_in_next = h_in.next_halfedge;
 
-    if (hi_in_next == hi_out) // v_in_to becomes isolated
+    // modify vertex if outgoing half-edge is going to be removed
+    if (v_in_to.outgoing_halfedge == hi_out)
     {
-        v_in_to.outgoing_halfedge = halfedge_index::invalid();
-    }
-    else
-    {
-        halfedge(hi_out_prev).next_halfedge = hi_in_next;
-        halfedge(hi_in_next).prev_halfedge = hi_out_prev;
-
-        v_in_to.outgoing_halfedge = hi_in_next;
+        if (hi_in_next == hi_out) // v_in_to becomes isolated
+            v_in_to.outgoing_halfedge = halfedge_index::invalid();
+        else
+            v_in_to.outgoing_halfedge = hi_in_next;
     }
 
-    if (hi_out_next == hi_in) // v_out_to becomes isolated
+    if (v_out_to.outgoing_halfedge == hi_in)
     {
-        v_out_to.outgoing_halfedge = halfedge_index::invalid();
+        if (hi_out_next == hi_in) // v_out_to becomes isolated
+            v_out_to.outgoing_halfedge = halfedge_index::invalid();
+        else
+            v_out_to.outgoing_halfedge = hi_out_next;
     }
-    else
-    {
-        halfedge(hi_in_prev).next_halfedge = hi_out_next;
-        halfedge(hi_out_next).prev_halfedge = hi_in_prev;
 
-        v_out_to.outgoing_halfedge = hi_out_next;
-    }
+    // reqire half-edges
+    halfedge(hi_out_prev).next_halfedge = hi_in_next;
+    halfedge(hi_in_next).prev_halfedge = hi_out_prev;
+
+    halfedge(hi_in_prev).next_halfedge = hi_out_next;
+    halfedge(hi_out_next).prev_halfedge = hi_in_prev;
+
+    // remove half-edges
+    h_in.set_removed();
+    h_out.set_removed();
 }
 
 inline void Mesh::remove_vertex(vertex_index v_idx)

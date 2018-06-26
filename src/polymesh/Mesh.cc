@@ -116,4 +116,11 @@ void Mesh::assert_consistency() const
     // check topology consistencies
 
     // check iterators
+
+    // check only non-removed can be accessed topologically
+    for (auto f : valid_faces())
+    {
+        for (auto v : f.vertices())
+            assert(!v.is_removed());
+    }
 }
