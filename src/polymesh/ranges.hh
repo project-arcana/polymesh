@@ -280,6 +280,8 @@ struct face_vertex_ring
     /// Number of vertices
     /// O(result) computation
     int size() const;
+    /// Returns true if handle is contained in this ring
+    bool contains(vertex_handle v) const;
 
     // Iteration:
     face_vertex_circulator begin() const { return {face, false}; }
@@ -294,6 +296,8 @@ struct face_halfedge_ring
     /// Number of vertices
     /// O(result) computation
     int size() const;
+    /// Returns true if handle is contained in this ring
+    bool contains(halfedge_handle h) const;
 
     // Iteration:
     face_halfedge_circulator begin() const { return {face, false}; }
@@ -308,6 +312,8 @@ struct face_edge_ring
     /// Number of vertices
     /// O(result) computation
     int size() const;
+    /// Returns true if handle is contained in this ring
+    bool contains(edge_handle e) const;
 
     // Iteration:
     face_edge_circulator begin() const { return {face, false}; }
@@ -322,6 +328,8 @@ struct face_face_ring
     /// Number of vertices
     /// O(result) computation
     int size() const;
+    /// Returns true if handle is contained in this ring
+    bool contains(face_handle f) const;
 
     // Iteration:
     face_face_circulator begin() const { return {face, false}; }
@@ -336,9 +344,11 @@ struct vertex_halfedge_out_ring
     /// Number of vertices
     /// O(result) computation
     int size() const;
+    /// Returns true if handle is contained in this ring
+    bool contains(halfedge_handle h) const;
 
     // Iteration:
-    vertex_halfedge_out_circulator begin() const { return {vertex, false}; }
+    vertex_halfedge_out_circulator begin() const { return {vertex, vertex.is_isolated()}; }
     vertex_halfedge_out_circulator end() const { return {vertex, true}; }
 };
 
@@ -350,9 +360,11 @@ struct vertex_halfedge_in_ring
     /// Number of vertices
     /// O(result) computation
     int size() const;
+    /// Returns true if handle is contained in this ring
+    bool contains(halfedge_handle h) const;
 
     // Iteration:
-    vertex_halfedge_in_circulator begin() const { return {vertex, false}; }
+    vertex_halfedge_in_circulator begin() const { return {vertex, vertex.is_isolated()}; }
     vertex_halfedge_in_circulator end() const { return {vertex, true}; }
 };
 
@@ -364,9 +376,11 @@ struct vertex_vertex_ring
     /// Number of vertices
     /// O(result) computation
     int size() const;
+    /// Returns true if handle is contained in this ring
+    bool contains(vertex_handle v) const;
 
     // Iteration:
-    vertex_vertex_circulator begin() const { return {vertex, false}; }
+    vertex_vertex_circulator begin() const { return {vertex, vertex.is_isolated()}; }
     vertex_vertex_circulator end() const { return {vertex, true}; }
 };
 
@@ -378,9 +392,11 @@ struct vertex_edge_ring
     /// Number of vertices
     /// O(result) computation
     int size() const;
+    /// Returns true if handle is contained in this ring
+    bool contains(edge_handle e) const;
 
     // Iteration:
-    vertex_edge_circulator begin() const { return {vertex, false}; }
+    vertex_edge_circulator begin() const { return {vertex, vertex.is_isolated()}; }
     vertex_edge_circulator end() const { return {vertex, true}; }
 };
 
@@ -392,9 +408,11 @@ struct vertex_face_ring
     /// Number of vertices
     /// O(result) computation
     int size() const;
+    /// Returns true if handle is contained in this ring
+    bool contains(face_handle f) const;
 
     // Iteration:
-    vertex_face_circulator begin() const { return {vertex, false}; }
+    vertex_face_circulator begin() const { return {vertex, vertex.is_isolated()}; }
     vertex_face_circulator end() const { return {vertex, true}; }
 };
 
@@ -495,5 +513,77 @@ inline int vertex_face_ring::size() const
         cnt++;
     }
     return cnt;
+}
+
+inline bool face_vertex_ring::contains(vertex_handle v) const
+{
+    for (auto v2 : *this)
+        if (v == v2)
+            return true;
+    return false;
+}
+
+inline bool face_edge_ring::contains(edge_handle e) const
+{
+    for (auto e2 : *this)
+        if (e == e2)
+            return true;
+    return false;
+}
+
+inline bool face_halfedge_ring::contains(halfedge_handle h) const
+{
+    for (auto h2 : *this)
+        if (h == h2)
+            return true;
+    return false;
+}
+
+inline bool face_face_ring::contains(face_handle f) const
+{
+    for (auto f2 : *this)
+        if (f == f2)
+            return true;
+    return false;
+}
+
+inline bool vertex_halfedge_out_ring::contains(halfedge_handle h) const
+{
+    for (auto h2 : *this)
+        if (h == h2)
+            return true;
+    return false;
+}
+
+inline bool vertex_halfedge_in_ring::contains(halfedge_handle h) const
+{
+    for (auto h2 : *this)
+        if (h == h2)
+            return true;
+    return false;
+}
+
+inline bool vertex_vertex_ring::contains(vertex_handle v) const
+{
+    for (auto v2 : *this)
+        if (v == v2)
+            return true;
+    return false;
+}
+
+inline bool vertex_edge_ring::contains(edge_handle e) const
+{
+    for (auto e2 : *this)
+        if (e == e2)
+            return true;
+    return false;
+}
+
+inline bool vertex_face_ring::contains(face_handle f) const
+{
+    for (auto f2 : *this)
+        if (f == f2)
+            return true;
+    return false;
 }
 }

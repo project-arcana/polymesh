@@ -179,6 +179,12 @@ private:
     /// removes all adjacent edges, then the vertex
     void remove_vertex(vertex_index v_idx);
 
+    /// choses a new outgoing half-edge for a given vertex, prefers boundary ones
+    /// assumes non-isolated vertex
+    void fix_boundary_state_of(vertex_index v_idx);
+    /// choses a new half-edge for a given face, prefers boundary ones
+    void fix_boundary_state_of(face_index f_idx);
+
     // attributes
     bool is_boundary(vertex_index idx) const;
     bool is_boundary(halfedge_index idx) const;
@@ -226,6 +232,7 @@ private:
 
         bool is_valid() const { return halfedge.is_valid(); }
         void set_removed() { halfedge = halfedge_index::invalid(); }
+        // is_boundary: check if half-edge is boundary
     };
 
     // 4 byte per vertex
@@ -265,14 +272,46 @@ private:
     std::vector<vertex_info> mVertices;
     std::vector<halfedge_info> mHalfedges;
 
-    struct face_info &face(face_index i) { return mFaces[i.value]; }
-    struct face_info const &face(face_index i) const { return mFaces[i.value]; }
-    struct vertex_info &vertex(vertex_index i) { return mVertices[i.value]; }
-    struct vertex_info const &vertex(vertex_index i) const { return mVertices[i.value]; }
-    struct halfedge_info &halfedge(halfedge_index i) { return mHalfedges[i.value]; }
-    struct halfedge_info const &halfedge(halfedge_index i) const { return mHalfedges[i.value]; }
-    struct halfedge_info &halfedge(edge_index i, int h) { return mHalfedges[(i.value >> 1) + h]; }
-    struct halfedge_info const &halfedge(edge_index i, int h) const { return mHalfedges[(i.value >> 1) + h]; }
+    struct face_info &face(face_index i)
+    {
+        assert(i.is_valid());
+        return mFaces[i.value];
+    }
+    struct face_info const &face(face_index i) const
+    {
+        assert(i.is_valid());
+        return mFaces[i.value];
+    }
+    struct vertex_info &vertex(vertex_index i)
+    {
+        assert(i.is_valid());
+        return mVertices[i.value];
+    }
+    struct vertex_info const &vertex(vertex_index i) const
+    {
+        assert(i.is_valid());
+        return mVertices[i.value];
+    }
+    struct halfedge_info &halfedge(halfedge_index i)
+    {
+        assert(i.is_valid());
+        return mHalfedges[i.value];
+    }
+    struct halfedge_info const &halfedge(halfedge_index i) const
+    {
+        assert(i.is_valid());
+        return mHalfedges[i.value];
+    }
+    struct halfedge_info &halfedge(edge_index i, int h)
+    {
+        assert(i.is_valid());
+        return mHalfedges[(i.value >> 1) + h];
+    }
+    struct halfedge_info const &halfedge(edge_index i, int h) const
+    {
+        assert(i.is_valid());
+        return mHalfedges[(i.value >> 1) + h];
+    }
 
     // internal state
 private:
@@ -354,7 +393,7 @@ inline face_index Mesh::add_face(const vertex_handle *v_handles, size_t vcnt)
 {
     mFaceInsertCache.resize(vcnt);
     for (auto i = 0u; i < vcnt; ++i)
-        mFaceInsertCache[i] = find_halfedge(v_handles[i].idx, v_handles[(i + 1) % vcnt].idx);
+        mFaceInsertCache[i] = add_or_get_halfedge(v_handles[i].idx, v_handles[(i + 1) % vcnt].idx);
     return add_face(mFaceInsertCache.data(), vcnt);
 }
 
@@ -362,7 +401,7 @@ inline face_index Mesh::add_face(const vertex_index *v_indices, size_t vcnt)
 {
     mFaceInsertCache.resize(vcnt);
     for (auto i = 0u; i < vcnt; ++i)
-        mFaceInsertCache[i] = find_halfedge(v_indices[i], v_indices[(i + 1) % vcnt]);
+        mFaceInsertCache[i] = add_or_get_halfedge(v_indices[i], v_indices[(i + 1) % vcnt]);
     return add_face(mFaceInsertCache.data(), vcnt);
 }
 
@@ -388,9 +427,9 @@ inline face_index Mesh::add_face(const halfedge_index *half_loop, size_t vcnt)
         auto h1 = half_loop[(i + 1) % vcnt];
 
         // half-edge must form a chain
-        assert(to_vertex_of(h0) == from_vertex_of(h1));
+        assert(to_vertex_of(h0) == from_vertex_of(h1) && "half-edges do not form a chain");
         // half-edge must be free, i.e. allow a new polygon
-        assert(halfedge(h0).is_free());
+        assert(halfedge(h0).is_free() && "half-edge already contains a face");
 
         // make them adjacent
         make_adjacent(h0, h1);
@@ -399,10 +438,28 @@ inline face_index Mesh::add_face(const halfedge_index *half_loop, size_t vcnt)
         halfedge(h0).face = fidx;
     }
 
+    // fix boundary states
+    for (auto i = 0u; i < vcnt; ++i)
+    {
+        auto h = half_loop[i];
+        auto v = halfedge(h).to_vertex;
+        auto f = halfedge(opposite(h)).face;
+
+        // fix vertex
+        fix_boundary_state_of(v);
+
+        // fix face
+        if (f.is_valid())
+            fix_boundary_state_of(f);
+    }
+
     // set up face data
     face_info f;
     f.halfedge = half_loop[0];
     mFaces.push_back(f);
+
+    // fix new face
+    fix_boundary_state_of(fidx);
 
     // notify attributes
     auto fCnt = mFaces.size();
@@ -458,7 +515,7 @@ inline edge_index Mesh::add_or_get_edge(vertex_index v_from, vertex_index v_to)
 
     // link to vertex
     if (vd_to.is_isolated())
-        vd_to.outgoing_halfedge = h_from_to_idx;
+        vd_to.outgoing_halfedge = h_to_from_idx;
     else
     {
         auto to_in_idx = find_free_incident(v_to);
@@ -547,9 +604,15 @@ inline void Mesh::remove_face(face_index f_idx)
         // set half-edge face to invalid
         h.face = face_index::invalid();
 
-        // outgoing vertex half-edge
+        // fix outgoing vertex half-edge
         // (vertex correctly reports is_boundary)
         vertex(from_vertex_of(he)).outgoing_halfedge = he;
+
+        // fix opposite face half-edge
+        auto ohe = opposite(he);
+        auto of = halfedge(ohe).face;
+        if (of.is_valid())
+            face(of).halfedge = ohe;
 
         // advance
         he = h.next_halfedge;
@@ -622,6 +685,47 @@ inline void Mesh::remove_vertex(vertex_index v_idx)
 
     // mark removed
     v.set_removed();
+}
+
+inline void Mesh::fix_boundary_state_of(vertex_index v_idx)
+{
+    auto &v = vertex(v_idx);
+    assert(!v.is_isolated());
+
+    auto he_begin = v.outgoing_halfedge;
+    auto he = he_begin;
+    do
+    {
+        // if half-edge is boundary, set it
+        if (halfedge(he).is_free())
+        {
+            v.outgoing_halfedge = he;
+            return;
+        }
+
+        // advance
+        he = halfedge(opposite(he)).next_halfedge;
+    } while (he != he_begin);
+}
+
+inline void Mesh::fix_boundary_state_of(face_index f_idx)
+{
+    auto &f = face(f_idx);
+
+    auto he_begin = f.halfedge;
+    auto he = he_begin;
+    do
+    {
+        // if half-edge is boundary, set it
+        if (halfedge(opposite(he)).is_free())
+        {
+            f.halfedge = he;
+            return;
+        }
+
+        // advance
+        he = halfedge(he).next_halfedge;
+    } while (he != he_begin);
 }
 
 inline halfedge_index Mesh::find_free_incident(halfedge_index in_begin, halfedge_index in_end) const
@@ -1220,44 +1324,57 @@ inline void Mesh::compactify()
 
 /// ======== HANDLES IMPLEMENTATION ========
 
-inline bool vertex_handle::is_valid() const
-{
-    return idx.is_valid() && mesh->vertex(idx).is_valid();
-}
-
 inline bool vertex_handle::is_removed() const
 {
-    return !idx.is_valid() || !mesh->vertex(idx).is_valid();
-}
-
-inline bool face_handle::is_valid() const
-{
-    return idx.is_valid() && mesh->face(idx).is_valid();
+    return idx.is_valid() && !mesh->vertex(idx).is_valid();
 }
 
 inline bool face_handle::is_removed() const
 {
-    return !idx.is_valid() || !mesh->face(idx).is_valid();
-}
-
-inline bool edge_handle::is_valid() const
-{
-    return idx.is_valid() && mesh->halfedge(idx, 0).is_valid();
+    return idx.is_valid() && !mesh->face(idx).is_valid();
 }
 
 inline bool edge_handle::is_removed() const
 {
-    return !idx.is_valid() || !mesh->halfedge(idx, 0).is_valid();
-}
-
-inline bool halfedge_handle::is_valid() const
-{
-    return idx.is_valid() && mesh->halfedge(idx).is_valid();
+    return idx.is_valid() && !mesh->halfedge(idx, 0).is_valid();
 }
 
 inline bool halfedge_handle::is_removed() const
 {
-    return !idx.is_valid() || !mesh->halfedge(idx).is_valid();
+    return idx.is_valid() && !mesh->halfedge(idx).is_valid();
+}
+
+inline bool vertex_handle::is_isolated() const
+{
+    return mesh->vertex(idx).is_isolated();
+}
+
+inline bool vertex_handle::is_boundary() const
+{
+    auto const &v = mesh->vertex(idx);
+    if (v.is_isolated())
+        return true;
+    return mesh->halfedge(v.outgoing_halfedge).is_free();
+}
+
+inline bool face_handle::is_boundary() const
+{
+    return mesh->halfedge(mesh->opposite(mesh->face(idx).halfedge)).is_free();
+}
+
+inline bool edge_handle::is_isolated() const
+{
+    return mesh->halfedge(idx, 0).is_free() && mesh->halfedge(idx, 1).is_free();
+}
+
+inline bool edge_handle::is_boundary() const
+{
+    return mesh->halfedge(idx, 0).is_free() || mesh->halfedge(idx, 1).is_free();
+}
+
+inline bool halfedge_handle::is_boundary() const
+{
+    return mesh->halfedge(idx).is_free();
 }
 
 inline vertex_handle halfedge_handle::vertex_to() const
@@ -1332,7 +1449,16 @@ inline face_handle edge_handle::faceB() const
 
 inline face_handle vertex_handle::any_face() const
 {
-    return mesh->handle_of(mesh->halfedge(mesh->vertex(idx).outgoing_halfedge).face);
+    auto h = mesh->vertex(idx).outgoing_halfedge;
+    return mesh->handle_of(h.is_valid() ? mesh->halfedge(h).face : face_index::invalid());
+}
+
+inline face_handle vertex_handle::any_valid_face() const
+{
+    for (auto f : faces())
+        if (f.is_valid())
+            return f;
+    return mesh->handle_of(face_index::invalid());
 }
 
 inline halfedge_handle vertex_handle::any_outgoing_halfedge() const
@@ -1342,7 +1468,14 @@ inline halfedge_handle vertex_handle::any_outgoing_halfedge() const
 
 inline halfedge_handle vertex_handle::any_incoming_halfedge() const
 {
-    return mesh->handle_of(mesh->opposite(mesh->vertex(idx).outgoing_halfedge));
+    auto h = mesh->vertex(idx).outgoing_halfedge;
+    return mesh->handle_of(h.is_valid() ? mesh->opposite(h) : halfedge_index::invalid());
+}
+
+inline edge_handle vertex_handle::any_edge() const
+{
+    auto h = mesh->vertex(idx).outgoing_halfedge;
+    return mesh->handle_of(h.is_valid() ? mesh->edge_of(h) : edge_index::invalid());
 }
 
 inline vertex_handle face_handle::any_vertex() const
@@ -1380,7 +1513,7 @@ inline vertex_halfedge_in_ring vertex_handle::incoming_halfedges() const
     return {*this};
 }
 
-inline vertex_halfedge_out_ring vertex_handle::outcoming_halfedges() const
+inline vertex_halfedge_out_ring vertex_handle::outgoing_halfedges() const
 {
     return {*this};
 }

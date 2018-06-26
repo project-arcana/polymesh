@@ -39,6 +39,7 @@ struct face_index
     explicit face_index(int idx) : value(idx) {}
 
     bool is_valid() const { return value >= 0; }
+    bool is_invalid() const { return value < 0; }
     static face_index invalid() { return {}; }
 
     bool operator==(face_index const& rhs) const { return value == rhs.value; }
@@ -58,6 +59,7 @@ struct vertex_index
     explicit vertex_index(int idx) : value(idx) {}
 
     bool is_valid() const { return value >= 0; }
+    bool is_invalid() const { return value < 0; }
     static vertex_index invalid() { return {}; }
 
     bool operator==(vertex_index const& rhs) const { return value == rhs.value; }
@@ -77,6 +79,7 @@ struct edge_index
     explicit edge_index(int idx) : value(idx) {}
 
     bool is_valid() const { return value >= 0; }
+    bool is_invalid() const { return value < 0; }
     static edge_index invalid() { return {}; }
 
     bool operator==(edge_index const& rhs) const { return value == rhs.value; }
@@ -96,6 +99,7 @@ struct halfedge_index
     explicit halfedge_index(int idx) : value(idx) {}
 
     bool is_valid() const { return value >= 0; }
+    bool is_invalid() const { return value < 0; }
     static halfedge_index invalid() { return {}; }
 
     bool operator==(halfedge_index const& rhs) const { return value == rhs.value; }
@@ -126,8 +130,11 @@ struct face_handle
     template <typename PropT>
     PropT const& operator[](face_attribute<PropT> const& prop) const;
 
-    bool is_valid() const;   ///< valid idx and not deleted
-    bool is_removed() const; ///< marked for deletion (or invalid idx)
+    bool is_valid() const { return idx.is_valid(); }     ///< valid idx (but could be deleted in some iterators)
+    bool is_invalid() const { return !idx.is_valid(); }; ///< invalid idx
+    bool is_removed() const;                             ///< marked for deletion (but valid idx)
+
+    bool is_boundary() const; ///< true if this face lies at a boundary
 
     vertex_handle any_vertex() const;
     halfedge_handle any_halfedge() const;
@@ -135,7 +142,7 @@ struct face_handle
     face_vertex_ring vertices() const;
     face_edge_ring edges() const;
     face_halfedge_ring halfedges() const;
-    face_face_ring adjacent_faces() const;
+    face_face_ring adjacent_faces() const; ///< includes invalid ones for boundaries!
 };
 
 struct vertex_handle
@@ -155,15 +162,21 @@ struct vertex_handle
     template <typename PropT>
     PropT const& operator[](vertex_attribute<PropT> const& prop) const;
 
-    bool is_valid() const;   ///< valid idx and not deleted
-    bool is_removed() const; ///< marked for deletion (or invalid idx)
+    bool is_valid() const { return idx.is_valid(); }     ///< valid idx (but could be deleted in some iterators)
+    bool is_invalid() const { return !idx.is_valid(); }; ///< invalid idx
+    bool is_removed() const;                             ///< marked for deletion (but valid idx)
 
-    face_handle any_face() const;
-    halfedge_handle any_outgoing_halfedge() const;
-    halfedge_handle any_incoming_halfedge() const;
+    bool is_isolated() const; ///< true if this vertex is not connected at all
+    bool is_boundary() const; ///< true if this vertex lies at a boundary
+
+    face_handle any_face() const;                  ///< invalid if at boundary
+    face_handle any_valid_face() const;            ///< invalid if isolated
+    halfedge_handle any_outgoing_halfedge() const; ///< invalid if isolated
+    halfedge_handle any_incoming_halfedge() const; ///< invalid if isolated
+    edge_handle any_edge() const;                  ///< invalid if isolated
 
     vertex_halfedge_in_ring incoming_halfedges() const;
-    vertex_halfedge_out_ring outcoming_halfedges() const;
+    vertex_halfedge_out_ring outgoing_halfedges() const;
     vertex_edge_ring edges() const;
     vertex_face_ring faces() const; ///< includes invalid ones for boundaries!
     vertex_vertex_ring adjacent_vertices() const;
@@ -186,15 +199,19 @@ struct edge_handle
     template <typename PropT>
     PropT const& operator[](edge_attribute<PropT> const& prop) const;
 
-    bool is_valid() const;   ///< valid idx and not deleted
-    bool is_removed() const; ///< marked for deletion (or invalid idx)
+    bool is_valid() const { return idx.is_valid(); }     ///< valid idx (but could be deleted in some iterators)
+    bool is_invalid() const { return !idx.is_valid(); }; ///< invalid idx
+    bool is_removed() const;                             ///< marked for deletion (but valid idx)
+
+    bool is_isolated() const; ///< true if this edge has no faces
+    bool is_boundary() const; ///< true if this edge is a boundary
 
     halfedge_handle halfedgeA() const;
     halfedge_handle halfedgeB() const;
     vertex_handle vertexA() const;
     vertex_handle vertexB() const;
-    face_handle faceA() const;
-    face_handle faceB() const;
+    face_handle faceA() const; ///< can be invalid if boundary
+    face_handle faceB() const; ///< can be invalid if boundary
 };
 
 struct halfedge_handle
@@ -214,17 +231,19 @@ struct halfedge_handle
     template <typename PropT>
     PropT const& operator[](halfedge_attribute<PropT> const& prop) const;
 
-    bool is_valid() const;   ///< valid idx and not deleted
-    bool is_removed() const; ///< marked for deletion (or invalid idx)
+    bool is_valid() const { return idx.is_valid(); }     ///< valid idx (but could be deleted in some iterators)
+    bool is_invalid() const { return !idx.is_valid(); }; ///< invalid idx
+    bool is_removed() const;                             ///< marked for deletion (but valid idx)
+
+    bool is_boundary() const; ///< true if this half-edge is a boundary (CAUTION: its opposite might not be)
 
     vertex_handle vertex_to() const;
     vertex_handle vertex_from() const;
     edge_handle edge() const;
-    face_handle face() const;
+    face_handle face() const; ///< invalid if boundary
     halfedge_handle next() const;
     halfedge_handle prev() const;
     halfedge_handle opposite() const;
-    face_handle opposite_face() const;
+    face_handle opposite_face() const; ///< invalid if opposite boundary
 };
-
 }
