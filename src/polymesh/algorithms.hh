@@ -14,6 +14,13 @@
 // - curvature
 #include "algorithms/properties.hh"
 
+// Basic mesh operations, including:
+// - elementary subdivision
+// - edge splits
+// - intersections
+// - collapses
+#include "algorithms/operations.hh"
+
 // TODO:
 // - decimation
 // - subdivision
