@@ -791,7 +791,7 @@ inline halfedge_index Mesh::find_halfedge(vertex_index from, vertex_index to) co
             return he;
 
         // advance
-        he = opposite(h.next_halfedge);
+        he = halfedge(opposite(he)).next_halfedge;
 
     } while (he != he_begin);
 

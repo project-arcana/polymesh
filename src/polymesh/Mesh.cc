@@ -1,6 +1,8 @@
 #include "Mesh.hh"
 
 #include <cassert>
+#include <map>
+#include <set>
 
 #include "debug.hh"
 
@@ -303,13 +305,19 @@ void Mesh::assert_consistency() const
     // check derived counts
     {
         auto v_e_sum = 0;
+        auto f_h_sum = 0;
 
         for (auto v : valid_vertices())
         {
             v_e_sum += v.edges().size();
         }
+        for (auto f : valid_faces())
+        {
+            f_h_sum += f.halfedges().size();
+        }
 
         assert(v_e_sum == 2 * size_valid_edges());
+        // WRONG: assert(f_h_sum == size_valid_halfedges());
 
         // TODO: more?
     }
@@ -340,5 +348,16 @@ void Mesh::assert_consistency() const
             assert(h.is_valid());
             assert(!h.is_removed());
         }
+    }
+
+    // check half-edge uniqueness
+    std::map<int, std::set<int>> hes;
+    for (auto h : valid_halfedges())
+    {
+        auto v0 = h.vertex_from().idx.value;
+        auto v1 = h.vertex_to().idx.value;
+
+        if (!hes[v0].insert(v1).second)
+            assert(false && "duplicated half-edge");
     }
 }
