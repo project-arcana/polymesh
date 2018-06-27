@@ -180,10 +180,6 @@ void Mesh::assert_consistency() const
         assert(h.vertex_from().is_valid());
         // face can be invalid
 
-        // DEBUG
-        if (h.next().prev() != h)
-            print_debug(*this);
-
         assert(h.next().prev() == h);
         assert(h.prev().next() == h);
         assert(h.opposite().opposite() == h);
