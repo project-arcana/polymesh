@@ -174,7 +174,7 @@ struct vertex_handle
     bool is_boundary() const; ///< true if this vertex lies at a boundary
 
     face_handle any_face() const;                  ///< invalid if at boundary
-    face_handle any_valid_face() const;            ///< invalid if isolated
+    face_handle any_valid_face() const;            ///< invalid if isolated (and can be if at boundary)
     halfedge_handle any_outgoing_halfedge() const; ///< invalid if isolated
     halfedge_handle any_incoming_halfedge() const; ///< invalid if isolated
     edge_handle any_edge() const;                  ///< invalid if isolated

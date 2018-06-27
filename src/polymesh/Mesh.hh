@@ -274,42 +274,42 @@ private:
 
     struct face_info &face(face_index i)
     {
-        assert(i.is_valid());
+        assert(i.is_valid() && i.value < size_faces());
         return mFaces[i.value];
     }
     struct face_info const &face(face_index i) const
     {
-        assert(i.is_valid());
+        assert(i.is_valid() && i.value < size_faces());
         return mFaces[i.value];
     }
     struct vertex_info &vertex(vertex_index i)
     {
-        assert(i.is_valid());
+        assert(i.is_valid() && i.value < size_vertices());
         return mVertices[i.value];
     }
     struct vertex_info const &vertex(vertex_index i) const
     {
-        assert(i.is_valid());
+        assert(i.is_valid() && i.value < size_vertices());
         return mVertices[i.value];
     }
     struct halfedge_info &halfedge(halfedge_index i)
     {
-        assert(i.is_valid());
+        assert(i.is_valid() && i.value < size_halfedges());
         return mHalfedges[i.value];
     }
     struct halfedge_info const &halfedge(halfedge_index i) const
     {
-        assert(i.is_valid());
+        assert(i.is_valid() && i.value < size_halfedges());
         return mHalfedges[i.value];
     }
     struct halfedge_info &halfedge(edge_index i, int h)
     {
-        assert(i.is_valid());
+        assert(i.is_valid() && i.value < size_edges());
         return mHalfedges[(i.value << 1) + h];
     }
     struct halfedge_info const &halfedge(edge_index i, int h) const
     {
-        assert(i.is_valid());
+        assert(i.is_valid() && i.value < size_edges());
         return mHalfedges[(i.value << 1) + h];
     }
 
@@ -623,6 +623,7 @@ inline void Mesh::remove_face(face_index f_idx)
 
     // bookkeeping
     mRemovedFaces++;
+    mCompact = false;
 }
 
 inline void Mesh::remove_edge(edge_index e_idx)
@@ -686,6 +687,7 @@ inline void Mesh::remove_edge(edge_index e_idx)
     // bookkeeping
     mRemovedHalfedges++;
     mRemovedHalfedges++;
+    mCompact = false;
 }
 
 inline void Mesh::remove_vertex(vertex_index v_idx)
@@ -702,6 +704,7 @@ inline void Mesh::remove_vertex(vertex_index v_idx)
 
     // bookkeeping
     mRemovedVertices++;
+    mCompact = false;
 }
 
 inline void Mesh::fix_boundary_state_of(vertex_index v_idx)
@@ -888,6 +891,10 @@ inline vertex_iterator &vertex_iterator::operator++()
     handle.idx.value++;
     return *this;
 }
+inline void valid_vertex_iterator::move_to_valid()
+{
+    handle.idx = handle.mesh->next_valid_idx_from(handle.idx);
+}
 
 inline valid_face_iterator &valid_face_iterator::operator++()
 {
@@ -899,6 +906,10 @@ inline face_iterator &face_iterator::operator++()
 {
     handle.idx.value++;
     return *this;
+}
+inline void valid_face_iterator::move_to_valid()
+{
+    handle.idx = handle.mesh->next_valid_idx_from(handle.idx);
 }
 
 inline valid_edge_iterator &valid_edge_iterator::operator++()
@@ -912,6 +923,10 @@ inline edge_iterator &edge_iterator::operator++()
     handle.idx.value++;
     return *this;
 }
+inline void valid_edge_iterator::move_to_valid()
+{
+    handle.idx = handle.mesh->next_valid_idx_from(handle.idx);
+}
 
 inline valid_halfedge_iterator &valid_halfedge_iterator::operator++()
 {
@@ -923,6 +938,10 @@ inline halfedge_iterator &halfedge_iterator::operator++()
 {
     handle.idx.value++;
     return *this;
+}
+inline void valid_halfedge_iterator::move_to_valid()
+{
+    handle.idx = handle.mesh->next_valid_idx_from(handle.idx);
 }
 
 /// ======== RANGES IMPLEMENTATION ========
@@ -1271,15 +1290,18 @@ inline void Mesh::compactify()
             v_old_to_new[i] = v_new_to_old.size();
             v_new_to_old.push_back(i);
         }
+
     for (auto i = 0; i < f_cnt; ++i)
         if (mFaces[i].is_valid())
         {
             f_old_to_new[i] = f_new_to_old.size();
             f_new_to_old.push_back(i);
         }
+
     for (auto i = 0; i < e_cnt; ++i)
         if (mHalfedges[i << 1].is_valid())
             e_new_to_old.push_back(i);
+
     for (auto i = 0; i < h_cnt; ++i)
         if (mHalfedges[i].is_valid())
         {

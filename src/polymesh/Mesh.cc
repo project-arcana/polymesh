@@ -203,7 +203,7 @@ void Mesh::assert_consistency() const
         {
             assert(v.any_incoming_halfedge().is_valid());
             assert(v.any_outgoing_halfedge().is_valid());
-            assert(v.any_valid_face().is_valid());
+            // assert(v.any_valid_face().is_valid()); -> wiremeshes are non-isolated but have no faces
             assert(v.any_edge().is_valid());
 
             assert(v.any_incoming_halfedge().vertex_to() == v);
@@ -313,8 +313,36 @@ void Mesh::assert_consistency() const
             v_e_sum += v.edges().size();
         }
 
-        assert(v_e_sum == 2 * size_edges());
+        assert(v_e_sum == 2 * size_valid_edges());
 
         // TODO: more?
+    }
+
+    // compactness
+    if (is_compact())
+    {
+        for (auto v : vertices())
+        {
+            assert(v.is_valid());
+            assert(!v.is_removed());
+        }
+
+        for (auto f : faces())
+        {
+            assert(f.is_valid());
+            assert(!f.is_removed());
+        }
+
+        for (auto e : edges())
+        {
+            assert(e.is_valid());
+            assert(!e.is_removed());
+        }
+
+        for (auto h : halfedges())
+        {
+            assert(h.is_valid());
+            assert(!h.is_removed());
+        }
     }
 }

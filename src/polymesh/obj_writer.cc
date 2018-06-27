@@ -59,7 +59,7 @@ void obj_writer::write_mesh(const Mesh &mesh,
             ++normal_idx;
         }
 
-    for (auto f : mesh.faces())
+    for (auto f : mesh.valid_faces())
     {
         *out << "f";
         for (auto v : f.vertices())

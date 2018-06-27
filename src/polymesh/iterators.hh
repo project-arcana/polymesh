@@ -12,7 +12,7 @@ namespace polymesh
 struct valid_vertex_iterator
 {
     valid_vertex_iterator() = default;
-    valid_vertex_iterator(vertex_handle handle) : handle(handle) {}
+    valid_vertex_iterator(vertex_handle handle) : handle(handle) { move_to_valid(); }
 
     vertex_handle operator*() const { return handle; }
     valid_vertex_iterator& operator++();
@@ -34,6 +34,8 @@ struct valid_vertex_iterator
 
 private:
     vertex_handle handle;
+
+    void move_to_valid();
 };
 
 struct vertex_iterator
@@ -66,7 +68,7 @@ private:
 struct valid_face_iterator
 {
     valid_face_iterator() = default;
-    valid_face_iterator(face_handle handle) : handle(handle) {}
+    valid_face_iterator(face_handle handle) : handle(handle) { move_to_valid(); }
 
     face_handle operator*() const { return handle; }
     valid_face_iterator& operator++();
@@ -88,6 +90,8 @@ struct valid_face_iterator
 
 private:
     face_handle handle;
+
+    void move_to_valid();
 };
 
 struct face_iterator
@@ -120,7 +124,7 @@ private:
 struct valid_edge_iterator
 {
     valid_edge_iterator() = default;
-    valid_edge_iterator(edge_handle handle) : handle(handle) {}
+    valid_edge_iterator(edge_handle handle) : handle(handle) { move_to_valid(); }
 
     edge_handle operator*() const { return handle; }
     valid_edge_iterator& operator++();
@@ -142,6 +146,8 @@ struct valid_edge_iterator
 
 private:
     edge_handle handle;
+
+    void move_to_valid();
 };
 
 struct edge_iterator
@@ -174,7 +180,7 @@ private:
 struct valid_halfedge_iterator
 {
     valid_halfedge_iterator() = default;
-    valid_halfedge_iterator(halfedge_handle handle) : handle(handle) {}
+    valid_halfedge_iterator(halfedge_handle handle) : handle(handle) { move_to_valid(); }
 
     halfedge_handle operator*() const { return handle; }
     valid_halfedge_iterator& operator++();
@@ -196,6 +202,8 @@ struct valid_halfedge_iterator
 
 private:
     halfedge_handle handle;
+
+    void move_to_valid();
 };
 
 struct halfedge_iterator
