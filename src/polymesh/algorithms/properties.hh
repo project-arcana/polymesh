@@ -25,11 +25,37 @@ float face_area(face_handle f, vertex_attribute<glm::vec3> const& position);
 /// returns the center of gravity for a given (flat) polygonal face
 glm::vec3 face_centroid(face_handle f, vertex_attribute<glm::vec3> const& position);
 
+/// returns the area of a given triangle
+float triangle_area(face_handle f, vertex_attribute<glm::vec3> const& position);
+
+/// returns the center of gravity for a given triangle
+glm::vec3 triangle_centroid(face_handle f, vertex_attribute<glm::vec3> const& position);
+
 /// ======== IMPLEMENTATION ========
 
 inline int valence_of(vertex_handle v)
 {
     return v.adjacent_vertices().size();
+}
+
+inline float triangle_area(face_handle f, vertex_attribute<glm::vec3> const& position)
+{
+    auto h = f.any_halfedge();
+    auto p0 = position[h.vertex_from()];
+    auto p1 = position[h.vertex_to()];
+    auto p2 = position[h.next().vertex_to()];
+
+    return 0.5f * length(cross(p0 - p1, p0 - p2));
+}
+
+inline glm::vec3 triangle_centroid(face_handle f, vertex_attribute<glm::vec3> const& position)
+{
+    auto h = f.any_halfedge();
+    auto p0 = position[h.vertex_from()];
+    auto p1 = position[h.vertex_to()];
+    auto p2 = position[h.next().vertex_to()];
+
+    return (p0 + p1 + p2) / 3.0f;
 }
 
 inline float face_area(face_handle f, vertex_attribute<glm::vec3> const& position)
@@ -52,30 +78,40 @@ inline float face_area(face_handle f, vertex_attribute<glm::vec3> const& positio
 
         // circulate
         h = h.next();
+        p_prev = p_curr;
     } while (h.vertex_to() != v0);
 
-    return length(varea) / 2;
+    return length(varea) * 0.5f;
 }
 
 inline glm::vec3 face_centroid(face_handle f, vertex_attribute<glm::vec3> const& position)
 {
-    /*
+    // TODO: make correct for non-convex polygons!
+
+    float area = 0.0f;
     glm::vec3 centroid;
 
-    auto area = 0.0f;
+    auto h = f.any_halfedge();
 
-    for (auto h : f.halfedges())
+    auto v0 = h.vertex_from();
+    auto p0 = v0[position];
+
+    auto p_prev = h.vertex_to()[position];
+    h = h.next();
+
+    do
     {
-        auto v0 = h.vertex_from()[position];
-        auto v1 = h.vertex_to()[position];
+        auto p_curr = h.vertex_to()[position];
 
-        area += cross(v0, v1);
+        auto a = length(cross(p_prev - p0, p_curr - p0));
+        area += a;
+        centroid += (p_prev + p_curr + p0) * a;
 
-    }
+        // circulate
+        h = h.next();
+        p_prev = p_curr;
+    } while (h.vertex_to() != v0);
 
-    return centroid;
-    */
-    assert(false);
-    return {};
+    return centroid / (3.0f * area);
 }
 }
