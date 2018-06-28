@@ -104,10 +104,10 @@ public:
     // internal helper
 private:
     // reserves a certain number of primitives
-    void reserve_faces(size_t capacity) { mFaces.reserve(capacity); }
-    void reserve_vertices(size_t capacity) { mVertices.reserve(capacity); }
-    void reserve_edges(size_t capacity) { mHalfedges.reserve(capacity * 2); }
-    void reserve_halfedges(size_t capacity) { mHalfedges.reserve(capacity); }
+    void reserve_faces(size_t capacity);
+    void reserve_vertices(size_t capacity);
+    void reserve_edges(size_t capacity);
+    void reserve_halfedges(size_t capacity);
 
     int size_faces() const { return (int)mFaces.size(); }
     int size_vertices() const { return (int)mVertices.size(); }
@@ -384,7 +384,7 @@ inline vertex_index Mesh::add_vertex()
     // notify attributes
     auto vCnt = mVertices.size();
     for (auto p = mVertexAttrs; p; p = p->mNextAttribute)
-        p->resize(vCnt);
+        p->resize(vCnt, false);
 
     return idx;
 }
@@ -463,7 +463,7 @@ inline face_index Mesh::add_face(const halfedge_index *half_loop, size_t vcnt)
     // notify attributes
     auto fCnt = mFaces.size();
     for (auto p = mFaceAttrs; p; p = p->mNextAttribute)
-        p->resize(fCnt);
+        p->resize(fCnt, false);
 
     return fidx;
 }
@@ -538,9 +538,9 @@ inline edge_index Mesh::add_or_get_edge(vertex_index v_from, vertex_index v_to)
     auto hCnt = mHalfedges.size();
     auto eCnt = hCnt >> 1;
     for (auto p = mHalfedgeAttrs; p; p = p->mNextAttribute)
-        p->resize(hCnt);
+        p->resize(hCnt, false);
     for (auto p = mEdgeAttrs; p; p = p->mNextAttribute)
-        p->resize(eCnt);
+        p->resize(eCnt, false);
 
     return eidx;
 }
@@ -1355,10 +1355,60 @@ inline void Mesh::compactify()
     for (auto a = mHalfedgeAttrs; a; a = a->mNextAttribute)
         a->apply_remapping(h_new_to_old);
 
+    // shrink to fit
+    mVertices.shrink_to_fit();
+    mFaces.shrink_to_fit();
+    mHalfedges.shrink_to_fit();
+
+    for (auto a = mVertexAttrs; a; a = a->mNextAttribute)
+        a->resize(size_vertices(), true);
+    for (auto a = mFaceAttrs; a; a = a->mNextAttribute)
+        a->resize(size_faces(), true);
+    for (auto a = mEdgeAttrs; a; a = a->mNextAttribute)
+        a->resize(size_edges(), true);
+    for (auto a = mHalfedgeAttrs; a; a = a->mNextAttribute)
+        a->resize(size_halfedges(), true);
+
     mRemovedFaces = 0;
     mRemovedHalfedges = 0;
     mRemovedVertices = 0;
     mCompact = true;
+}
+
+inline void Mesh::reserve_faces(size_t capacity)
+{
+    for (auto a = mFaceAttrs; a; a = a->mNextAttribute)
+        a->resize(capacity, false);
+
+    mFaces.reserve(capacity);
+}
+
+inline void Mesh::reserve_vertices(size_t capacity)
+{
+    for (auto a = mVertexAttrs; a; a = a->mNextAttribute)
+        a->resize(capacity, false);
+
+    mVertices.reserve(capacity);
+}
+
+inline void Mesh::reserve_edges(size_t capacity)
+{
+    for (auto a = mEdgeAttrs; a; a = a->mNextAttribute)
+        a->resize(capacity, false);
+    for (auto a = mHalfedgeAttrs; a; a = a->mNextAttribute)
+        a->resize(capacity << 1, false);
+
+    mHalfedges.reserve(capacity * 2);
+}
+
+inline void Mesh::reserve_halfedges(size_t capacity)
+{
+    for (auto a = mHalfedgeAttrs; a; a = a->mNextAttribute)
+        a->resize(capacity, false);
+    for (auto a = mEdgeAttrs; a; a = a->mNextAttribute)
+        a->resize(capacity >> 1, false);
+
+    mHalfedges.reserve(capacity);
 }
 
 /// ======== HANDLES IMPLEMENTATION ========
@@ -1632,7 +1682,7 @@ inline void Mesh::register_attr(vertex_attribute_base *attr) const
         nextAttrs->mPrevAttribute = attr;
 
     // resize attr
-    attr->resize(vertices().size());
+    attr->resize(vertices().size(), false);
 }
 
 inline void Mesh::deregister_attr(vertex_attribute_base *attr) const
@@ -1641,10 +1691,13 @@ inline void Mesh::deregister_attr(vertex_attribute_base *attr) const
         attr->mPrevAttribute->mNextAttribute = attr->mNextAttribute;
 
     if (attr->mNextAttribute)
-        attr->mNextAttribute = attr->mPrevAttribute;
+        attr->mNextAttribute->mPrevAttribute = attr->mPrevAttribute;
 
     if (mVertexAttrs == attr)
         mVertexAttrs = attr->mNextAttribute;
+
+    attr->mNextAttribute = nullptr;
+    attr->mPrevAttribute = nullptr;
 }
 
 inline void Mesh::register_attr(face_attribute_base *attr) const
@@ -1657,7 +1710,7 @@ inline void Mesh::register_attr(face_attribute_base *attr) const
         nextAttrs->mPrevAttribute = attr;
 
     // resize attr
-    attr->resize(faces().size());
+    attr->resize(faces().size(), false);
 }
 
 inline void Mesh::deregister_attr(face_attribute_base *attr) const
@@ -1666,10 +1719,13 @@ inline void Mesh::deregister_attr(face_attribute_base *attr) const
         attr->mPrevAttribute->mNextAttribute = attr->mNextAttribute;
 
     if (attr->mNextAttribute)
-        attr->mNextAttribute = attr->mPrevAttribute;
+        attr->mNextAttribute->mPrevAttribute = attr->mPrevAttribute;
 
     if (mFaceAttrs == attr)
         mFaceAttrs = attr->mNextAttribute;
+
+    attr->mNextAttribute = nullptr;
+    attr->mPrevAttribute = nullptr;
 }
 
 inline void Mesh::register_attr(edge_attribute_base *attr) const
@@ -1682,7 +1738,7 @@ inline void Mesh::register_attr(edge_attribute_base *attr) const
         nextAttrs->mPrevAttribute = attr;
 
     // resize attr
-    attr->resize(edges().size());
+    attr->resize(edges().size(), false);
 }
 
 inline void Mesh::deregister_attr(edge_attribute_base *attr) const
@@ -1691,10 +1747,13 @@ inline void Mesh::deregister_attr(edge_attribute_base *attr) const
         attr->mPrevAttribute->mNextAttribute = attr->mNextAttribute;
 
     if (attr->mNextAttribute)
-        attr->mNextAttribute = attr->mPrevAttribute;
+        attr->mNextAttribute->mPrevAttribute = attr->mPrevAttribute;
 
     if (mEdgeAttrs == attr)
         mEdgeAttrs = attr->mNextAttribute;
+
+    attr->mNextAttribute = nullptr;
+    attr->mPrevAttribute = nullptr;
 }
 
 inline void Mesh::register_attr(halfedge_attribute_base *attr) const
@@ -1707,7 +1766,7 @@ inline void Mesh::register_attr(halfedge_attribute_base *attr) const
         nextAttrs->mPrevAttribute = attr;
 
     // resize attr
-    attr->resize(halfedges().size());
+    attr->resize(halfedges().size(), false);
 }
 
 inline void Mesh::deregister_attr(halfedge_attribute_base *attr) const
@@ -1716,10 +1775,13 @@ inline void Mesh::deregister_attr(halfedge_attribute_base *attr) const
         attr->mPrevAttribute->mNextAttribute = attr->mNextAttribute;
 
     if (attr->mNextAttribute)
-        attr->mNextAttribute = attr->mPrevAttribute;
+        attr->mNextAttribute->mPrevAttribute = attr->mPrevAttribute;
 
     if (mHalfedgeAttrs == attr)
         mHalfedgeAttrs = attr->mNextAttribute;
+
+    attr->mNextAttribute = nullptr;
+    attr->mPrevAttribute = nullptr;
 }
 
 inline vertex_attribute_base::vertex_attribute_base(const Mesh *mesh) : mMesh(mesh)
@@ -1742,24 +1804,40 @@ inline halfedge_attribute_base::halfedge_attribute_base(const Mesh *mesh) : mMes
     // mMesh->register_attr(this); TOO EARLY!
 }
 
-inline vertex_attribute_base::~vertex_attribute_base()
+inline void vertex_attribute_base::deregister_attr()
 {
-    mMesh->deregister_attr(this);
+    if (mMesh)
+    {
+        mMesh->deregister_attr(this);
+        mMesh = nullptr;
+    }
 }
 
-inline face_attribute_base::~face_attribute_base()
+inline void face_attribute_base::deregister_attr()
 {
-    mMesh->deregister_attr(this);
+    if (mMesh)
+    {
+        mMesh->deregister_attr(this);
+        mMesh = nullptr;
+    }
 }
 
-inline edge_attribute_base::~edge_attribute_base()
+inline void edge_attribute_base::deregister_attr()
 {
-    mMesh->deregister_attr(this);
+    if (mMesh)
+    {
+        mMesh->deregister_attr(this);
+        mMesh = nullptr;
+    }
 }
 
-inline halfedge_attribute_base::~halfedge_attribute_base()
+inline void halfedge_attribute_base::deregister_attr()
 {
-    mMesh->deregister_attr(this);
+    if (mMesh)
+    {
+        mMesh->deregister_attr(this);
+        mMesh = nullptr;
+    }
 }
 
 inline void vertex_attribute_base::register_attr()

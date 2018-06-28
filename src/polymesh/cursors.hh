@@ -133,9 +133,9 @@ struct face_handle
     template <typename PropT>
     PropT const& operator[](face_attribute<PropT> const& prop) const;
 
-    bool is_valid() const { return idx.is_valid(); }     ///< valid idx (but could be deleted in some iterators)
-    bool is_invalid() const { return !idx.is_valid(); }; ///< invalid idx
-    bool is_removed() const;                             ///< marked for deletion (but valid idx)
+    bool is_valid() const { return idx.is_valid(); }    ///< valid idx (but could be deleted in some iterators)
+    bool is_invalid() const { return !idx.is_valid(); } ///< invalid idx
+    bool is_removed() const;                            ///< marked for deletion (but valid idx)
 
     bool is_boundary() const; ///< true if this face lies at a boundary
 
@@ -166,9 +166,9 @@ struct vertex_handle
     template <typename PropT>
     PropT const& operator[](vertex_attribute<PropT> const& prop) const;
 
-    bool is_valid() const { return idx.is_valid(); }     ///< valid idx (but could be deleted in some iterators)
-    bool is_invalid() const { return !idx.is_valid(); }; ///< invalid idx
-    bool is_removed() const;                             ///< marked for deletion (but valid idx)
+    bool is_valid() const { return idx.is_valid(); }    ///< valid idx (but could be deleted in some iterators)
+    bool is_invalid() const { return !idx.is_valid(); } ///< invalid idx
+    bool is_removed() const;                            ///< marked for deletion (but valid idx)
 
     bool is_isolated() const; ///< true if this vertex is not connected at all
     bool is_boundary() const; ///< true if this vertex lies at a boundary
@@ -204,9 +204,9 @@ struct edge_handle
     template <typename PropT>
     PropT const& operator[](edge_attribute<PropT> const& prop) const;
 
-    bool is_valid() const { return idx.is_valid(); }     ///< valid idx (but could be deleted in some iterators)
-    bool is_invalid() const { return !idx.is_valid(); }; ///< invalid idx
-    bool is_removed() const;                             ///< marked for deletion (but valid idx)
+    bool is_valid() const { return idx.is_valid(); }    ///< valid idx (but could be deleted in some iterators)
+    bool is_invalid() const { return !idx.is_valid(); } ///< invalid idx
+    bool is_removed() const;                            ///< marked for deletion (but valid idx)
 
     bool is_isolated() const; ///< true if this edge has no faces
     bool is_boundary() const; ///< true if this edge is a boundary
@@ -237,9 +237,9 @@ struct halfedge_handle
     template <typename PropT>
     PropT const& operator[](halfedge_attribute<PropT> const& prop) const;
 
-    bool is_valid() const { return idx.is_valid(); }     ///< valid idx (but could be deleted in some iterators)
-    bool is_invalid() const { return !idx.is_valid(); }; ///< invalid idx
-    bool is_removed() const;                             ///< marked for deletion (but valid idx)
+    bool is_valid() const { return idx.is_valid(); }    ///< valid idx (but could be deleted in some iterators)
+    bool is_invalid() const { return !idx.is_valid(); } ///< invalid idx
+    bool is_removed() const;                            ///< marked for deletion (but valid idx)
 
     bool is_boundary() const; ///< true if this half-edge is a boundary (CAUTION: its opposite might not be)
 

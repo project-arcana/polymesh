@@ -3,10 +3,10 @@
 #include <cstddef>
 #include <vector>
 
-#include "cursors.hh"
 #include "attribute_base.hh"
+#include "cursors.hh"
 
-/** Attrerties
+/** Attributes
  *
  * Golden rule:
  *  - the Mesh must always outlive the attribute!
@@ -18,8 +18,6 @@
  *   vertex_handle v; // or _index
  *   v[myAttr] = 7;
  *   myAttr[v] = 7;
- *
- * TODO: correct copy and move ctors/assignments
  */
 
 namespace polymesh
@@ -34,8 +32,8 @@ public:
     AttrT& operator[](vertex_index v) { return mData[v.value]; }
     AttrT const& operator[](vertex_index v) const { return mData[v.value]; }
 
-    AttrT* data() { return mData.data(); }
-    AttrT const* data() const { return mData.data(); }
+    AttrT* data() { return mData; }
+    AttrT const* data() const { return mData; }
     size_t size() const;
 
     // methods
@@ -45,7 +43,7 @@ public:
 
     // data
 private:
-    std::vector<AttrT> mData;
+    attribute_data<AttrT> mData;
     AttrT mDefaultValue;
 
     void on_resize(size_t newSize) override { mData.resize(newSize, mDefaultValue); }
@@ -55,6 +53,13 @@ private:
 private:
     vertex_attribute(Mesh const* mesh, AttrT const& def_value);
     friend struct vertex_collection;
+
+    // move & copy
+public:
+    vertex_attribute(vertex_attribute const&);
+    vertex_attribute(vertex_attribute&&);
+    vertex_attribute& operator=(vertex_attribute const&);
+    vertex_attribute& operator=(vertex_attribute&&);
 };
 
 template <typename AttrT>
@@ -78,7 +83,7 @@ public:
 
     // data
 private:
-    std::vector<AttrT> mData;
+    attribute_data<AttrT> mData;
     AttrT mDefaultValue;
 
     void on_resize(size_t newSize) override { mData.resize(newSize, mDefaultValue); }
@@ -88,6 +93,13 @@ private:
 private:
     face_attribute(Mesh const* mesh, AttrT const& def_value);
     friend struct face_collection;
+
+    // move & copy
+public:
+    face_attribute(face_attribute const&);
+    face_attribute(face_attribute&&);
+    face_attribute& operator=(face_attribute const&);
+    face_attribute& operator=(face_attribute&&);
 };
 
 template <typename AttrT>
@@ -111,7 +123,7 @@ public:
 
     // data
 private:
-    std::vector<AttrT> mData;
+    attribute_data<AttrT> mData;
     AttrT mDefaultValue;
 
     void on_resize(size_t newSize) override { mData.resize(newSize, mDefaultValue); }
@@ -121,6 +133,13 @@ private:
 private:
     edge_attribute(Mesh const* mesh, AttrT const& def_value);
     friend struct edge_collection;
+
+    // move & copy
+public:
+    edge_attribute(edge_attribute const&);
+    edge_attribute(edge_attribute&&);
+    edge_attribute& operator=(edge_attribute const&);
+    edge_attribute& operator=(edge_attribute&&);
 };
 
 template <typename AttrT>
@@ -147,40 +166,240 @@ public:
 
     // data
 private:
-    std::vector<AttrT> mData;
+    attribute_data<AttrT> mData;
     AttrT mDefaultValue;
 
     // ctor
 private:
     halfedge_attribute(Mesh const* mesh, AttrT const& def_value);
     friend struct halfedge_collection;
+
+    // move & copy
+public:
+    halfedge_attribute(halfedge_attribute const&);
+    halfedge_attribute(halfedge_attribute&&);
+    halfedge_attribute& operator=(halfedge_attribute const&);
+    halfedge_attribute& operator=(halfedge_attribute&&);
 };
 
 /// ======== IMPLEMENTATION ========
 
-template<typename AttrT>
-void vertex_attribute<AttrT>::apply_remapping(const std::vector<int> &map)
+template <typename AttrT>
+void vertex_attribute<AttrT>::apply_remapping(const std::vector<int>& map)
 {
     for (auto i = 0u; i < map.size(); ++i)
         mData[i] = mData[map[i]];
 }
-template<typename AttrT>
-void face_attribute<AttrT>::apply_remapping(const std::vector<int> &map)
+template <typename AttrT>
+void face_attribute<AttrT>::apply_remapping(const std::vector<int>& map)
 {
     for (auto i = 0u; i < map.size(); ++i)
         mData[i] = mData[map[i]];
 }
-template<typename AttrT>
-void edge_attribute<AttrT>::apply_remapping(const std::vector<int> &map)
+template <typename AttrT>
+void edge_attribute<AttrT>::apply_remapping(const std::vector<int>& map)
 {
     for (auto i = 0u; i < map.size(); ++i)
         mData[i] = mData[map[i]];
 }
-template<typename AttrT>
-void halfedge_attribute<AttrT>::apply_remapping(const std::vector<int> &map)
+template <typename AttrT>
+void halfedge_attribute<AttrT>::apply_remapping(const std::vector<int>& map)
 {
     for (auto i = 0u; i < map.size(); ++i)
         mData[i] = mData[map[i]];
+}
+
+template <typename AttrT>
+vertex_attribute<AttrT>::vertex_attribute(vertex_attribute const& rhs) : vertex_attribute_base(rhs.mMesh) // copy
+{
+    mDefaultValue = rhs.mDefaultValue;
+    mData = rhs.mData;
+    mDataSize = rhs.mDataSize;
+
+    register_attr();
+}
+
+template <typename AttrT>
+vertex_attribute<AttrT>::vertex_attribute(vertex_attribute&& rhs) : vertex_attribute_base(rhs.mMesh) // move
+{
+    mDefaultValue = std::move(rhs.mDefaultValue);
+    mData = std::move(rhs.mData);
+    mDataSize = rhs.mDataSize;
+
+    rhs.deregister_attr();
+    register_attr();
+}
+
+template <typename AttrT>
+vertex_attribute<AttrT>& vertex_attribute<AttrT>::operator=(vertex_attribute const& rhs) // copy
+{
+    deregister_attr();
+
+    mMesh = rhs.mMesh;
+    mDefaultValue = rhs.mDefaultValue;
+    mData = rhs.mData;
+    mDataSize = rhs.mDataSize;
+
+    register_attr();
+}
+
+template <typename AttrT>
+vertex_attribute<AttrT>& vertex_attribute<AttrT>::operator=(vertex_attribute&& rhs) // move
+{
+    deregister_attr();
+
+    mMesh = rhs.mMesh;
+    mDefaultValue = std::move(rhs.mDefaultValue);
+    mData = std::move(rhs.mData);
+    mDataSize = rhs.mDataSize;
+
+    rhs.deregister_attr();
+    register_attr();
+}
+
+template <typename AttrT>
+face_attribute<AttrT>::face_attribute(face_attribute const& rhs) : face_attribute_base(rhs.mMesh) // copy
+{
+    mDefaultValue = rhs.mDefaultValue;
+    mData = rhs.mData;
+    mDataSize = rhs.mDataSize;
+
+    register_attr();
+}
+
+template <typename AttrT>
+face_attribute<AttrT>::face_attribute(face_attribute&& rhs) : face_attribute_base(rhs.mMesh) // move
+{
+    mDefaultValue = std::move(rhs.mDefaultValue);
+    mData = std::move(rhs.mData);
+    mDataSize = rhs.mDataSize;
+
+    rhs.deregister_attr();
+    register_attr();
+}
+
+template <typename AttrT>
+face_attribute<AttrT>& face_attribute<AttrT>::operator=(face_attribute const& rhs) // copy
+{
+    deregister_attr();
+
+    mMesh = rhs.mMesh;
+    mDefaultValue = rhs.mDefaultValue;
+    mData = rhs.mData;
+    mDataSize = rhs.mDataSize;
+
+    register_attr();
+}
+
+template <typename AttrT>
+face_attribute<AttrT>& face_attribute<AttrT>::operator=(face_attribute&& rhs) // move
+{
+    deregister_attr();
+
+    mMesh = rhs.mMesh;
+    mDefaultValue = std::move(rhs.mDefaultValue);
+    mData = std::move(rhs.mData);
+    mDataSize = rhs.mDataSize;
+
+    rhs.deregister_attr();
+    register_attr();
+}
+
+template <typename AttrT>
+edge_attribute<AttrT>::edge_attribute(edge_attribute const& rhs) : edge_attribute_base(rhs.mMesh) // copy
+{
+    mDefaultValue = rhs.mDefaultValue;
+    mData = rhs.mData;
+    mDataSize = rhs.mDataSize;
+
+    register_attr();
+}
+
+template <typename AttrT>
+edge_attribute<AttrT>::edge_attribute(edge_attribute&& rhs) : edge_attribute_base(rhs.mMesh) // move
+{
+    mDefaultValue = std::move(rhs.mDefaultValue);
+    mData = std::move(rhs.mData);
+    mDataSize = rhs.mDataSize;
+
+    rhs.deregister_attr();
+    register_attr();
+}
+
+template <typename AttrT>
+edge_attribute<AttrT>& edge_attribute<AttrT>::operator=(edge_attribute const& rhs) // copy
+{
+    deregister_attr();
+
+    mMesh = rhs.mMesh;
+    mDefaultValue = rhs.mDefaultValue;
+    mData = rhs.mData;
+    mDataSize = rhs.mDataSize;
+
+    register_attr();
+}
+
+template <typename AttrT>
+edge_attribute<AttrT>& edge_attribute<AttrT>::operator=(edge_attribute&& rhs) // move
+{
+    deregister_attr();
+
+    mMesh = rhs.mMesh;
+    mDefaultValue = std::move(rhs.mDefaultValue);
+    mData = std::move(rhs.mData);
+    mDataSize = rhs.mDataSize;
+
+    rhs.deregister_attr();
+    register_attr();
+}
+
+template <typename AttrT>
+halfedge_attribute<AttrT>::halfedge_attribute(halfedge_attribute const& rhs)
+  : halfedge_attribute_base(rhs.mMesh) // copy
+{
+    mDefaultValue = rhs.mDefaultValue;
+    mData = rhs.mData;
+    mDataSize = rhs.mDataSize;
+
+    register_attr();
+}
+
+template <typename AttrT>
+halfedge_attribute<AttrT>::halfedge_attribute(halfedge_attribute&& rhs) : halfedge_attribute_base(rhs.mMesh) // move
+{
+    mDefaultValue = std::move(rhs.mDefaultValue);
+    mData = std::move(rhs.mData);
+    mDataSize = rhs.mDataSize;
+
+    rhs.deregister_attr();
+    register_attr();
+}
+
+template <typename AttrT>
+halfedge_attribute<AttrT>& halfedge_attribute<AttrT>::operator=(halfedge_attribute const& rhs) // copy
+{
+    deregister_attr();
+
+    mMesh = rhs.mMesh;
+    mDefaultValue = rhs.mDefaultValue;
+    mData = rhs.mData;
+    mDataSize = rhs.mDataSize;
+
+    register_attr();
+}
+
+template <typename AttrT>
+halfedge_attribute<AttrT>& halfedge_attribute<AttrT>::operator=(halfedge_attribute&& rhs) // move
+{
+    deregister_attr();
+
+    mMesh = rhs.mMesh;
+    mDefaultValue = std::move(rhs.mDefaultValue);
+    mData = std::move(rhs.mData);
+    mDataSize = rhs.mDataSize;
+
+    rhs.deregister_attr();
+    register_attr();
 }
 
 /// ======== CURSOR IMPLEMENTATION ========
@@ -268,5 +487,4 @@ AttrT const& halfedge_handle::operator[](halfedge_attribute<AttrT> const& attr) 
 {
     return attr[*this];
 }
-
 }

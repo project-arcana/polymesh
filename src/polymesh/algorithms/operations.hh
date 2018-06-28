@@ -13,9 +13,9 @@
 namespace polymesh
 {
 
-vertex_handle split(edge_handle e)
-{
-    // TODO
-}
+// vertex_handle split(edge_handle e)
+// {
+//     // TODO
+// }
 
 }

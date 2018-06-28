@@ -10,9 +10,6 @@ using namespace polymesh;
 
 void Mesh::assert_consistency() const
 {
-    /// TODO
-    /// check compact!
-
     // check sizes
     assert(mHalfedges.size() % 2 == 0); ///< even number of halfedges
 
