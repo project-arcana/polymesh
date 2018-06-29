@@ -7,18 +7,38 @@
 
 namespace polymesh
 {
-/// Collection of all vertices of a mesh, including deleted ones
-/// Basically a smart std::vector
-struct vertex_collection
+template<class tag, class iterator>
+struct smart_collection
 {
-    Mesh* mesh;
+    template<typename AttrT>
+    using attribute = typename primitive<tag>::template attribute<AttrT>;
 
-    /// Number of vertices, INCLUDING deleted/invalid ones
+    /// Number of primitives, INCLUDING those marked for deletion
     /// O(1) computation
     int size() const;
-    /// Ensures that a given number of vertices can be stored without reallocation
+
+    /// Ensures that a given number of primitives can be stored without reallocation
     void reserve(int capacity) const;
 
+    /// Creates a new vertex attribute
+    template <class PropT>
+    attribute<PropT> make_attribute(PropT const& def_value = PropT());
+
+    // Iteration:
+    iterator begin() const;
+    iterator end() const;
+
+private:
+    /// Backreference to mesh
+    Mesh* mesh;
+
+    friend class Mesh;
+};
+
+/// Collection of all vertices of a mesh, including deleted ones
+/// Basically a smart std::vector
+struct vertex_collection : smart_collection<vertex_tag, primitive<vertex_tag>::all_iterator>
+{
     /// Adds a new vertex and returns its handle
     /// Does NOT invalidate any iterator!
     vertex_handle add() const;
@@ -26,14 +46,6 @@ struct vertex_collection
     /// Removes a vertex (and all adjacent faces and edges)
     /// (marks them as removed, compactify mesh to actually remove them)
     void remove(vertex_handle v) const;
-
-    /// Creates a new vertex attribute
-    template <class PropT>
-    vertex_attribute<PropT> make_attribute(PropT const& def_value = PropT());
-
-    // Iteration:
-    vertex_iterator begin() const;
-    vertex_iterator end() const;
 };
 
 /// same as vertex_collection but const
@@ -50,8 +62,8 @@ struct const_vertex_collection
     vertex_attribute<PropT> make_attribute(PropT const& def_value = PropT());
 
     // Iteration:
-    vertex_iterator begin() const;
-    vertex_iterator end() const;
+    all_vertex_iterator begin() const;
+    all_vertex_iterator end() const;
 };
 
 /// Same as vertex_collection but only including valid, non-deleted vertices

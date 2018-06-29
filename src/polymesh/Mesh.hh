@@ -138,8 +138,8 @@ private:
     halfedge_index prev_valid_idx_from(halfedge_index idx) const;
 
     // Iterators
-    vertex_iterator vertices_begin() const { return {{this, vertex_index(0)}}; }
-    vertex_iterator vertices_end() const { return {{this, vertex_index(size_vertices())}}; }
+    all_vertex_iterator vertices_begin() const { return {{this, vertex_index(0)}}; }
+    all_vertex_iterator vertices_end() const { return {{this, vertex_index(size_vertices())}}; }
     valid_vertex_iterator valid_vertices_begin() const { return {{this, vertex_index(0)}}; }
     valid_vertex_iterator valid_vertices_end() const { return {{this, vertex_index(size_vertices())}}; }
 
@@ -349,7 +349,7 @@ private:
 private:
     friend struct vertex_handle;
     friend struct vertex_collection;
-    friend struct vertex_iterator;
+    friend struct all_vertex_iterator;
     friend struct valid_vertex_iterator;
     friend struct valid_vertex_collection;
     friend struct const_vertex_collection;
@@ -384,7 +384,7 @@ private:
     template <class tag>
     friend struct primitive_collection;
     template <class tag>
-    friend struct primitive_iterator;
+    friend struct all_primitive_iterator;
     template <class tag>
     friend struct valid_primitive_iterator;
     template <class tag>
@@ -907,7 +907,7 @@ inline valid_vertex_iterator &valid_vertex_iterator::operator++()
     handle.idx = handle.mesh->next_valid_idx_from(handle.idx);
     return *this;
 }
-inline vertex_iterator &vertex_iterator::operator++()
+inline all_vertex_iterator &all_vertex_iterator::operator++()
 {
     handle.idx.value++;
     return *this;
@@ -1024,12 +1024,12 @@ inline vertex_handle vertex_collection::add() const
     return mesh->handle_of(mesh->add_vertex());
 }
 
-inline vertex_iterator vertex_collection::begin() const
+inline all_vertex_iterator vertex_collection::begin() const
 {
     return mesh->vertices_begin();
 }
 
-inline vertex_iterator vertex_collection::end() const
+inline all_vertex_iterator vertex_collection::end() const
 {
     return mesh->vertices_end();
 }
@@ -1039,12 +1039,12 @@ inline int const_vertex_collection::size() const
     return mesh->size_vertices();
 }
 
-inline vertex_iterator const_vertex_collection::begin() const
+inline all_vertex_iterator const_vertex_collection::begin() const
 {
     return mesh->vertices_begin();
 }
 
-inline vertex_iterator const_vertex_collection::end() const
+inline all_vertex_iterator const_vertex_collection::end() const
 {
     return mesh->vertices_end();
 }

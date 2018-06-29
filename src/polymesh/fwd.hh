@@ -18,6 +18,11 @@ struct edge_attribute;
 template <class AttrT>
 struct halfedge_attribute;
 
+template <typename tag>
+struct all_primitive_iterator;
+template <typename tag>
+struct valid_primitive_iterator;
+
 struct vertex_index;
 struct face_index;
 struct edge_index;

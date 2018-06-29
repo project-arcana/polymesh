@@ -10,241 +10,80 @@
 namespace polymesh
 {
 
-// struct valid_primitive_iterator
-// {
-//
-// };
+template <typename tag>
+struct valid_primitive_iterator
+{
+    using handle_t = typename primitive<tag>::handle;
 
+    valid_primitive_iterator() = default;
+    valid_primitive_iterator(handle_t handle) : handle(handle)
+    {
+        handle.idx = handle.mesh->next_valid_idx_from(handle.idx);
+    }
 
+    handle_t operator*() const { return handle; }
+    valid_primitive_iterator& operator++()
+    {
+        handle.idx.value++;
+        handle.idx = handle.mesh->next_valid_idx_from(handle.idx);
+        return *this;
+    }
+    valid_primitive_iterator operator++(int)
+    {
+        auto i = *this;
+        return ++i;
+    }
+    bool operator==(valid_primitive_iterator const& rhs) const
+    {
+        assert(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
+        return handle.idx == rhs.handle.idx;
+    }
+    bool operator!=(valid_primitive_iterator const& rhs) const
+    {
+        assert(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
+        return handle.idx != rhs.handle.idx;
+    }
 
+private:
+    handle_t handle;
+};
 
+template <typename tag>
+struct all_primitive_iterator
+{
+    using handle_t = typename primitive<tag>::handle;
+
+    all_primitive_iterator() = default;
+    all_primitive_iterator(handle_t handle) : handle(handle) {}
+
+    handle_t operator*() const { return handle; }
+    all_primitive_iterator& operator++()
+    {
+        handle.idx.value++;
+        return *this;
+    }
+    all_primitive_iterator operator++(int)
+    {
+        auto i = *this;
+        return ++i;
+    }
+    bool operator==(all_primitive_iterator const& rhs) const
+    {
+        assert(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
+        return handle.idx == rhs.handle.idx;
+    }
+    bool operator!=(all_primitive_iterator const& rhs) const
+    {
+        assert(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
+        return handle.idx != rhs.handle.idx;
+    }
+
+private:
+    handle_t handle;
+};
 
 // ===========================================
 // OLD CODE:
-
-struct valid_vertex_iterator
-{
-    valid_vertex_iterator() = default;
-    valid_vertex_iterator(vertex_handle handle) : handle(handle) { move_to_valid(); }
-
-    vertex_handle operator*() const { return handle; }
-    valid_vertex_iterator& operator++();
-    valid_vertex_iterator operator++(int)
-    {
-        auto i = *this;
-        return ++i;
-    }
-    bool operator==(valid_vertex_iterator const& rhs) const
-    {
-        assert(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
-        return handle.idx == rhs.handle.idx;
-    }
-    bool operator!=(valid_vertex_iterator const& rhs) const
-    {
-        assert(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
-        return handle.idx != rhs.handle.idx;
-    }
-
-private:
-    vertex_handle handle;
-
-    void move_to_valid();
-};
-
-struct vertex_iterator
-{
-    vertex_iterator() = default;
-    vertex_iterator(vertex_handle handle) : handle(handle) {}
-
-    vertex_handle operator*() const { return handle; }
-    vertex_iterator& operator++();
-    vertex_iterator operator++(int)
-    {
-        auto i = *this;
-        return ++i;
-    }
-    bool operator==(vertex_iterator const& rhs) const
-    {
-        assert(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
-        return handle.idx == rhs.handle.idx;
-    }
-    bool operator!=(vertex_iterator const& rhs) const
-    {
-        assert(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
-        return handle.idx != rhs.handle.idx;
-    }
-
-private:
-    vertex_handle handle;
-};
-
-struct valid_face_iterator
-{
-    valid_face_iterator() = default;
-    valid_face_iterator(face_handle handle) : handle(handle) { move_to_valid(); }
-
-    face_handle operator*() const { return handle; }
-    valid_face_iterator& operator++();
-    valid_face_iterator operator++(int)
-    {
-        auto i = *this;
-        return ++i;
-    }
-    bool operator==(valid_face_iterator const& rhs) const
-    {
-        assert(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
-        return handle.idx == rhs.handle.idx;
-    }
-    bool operator!=(valid_face_iterator const& rhs) const
-    {
-        assert(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
-        return handle.idx != rhs.handle.idx;
-    }
-
-private:
-    face_handle handle;
-
-    void move_to_valid();
-};
-
-struct face_iterator
-{
-    face_iterator() = default;
-    face_iterator(face_handle handle) : handle(handle) {}
-
-    face_handle operator*() const { return handle; }
-    face_iterator& operator++();
-    face_iterator operator++(int)
-    {
-        auto i = *this;
-        return ++i;
-    }
-    bool operator==(face_iterator const& rhs) const
-    {
-        assert(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
-        return handle.idx == rhs.handle.idx;
-    }
-    bool operator!=(face_iterator const& rhs) const
-    {
-        assert(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
-        return handle.idx != rhs.handle.idx;
-    }
-
-private:
-    face_handle handle;
-};
-
-struct valid_edge_iterator
-{
-    valid_edge_iterator() = default;
-    valid_edge_iterator(edge_handle handle) : handle(handle) { move_to_valid(); }
-
-    edge_handle operator*() const { return handle; }
-    valid_edge_iterator& operator++();
-    valid_edge_iterator operator++(int)
-    {
-        auto i = *this;
-        return ++i;
-    }
-    bool operator==(valid_edge_iterator const& rhs) const
-    {
-        assert(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
-        return handle.idx == rhs.handle.idx;
-    }
-    bool operator!=(valid_edge_iterator const& rhs) const
-    {
-        assert(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
-        return handle.idx != rhs.handle.idx;
-    }
-
-private:
-    edge_handle handle;
-
-    void move_to_valid();
-};
-
-struct edge_iterator
-{
-    edge_iterator() = default;
-    edge_iterator(edge_handle handle) : handle(handle) {}
-
-    edge_handle operator*() const { return handle; }
-    edge_iterator& operator++();
-    edge_iterator operator++(int)
-    {
-        auto i = *this;
-        return ++i;
-    }
-    bool operator==(edge_iterator const& rhs) const
-    {
-        assert(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
-        return handle.idx == rhs.handle.idx;
-    }
-    bool operator!=(edge_iterator const& rhs) const
-    {
-        assert(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
-        return handle.idx != rhs.handle.idx;
-    }
-
-private:
-    edge_handle handle;
-};
-
-struct valid_halfedge_iterator
-{
-    valid_halfedge_iterator() = default;
-    valid_halfedge_iterator(halfedge_handle handle) : handle(handle) { move_to_valid(); }
-
-    halfedge_handle operator*() const { return handle; }
-    valid_halfedge_iterator& operator++();
-    valid_halfedge_iterator operator++(int)
-    {
-        auto i = *this;
-        return ++i;
-    }
-    bool operator==(valid_halfedge_iterator const& rhs) const
-    {
-        assert(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
-        return handle.idx == rhs.handle.idx;
-    }
-    bool operator!=(valid_halfedge_iterator const& rhs) const
-    {
-        assert(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
-        return handle.idx != rhs.handle.idx;
-    }
-
-private:
-    halfedge_handle handle;
-
-    void move_to_valid();
-};
-
-struct halfedge_iterator
-{
-    halfedge_iterator() = default;
-    halfedge_iterator(halfedge_handle handle) : handle(handle) {}
-
-    halfedge_handle operator*() const { return handle; }
-    halfedge_iterator& operator++();
-    halfedge_iterator operator++(int)
-    {
-        auto i = *this;
-        return ++i;
-    }
-    bool operator==(halfedge_iterator const& rhs) const
-    {
-        assert(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
-        return handle.idx == rhs.handle.idx;
-    }
-    bool operator!=(halfedge_iterator const& rhs) const
-    {
-        assert(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
-        return handle.idx != rhs.handle.idx;
-    }
-
-private:
-    halfedge_handle handle;
-};
 
 /// Iterates over all vertices of a given face
 struct face_vertex_circulator

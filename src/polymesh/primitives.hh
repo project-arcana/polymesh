@@ -16,6 +16,8 @@ struct primitive<vertex_tag>
     using handle = vertex_handle;
     using collection = vertex_collection;
     using const_collection = const_vertex_collection;
+    using all_iterator = all_primitive_iterator<vertex_tag>;
+    using valid_iterator = valid_primitive_iterator<vertex_tag>;
 
     template<class AttrT>
     using attribute = vertex_attribute<AttrT>;
@@ -33,6 +35,8 @@ struct primitive<face_tag>
     using handle = face_handle;
     using collection = face_collection;
     using const_collection = const_face_collection;
+    using all_iterator = all_primitive_iterator<face_tag>;
+    using valid_iterator = valid_primitive_iterator<face_tag>;
 
     template<class AttrT>
     using attribute = face_attribute<AttrT>;
@@ -50,6 +54,8 @@ struct primitive<edge_tag>
     using handle = edge_handle;
     using collection = edge_collection;
     using const_collection = const_edge_collection;
+    using all_iterator = all_primitive_iterator<edge_tag>;
+    using valid_iterator = valid_primitive_iterator<edge_tag>;
 
     template<class AttrT>
     using attribute = edge_attribute<AttrT>;
@@ -67,6 +73,8 @@ struct primitive<halfedge_tag>
     using handle = halfedge_handle;
     using collection = halfedge_collection;
     using const_collection = const_halfedge_collection;
+    using all_iterator = all_primitive_iterator<halfedge_tag>;
+    using valid_iterator = valid_primitive_iterator<halfedge_tag>;
 
     template<class AttrT>
     using attribute = halfedge_attribute<AttrT>;

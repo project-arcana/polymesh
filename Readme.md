@@ -19,3 +19,4 @@ Best used with glm and glow.
 * smart ranges: average, min, max, any, all, first, last ...
 * mid-level topo API: edge-rotate-next/prev, edge-split, edge-collapse, halfedge-split, halfedge-collapse, vertex-collapse
 * annotate property preservation for mid-level topo API
+* move "remove" API to handles
