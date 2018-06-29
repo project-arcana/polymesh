@@ -9,10 +9,10 @@ namespace polymesh
 {
 class Mesh;
 
-template <typename DataT>
+template <class DataT>
 struct attribute_data
 {
-    size_t size = 0;
+    int size = 0;
     DataT* data = nullptr;
 
     DataT& operator[](int i) { return data[i]; }
@@ -24,7 +24,7 @@ struct attribute_data
         size = rhs.size;
         data = new DataT[size];
 
-        for (size_t i = 0; i < size; ++i)
+        for (int i = 0; i < size; ++i)
             data[i] = rhs.data[i];
     }
     attribute_data(attribute_data<DataT>&& rhs) // move
@@ -42,7 +42,7 @@ struct attribute_data
         size = rhs.size;
         data = new DataT[size];
 
-        for (size_t i = 0; i < size; ++i)
+        for (int i = 0; i < size; ++i)
             data[i] = rhs.data[i];
 
         return *this;
@@ -61,21 +61,21 @@ struct attribute_data
     }
     ~attribute_data() { delete[] data; }
 
-    void resize(size_t new_size, DataT const& default_value)
+    void resize(int new_size, DataT const& default_value)
     {
         auto new_data = new DataT[new_size];
 
         if (new_size < size)
         {
-            for (size_t i = 0; i < new_size; ++i)
+            for (int i = 0; i < new_size; ++i)
                 new_data[i] = data[i];
         }
         else
         {
-            for (size_t i = 0; i < size; ++i)
+            for (int i = 0; i < size; ++i)
                 new_data[i] = data[i];
 
-            for (size_t i = size; i < new_size; ++i)
+            for (int i = size; i < new_size; ++i)
                 new_data[i] = default_value;
         }
 
@@ -91,7 +91,7 @@ private:
     vertex_attribute_base* mNextAttribute = nullptr;
     vertex_attribute_base* mPrevAttribute = nullptr;
 
-    void resize(size_t newSize, bool force)
+    void resize(int newSize, bool force)
     {
         if (force)
         {
@@ -108,11 +108,11 @@ private:
     }
 
 protected:
-    size_t mDataSize = 0;
+    int mDataSize = 0;
     Mesh const* mMesh;
     vertex_attribute_base(Mesh const* mesh);
     virtual ~vertex_attribute_base() { deregister_attr(); }
-    virtual void on_resize(size_t newSize) = 0;
+    virtual void on_resize(int newSize) = 0;
     virtual void apply_remapping(std::vector<int> const& map) = 0;
     void register_attr();
     void deregister_attr();
@@ -125,7 +125,7 @@ private:
     face_attribute_base* mNextAttribute = nullptr;
     face_attribute_base* mPrevAttribute = nullptr;
 
-    void resize(size_t newSize, bool force)
+    void resize(int newSize, bool force)
     {
         if (force)
         {
@@ -142,11 +142,11 @@ private:
     }
 
 protected:
-    size_t mDataSize = 0;
+    int mDataSize = 0;
     Mesh const* mMesh;
     face_attribute_base(Mesh const* mesh);
     virtual ~face_attribute_base() { deregister_attr(); }
-    virtual void on_resize(size_t newSize) = 0;
+    virtual void on_resize(int newSize) = 0;
     virtual void apply_remapping(std::vector<int> const& map) = 0;
     void register_attr();
     void deregister_attr();
@@ -159,7 +159,7 @@ private:
     edge_attribute_base* mNextAttribute = nullptr;
     edge_attribute_base* mPrevAttribute = nullptr;
 
-    void resize(size_t newSize, bool force)
+    void resize(int newSize, bool force)
     {
         if (force)
         {
@@ -176,11 +176,11 @@ private:
     }
 
 protected:
-    size_t mDataSize = 0;
+    int mDataSize = 0;
     Mesh const* mMesh;
     edge_attribute_base(Mesh const* mesh);
     virtual ~edge_attribute_base() { deregister_attr(); }
-    virtual void on_resize(size_t newSize) = 0;
+    virtual void on_resize(int newSize) = 0;
     virtual void apply_remapping(std::vector<int> const& map) = 0;
     void register_attr();
     void deregister_attr();
@@ -193,7 +193,7 @@ private:
     halfedge_attribute_base* mNextAttribute = nullptr;
     halfedge_attribute_base* mPrevAttribute = nullptr;
 
-    void resize(size_t newSize, bool force)
+    void resize(int newSize, bool force)
     {
         if (force)
         {
@@ -210,11 +210,11 @@ private:
     }
 
 protected:
-    size_t mDataSize = 0;
+    int mDataSize = 0;
     Mesh const* mMesh;
     halfedge_attribute_base(Mesh const* mesh);
     virtual ~halfedge_attribute_base() { deregister_attr(); }
-    virtual void on_resize(size_t newSize) = 0;
+    virtual void on_resize(int newSize) = 0;
     virtual void apply_remapping(std::vector<int> const& map) = 0;
     void register_attr();
     void deregister_attr();

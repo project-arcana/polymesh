@@ -28,7 +28,7 @@ struct vertex_collection
     void remove(vertex_handle v) const;
 
     /// Creates a new vertex attribute
-    template <typename PropT>
+    template <class PropT>
     vertex_attribute<PropT> make_attribute(PropT const& def_value = PropT());
 
     // Iteration:
@@ -46,7 +46,7 @@ struct const_vertex_collection
     int size() const;
 
     /// Creates a new vertex attribute
-    template <typename PropT>
+    template <class PropT>
     vertex_attribute<PropT> make_attribute(PropT const& def_value = PropT());
 
     // Iteration:
@@ -90,20 +90,20 @@ struct face_collection
     face_handle add(vertex_handle v0, vertex_handle v1, vertex_handle v2) const;
     face_handle add(vertex_handle v0, vertex_handle v1, vertex_handle v2, vertex_handle v3) const;
     face_handle add(std::vector<vertex_handle> const& v_handles) const;
-    face_handle add(vertex_handle const* v_handles, size_t vcnt) const;
+    face_handle add(vertex_handle const* v_handles, int vcnt) const;
     template <size_t N>
     face_handle add(const halfedge_handle (&half_loop)[N]) const;
     face_handle add(halfedge_handle h0, halfedge_handle h1, halfedge_handle h2) const;
     face_handle add(halfedge_handle h0, halfedge_handle h1, halfedge_handle h2, halfedge_handle h3) const;
     face_handle add(std::vector<halfedge_handle> const& half_loop) const;
-    face_handle add(halfedge_handle const* half_loop, size_t vcnt) const;
+    face_handle add(halfedge_handle const* half_loop, int vcnt) const;
 
     /// Removes a face (adjacent edges and vertices are NOT removed)
     /// (marks it as removed, compactify mesh to actually remove it)
     void remove(face_handle f) const;
 
     /// Creates a new face attribute
-    template <typename PropT>
+    template <class PropT>
     face_attribute<PropT> make_attribute(PropT const& def_value = PropT());
 
     // Iteration:
@@ -121,7 +121,7 @@ struct const_face_collection
     int size() const;
 
     /// Creates a new face attribute
-    template <typename PropT>
+    template <class PropT>
     face_attribute<PropT> make_attribute(PropT const& def_value = PropT());
 
     // Iteration:
@@ -166,7 +166,7 @@ struct edge_collection
     void remove(edge_handle e) const;
 
     /// Creates a new edge attribute
-    template <typename PropT>
+    template <class PropT>
     edge_attribute<PropT> make_attribute(PropT const& def_value = PropT());
 
     // Iteration:
@@ -184,7 +184,7 @@ struct const_edge_collection
     int size() const;
 
     /// Creates a new edge attribute
-    template <typename PropT>
+    template <class PropT>
     edge_attribute<PropT> make_attribute(PropT const& def_value = PropT());
 
     // Iteration:
@@ -230,7 +230,7 @@ struct halfedge_collection
     void remove_edge(halfedge_handle h) const;
 
     /// Creates a new half-edge attribute
-    template <typename PropT>
+    template <class PropT>
     halfedge_attribute<PropT> make_attribute(PropT const& def_value = PropT());
 
     // Iteration:
@@ -248,7 +248,7 @@ struct const_halfedge_collection
     int size() const;
 
     /// Creates a new half-edge attribute
-    template <typename PropT>
+    template <class PropT>
     halfedge_attribute<PropT> make_attribute(PropT const& def_value = PropT());
 
     // Iteration:

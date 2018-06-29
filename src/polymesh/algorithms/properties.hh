@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 
 #include "../Mesh.hh"
+#include "../fields.hh"
 
 // Derived mesh properties, including:
 // - valences
@@ -20,16 +21,20 @@ namespace polymesh
 int valence_of(vertex_handle v);
 
 /// returns the area of the (flat) polygonal face
-float face_area(face_handle f, vertex_attribute<glm::vec3> const& position);
+template <class Vec3>
+typename field_3d<Vec3>::Scalar face_area(face_handle f, vertex_attribute<Vec3> const& position);
 
 /// returns the center of gravity for a given (flat) polygonal face
-glm::vec3 face_centroid(face_handle f, vertex_attribute<glm::vec3> const& position);
+template <class Vec3>
+Vec3 face_centroid(face_handle f, vertex_attribute<Vec3> const& position);
 
 /// returns the area of a given triangle
-float triangle_area(face_handle f, vertex_attribute<glm::vec3> const& position);
+template <class Vec3>
+typename field_3d<Vec3>::Scalar triangle_area(face_handle f, vertex_attribute<Vec3> const& position);
 
 /// returns the center of gravity for a given triangle
-glm::vec3 triangle_centroid(face_handle f, vertex_attribute<glm::vec3> const& position);
+template <class Vec3>
+Vec3 triangle_centroid(face_handle f, vertex_attribute<Vec3> const& position);
 
 /// ======== IMPLEMENTATION ========
 
@@ -38,29 +43,32 @@ inline int valence_of(vertex_handle v)
     return v.adjacent_vertices().size();
 }
 
-inline float triangle_area(face_handle f, vertex_attribute<glm::vec3> const& position)
+template <class Vec3>
+typename field_3d<Vec3>::Scalar triangle_area(face_handle f, vertex_attribute<Vec3> const& position)
 {
     auto h = f.any_halfedge();
     auto p0 = position[h.vertex_from()];
     auto p1 = position[h.vertex_to()];
     auto p2 = position[h.next().vertex_to()];
 
-    return 0.5f * length(cross(p0 - p1, p0 - p2));
+    return field_3d<Vec3>::length(field_3d<Vec3>::cross(p0 - p1, p0 - p2)) * field_3d<Vec3>::scalar(0.5f);
 }
 
-inline glm::vec3 triangle_centroid(face_handle f, vertex_attribute<glm::vec3> const& position)
+template <class Vec3>
+Vec3 triangle_centroid(face_handle f, vertex_attribute<Vec3> const& position)
 {
     auto h = f.any_halfedge();
     auto p0 = position[h.vertex_from()];
     auto p1 = position[h.vertex_to()];
     auto p2 = position[h.next().vertex_to()];
 
-    return (p0 + p1 + p2) / 3.0f;
+    return (p0 + p1 + p2) / field_3d<Vec3>::scalar(3);
 }
 
-inline float face_area(face_handle f, vertex_attribute<glm::vec3> const& position)
+template <class Vec3>
+typename field_3d<Vec3>::Scalar face_area(face_handle f, vertex_attribute<Vec3> const& position)
 {
-    glm::vec3 varea;
+    auto varea = field_3d<Vec3>::zero();
 
     auto h = f.any_halfedge();
 
@@ -74,22 +82,23 @@ inline float face_area(face_handle f, vertex_attribute<glm::vec3> const& positio
     {
         auto p_curr = h.vertex_to()[position];
 
-        varea += cross(p_prev - p0, p_curr - p0);
+        varea += field_3d<Vec3>::cross(p_prev - p0, p_curr - p0);
 
         // circulate
         h = h.next();
         p_prev = p_curr;
     } while (h.vertex_to() != v0);
 
-    return length(varea) * 0.5f;
+    return field_3d<Vec3>::length(varea) * 0.5f;
 }
 
-inline glm::vec3 face_centroid(face_handle f, vertex_attribute<glm::vec3> const& position)
+template <class Vec3>
+Vec3 face_centroid(face_handle f, vertex_attribute<Vec3> const& position)
 {
     // TODO: make correct for non-convex polygons!
 
-    float area = 0.0f;
-    glm::vec3 centroid;
+    auto area = field_3d<Vec3>::scalar(0);
+    auto centroid = field_3d<Vec3>::zero();
 
     auto h = f.any_halfedge();
 
@@ -103,7 +112,7 @@ inline glm::vec3 face_centroid(face_handle f, vertex_attribute<glm::vec3> const&
     {
         auto p_curr = h.vertex_to()[position];
 
-        auto a = length(cross(p_prev - p0, p_curr - p0));
+        auto a = field_3d<Vec3>::length(field_3d<Vec3>::cross(p_prev - p0, p_curr - p0));
         area += a;
         centroid += (p_prev + p_curr + p0) * a;
 

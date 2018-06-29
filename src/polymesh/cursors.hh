@@ -6,13 +6,13 @@ namespace polymesh
 {
 class Mesh;
 
-template <typename PropT>
+template <class PropT>
 struct vertex_attribute;
-template <typename PropT>
+template <class PropT>
 struct face_attribute;
-template <typename PropT>
+template <class PropT>
 struct edge_attribute;
-template <typename PropT>
+template <class PropT>
 struct halfedge_attribute;
 
 struct vertex_handle;
@@ -47,10 +47,14 @@ struct face_index
     bool operator==(face_index const& rhs) const { return value == rhs.value; }
     bool operator!=(face_index const& rhs) const { return value != rhs.value; }
 
-    template <typename PropT>
+    template <class PropT>
     PropT& operator[](face_attribute<PropT>& prop) const;
-    template <typename PropT>
+    template <class PropT>
     PropT const& operator[](face_attribute<PropT> const& prop) const;
+    template <class PropT>
+    PropT& operator[](face_attribute<PropT>* prop) const;
+    template <class PropT>
+    PropT const& operator[](face_attribute<PropT> const* prop) const;
 };
 
 struct vertex_index
@@ -67,10 +71,14 @@ struct vertex_index
     bool operator==(vertex_index const& rhs) const { return value == rhs.value; }
     bool operator!=(vertex_index const& rhs) const { return value != rhs.value; }
 
-    template <typename PropT>
+    template <class PropT>
     PropT& operator[](vertex_attribute<PropT>& prop) const;
-    template <typename PropT>
+    template <class PropT>
     PropT const& operator[](vertex_attribute<PropT> const& prop) const;
+    template <class PropT>
+    PropT& operator[](vertex_attribute<PropT>* prop) const;
+    template <class PropT>
+    PropT const& operator[](vertex_attribute<PropT> const* prop) const;
 };
 
 struct edge_index
@@ -87,10 +95,14 @@ struct edge_index
     bool operator==(edge_index const& rhs) const { return value == rhs.value; }
     bool operator!=(edge_index const& rhs) const { return value != rhs.value; }
 
-    template <typename PropT>
+    template <class PropT>
     PropT& operator[](edge_attribute<PropT>& prop) const;
-    template <typename PropT>
+    template <class PropT>
     PropT const& operator[](edge_attribute<PropT> const& prop) const;
+    template <class PropT>
+    PropT& operator[](edge_attribute<PropT>* prop) const;
+    template <class PropT>
+    PropT const& operator[](edge_attribute<PropT> const* prop) const;
 };
 
 struct halfedge_index
@@ -107,10 +119,14 @@ struct halfedge_index
     bool operator==(halfedge_index const& rhs) const { return value == rhs.value; }
     bool operator!=(halfedge_index const& rhs) const { return value != rhs.value; }
 
-    template <typename PropT>
+    template <class PropT>
     PropT& operator[](halfedge_attribute<PropT>& prop) const;
-    template <typename PropT>
+    template <class PropT>
     PropT const& operator[](halfedge_attribute<PropT> const& prop) const;
+    template <class PropT>
+    PropT& operator[](halfedge_attribute<PropT>* prop) const;
+    template <class PropT>
+    PropT const& operator[](halfedge_attribute<PropT> const* prop) const;
 };
 
 // ======================== HANDLES ========================
@@ -128,10 +144,14 @@ struct face_handle
     bool operator==(face_handle const& rhs) const { return mesh == rhs.mesh && idx == rhs.idx; }
     bool operator!=(face_handle const& rhs) const { return mesh != rhs.mesh || idx != rhs.idx; }
 
-    template <typename PropT>
+    template <class PropT>
     PropT& operator[](face_attribute<PropT>& prop) const;
-    template <typename PropT>
+    template <class PropT>
     PropT const& operator[](face_attribute<PropT> const& prop) const;
+    template <class PropT>
+    PropT& operator[](face_attribute<PropT>* prop) const;
+    template <class PropT>
+    PropT const& operator[](face_attribute<PropT> const* prop) const;
 
     bool is_valid() const { return idx.is_valid(); }    ///< valid idx (but could be deleted in some iterators)
     bool is_invalid() const { return !idx.is_valid(); } ///< invalid idx
@@ -161,10 +181,14 @@ struct vertex_handle
     bool operator==(vertex_handle const& rhs) const { return mesh == rhs.mesh && idx == rhs.idx; }
     bool operator!=(vertex_handle const& rhs) const { return mesh != rhs.mesh || idx != rhs.idx; }
 
-    template <typename PropT>
+    template <class PropT>
     PropT& operator[](vertex_attribute<PropT>& prop) const;
-    template <typename PropT>
+    template <class PropT>
     PropT const& operator[](vertex_attribute<PropT> const& prop) const;
+    template <class PropT>
+    PropT& operator[](vertex_attribute<PropT>* prop) const;
+    template <class PropT>
+    PropT const& operator[](vertex_attribute<PropT> const* prop) const;
 
     bool is_valid() const { return idx.is_valid(); }    ///< valid idx (but could be deleted in some iterators)
     bool is_invalid() const { return !idx.is_valid(); } ///< invalid idx
@@ -199,10 +223,14 @@ struct edge_handle
     bool operator==(edge_handle const& rhs) const { return mesh == rhs.mesh && idx == rhs.idx; }
     bool operator!=(edge_handle const& rhs) const { return mesh != rhs.mesh || idx != rhs.idx; }
 
-    template <typename PropT>
+    template <class PropT>
     PropT& operator[](edge_attribute<PropT>& prop) const;
-    template <typename PropT>
+    template <class PropT>
     PropT const& operator[](edge_attribute<PropT> const& prop) const;
+    template <class PropT>
+    PropT& operator[](edge_attribute<PropT>* prop) const;
+    template <class PropT>
+    PropT const& operator[](edge_attribute<PropT> const* prop) const;
 
     bool is_valid() const { return idx.is_valid(); }    ///< valid idx (but could be deleted in some iterators)
     bool is_invalid() const { return !idx.is_valid(); } ///< invalid idx
@@ -232,10 +260,14 @@ struct halfedge_handle
     bool operator==(halfedge_handle const& rhs) const { return mesh == rhs.mesh && idx == rhs.idx; }
     bool operator!=(halfedge_handle const& rhs) const { return mesh != rhs.mesh || idx != rhs.idx; }
 
-    template <typename PropT>
+    template <class PropT>
     PropT& operator[](halfedge_attribute<PropT>& prop) const;
-    template <typename PropT>
+    template <class PropT>
     PropT const& operator[](halfedge_attribute<PropT> const& prop) const;
+    template <class PropT>
+    PropT& operator[](halfedge_attribute<PropT>* prop) const;
+    template <class PropT>
+    PropT const& operator[](halfedge_attribute<PropT> const* prop) const;
 
     bool is_valid() const { return idx.is_valid(); }    ///< valid idx (but could be deleted in some iterators)
     bool is_invalid() const { return !idx.is_valid(); } ///< invalid idx

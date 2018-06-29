@@ -8,6 +8,9 @@
 #include "cursors.hh"
 #include "ranges.hh"
 
+// often used helper
+#include "attribute_collection.hh"
+
 namespace polymesh
 {
 using SharedMesh = std::shared_ptr<Mesh>;
@@ -77,6 +80,9 @@ public:
     vertex_handle operator[](vertex_index idx) const { return handle_of(idx); }
     halfedge_handle operator[](halfedge_index idx) const { return handle_of(idx); }
 
+    /// deletes all faces, vertices, edges, and halfedges
+    void clear();
+
     // helper
 public:
     /// Returns true if the mesh is guaranteed compact, otherwise call compactify() to be sure
@@ -104,10 +110,10 @@ public:
     // internal helper
 private:
     // reserves a certain number of primitives
-    void reserve_faces(size_t capacity);
-    void reserve_vertices(size_t capacity);
-    void reserve_edges(size_t capacity);
-    void reserve_halfedges(size_t capacity);
+    void reserve_faces(int capacity);
+    void reserve_vertices(int capacity);
+    void reserve_edges(int capacity);
+    void reserve_halfedges(int capacity);
 
     int size_faces() const { return (int)mFaces.size(); }
     int size_vertices() const { return (int)mVertices.size(); }
@@ -159,10 +165,10 @@ private:
     /// Adds a face consisting of N vertices
     /// The vertices must already be sorted in CCW order
     /// (note: trying to add already existing halfedges triggers assertions)
-    face_index add_face(vertex_handle const *v_handles, size_t vcnt);
-    face_index add_face(vertex_index const *v_indices, size_t vcnt);
-    face_index add_face(halfedge_handle const *half_loop, size_t vcnt);
-    face_index add_face(halfedge_index const *half_loop, size_t vcnt);
+    face_index add_face(vertex_handle const *v_handles, int vcnt);
+    face_index add_face(vertex_index const *v_indices, int vcnt);
+    face_index add_face(halfedge_handle const *half_loop, int vcnt);
+    face_index add_face(halfedge_index const *half_loop, int vcnt);
 
     /// Adds an edge between two existing, distinct vertices
     /// if edge already exists, returns it
@@ -389,38 +395,38 @@ inline vertex_index Mesh::add_vertex()
     return idx;
 }
 
-inline face_index Mesh::add_face(const vertex_handle *v_handles, size_t vcnt)
+inline face_index Mesh::add_face(const vertex_handle *v_handles, int vcnt)
 {
     mFaceInsertCache.resize(vcnt);
-    for (auto i = 0u; i < vcnt; ++i)
+    for (auto i = 0; i < vcnt; ++i)
         mFaceInsertCache[i] = add_or_get_halfedge(v_handles[i].idx, v_handles[(i + 1) % vcnt].idx);
     return add_face(mFaceInsertCache.data(), vcnt);
 }
 
-inline face_index Mesh::add_face(const vertex_index *v_indices, size_t vcnt)
+inline face_index Mesh::add_face(const vertex_index *v_indices, int vcnt)
 {
     mFaceInsertCache.resize(vcnt);
-    for (auto i = 0u; i < vcnt; ++i)
+    for (auto i = 0; i < vcnt; ++i)
         mFaceInsertCache[i] = add_or_get_halfedge(v_indices[i], v_indices[(i + 1) % vcnt]);
     return add_face(mFaceInsertCache.data(), vcnt);
 }
 
-inline face_index Mesh::add_face(const halfedge_handle *half_loop, size_t vcnt)
+inline face_index Mesh::add_face(const halfedge_handle *half_loop, int vcnt)
 {
     mFaceInsertCache.resize(vcnt);
-    for (auto i = 0u; i < vcnt; ++i)
+    for (auto i = 0; i < vcnt; ++i)
         mFaceInsertCache[i] = half_loop[i].idx;
     return add_face(mFaceInsertCache.data(), vcnt);
 }
 
-inline face_index Mesh::add_face(const halfedge_index *half_loop, size_t vcnt)
+inline face_index Mesh::add_face(const halfedge_index *half_loop, int vcnt)
 {
     assert(vcnt >= 3 && "no support for less-than-triangular faces");
 
     auto fidx = face_index((int)mFaces.size());
 
     // ensure that half-edges are adjacent at each vertex
-    for (auto i = 0u; i < vcnt; ++i)
+    for (auto i = 0; i < vcnt; ++i)
     {
         auto h0 = half_loop[i];
         auto h1 = half_loop[(i + 1) % vcnt];
@@ -438,7 +444,7 @@ inline face_index Mesh::add_face(const halfedge_index *half_loop, size_t vcnt)
     }
 
     // fix boundary states
-    for (auto i = 0u; i < vcnt; ++i)
+    for (auto i = 0; i < vcnt; ++i)
     {
         auto h = half_loop[i];
         auto v = halfedge(h).to_vertex;
@@ -1015,12 +1021,12 @@ inline void face_collection::reserve(int capacity) const
     mesh->reserve_faces(capacity);
 }
 
-inline face_handle face_collection::add(const vertex_handle *v_handles, size_t vcnt) const
+inline face_handle face_collection::add(const vertex_handle *v_handles, int vcnt) const
 {
     return mesh->handle_of(mesh->add_face(v_handles, vcnt));
 }
 
-inline face_handle face_collection::add(const halfedge_handle *half_loop, size_t vcnt) const
+inline face_handle face_collection::add(const halfedge_handle *half_loop, int vcnt) const
 {
     return mesh->handle_of(mesh->add_face(half_loop, vcnt));
 }
@@ -1072,7 +1078,7 @@ template <size_t N>
 inline face_handle face_collection::add(const vertex_handle (&v_handles)[N]) const
 {
     halfedge_index hs[N];
-    for (auto i = 0u; i < N; ++i)
+    for (auto i = 0; i < N; ++i)
         hs[i] = mesh->find_halfedge(v_handles[i].idx, v_handles[(i + 1) % N].idx);
     return mesh->handle_of(mesh->add_face(hs, N));
 }
@@ -1081,7 +1087,7 @@ template <size_t N>
 inline face_handle face_collection::add(const halfedge_handle (&half_loop)[N]) const
 {
     halfedge_index hs[N];
-    for (auto i = 0u; i < N; ++i)
+    for (auto i = 0; i < N; ++i)
         hs[i] = half_loop[i].idx;
     return mesh->handle_of(mesh->add_face(hs, N));
 }
@@ -1375,7 +1381,22 @@ inline void Mesh::compactify()
     mCompact = true;
 }
 
-inline void Mesh::reserve_faces(size_t capacity)
+/// ======== OTHER IMPLEMENTATION ========
+
+inline void Mesh::clear()
+{
+    for (auto &v : mVertices)
+        v.set_removed();
+    for (auto &h : mHalfedges)
+        h.set_removed();
+    for (auto &f : mFaces)
+        f.set_removed();
+
+    mCompact = false;
+    compactify();
+}
+
+inline void Mesh::reserve_faces(int capacity)
 {
     for (auto a = mFaceAttrs; a; a = a->mNextAttribute)
         a->resize(capacity, false);
@@ -1383,7 +1404,7 @@ inline void Mesh::reserve_faces(size_t capacity)
     mFaces.reserve(capacity);
 }
 
-inline void Mesh::reserve_vertices(size_t capacity)
+inline void Mesh::reserve_vertices(int capacity)
 {
     for (auto a = mVertexAttrs; a; a = a->mNextAttribute)
         a->resize(capacity, false);
@@ -1391,7 +1412,7 @@ inline void Mesh::reserve_vertices(size_t capacity)
     mVertices.reserve(capacity);
 }
 
-inline void Mesh::reserve_edges(size_t capacity)
+inline void Mesh::reserve_edges(int capacity)
 {
     for (auto a = mEdgeAttrs; a; a = a->mNextAttribute)
         a->resize(capacity, false);
@@ -1401,7 +1422,7 @@ inline void Mesh::reserve_edges(size_t capacity)
     mHalfedges.reserve(capacity * 2);
 }
 
-inline void Mesh::reserve_halfedges(size_t capacity)
+inline void Mesh::reserve_halfedges(int capacity)
 {
     for (auto a = mHalfedgeAttrs; a; a = a->mNextAttribute)
         a->resize(capacity, false);
@@ -1624,49 +1645,49 @@ inline vertex_vertex_ring vertex_handle::adjacent_vertices() const
 
 /// ======== attributes IMPLEMENTATION ========
 
-template <typename AttrT>
+template <class AttrT>
 vertex_attribute<AttrT> vertex_collection::make_attribute(const AttrT &def_value)
 {
     return vertex_attribute<AttrT>(mesh, def_value);
 }
 
-template <typename AttrT>
+template <class AttrT>
 vertex_attribute<AttrT> const_vertex_collection::make_attribute(const AttrT &def_value)
 {
     return vertex_attribute<AttrT>(mesh, def_value);
 }
 
-template <typename AttrT>
+template <class AttrT>
 face_attribute<AttrT> face_collection::make_attribute(const AttrT &def_value)
 {
     return face_attribute<AttrT>(mesh, def_value);
 }
 
-template <typename AttrT>
+template <class AttrT>
 face_attribute<AttrT> const_face_collection::make_attribute(const AttrT &def_value)
 {
     return face_attribute<AttrT>(mesh, def_value);
 }
 
-template <typename AttrT>
+template <class AttrT>
 edge_attribute<AttrT> edge_collection::make_attribute(const AttrT &def_value)
 {
     return edge_attribute<AttrT>(mesh, def_value);
 }
 
-template <typename AttrT>
+template <class AttrT>
 edge_attribute<AttrT> const_edge_collection::make_attribute(const AttrT &def_value)
 {
     return edge_attribute<AttrT>(mesh, def_value);
 }
 
-template <typename AttrT>
+template <class AttrT>
 halfedge_attribute<AttrT> halfedge_collection::make_attribute(const AttrT &def_value)
 {
     return halfedge_attribute<AttrT>(mesh, def_value);
 }
 
-template <typename AttrT>
+template <class AttrT>
 halfedge_attribute<AttrT> const_halfedge_collection::make_attribute(const AttrT &def_value)
 {
     return halfedge_attribute<AttrT>(mesh, def_value);
@@ -1860,103 +1881,114 @@ inline void halfedge_attribute_base::register_attr()
     mMesh->register_attr(this);
 }
 
-template <typename AttrT>
+template <class AttrT>
 vertex_attribute<AttrT>::vertex_attribute(const Mesh *mesh, const AttrT &def_value)
   : vertex_attribute_base(mesh), mDefaultValue(def_value)
 {
     register_attr();
 }
 
-template <typename AttrT>
+template <class AttrT>
 face_attribute<AttrT>::face_attribute(const Mesh *mesh, const AttrT &def_value)
   : face_attribute_base(mesh), mDefaultValue(def_value)
 {
     register_attr();
 }
 
-template <typename AttrT>
+template <class AttrT>
 edge_attribute<AttrT>::edge_attribute(const Mesh *mesh, const AttrT &def_value)
   : edge_attribute_base(mesh), mDefaultValue(def_value)
 {
     register_attr();
 }
 
-template <typename AttrT>
+template <class AttrT>
 halfedge_attribute<AttrT>::halfedge_attribute(const Mesh *mesh, const AttrT &def_value)
   : halfedge_attribute_base(mesh), mDefaultValue(def_value)
 {
     register_attr();
 }
 
-template <typename AttrT>
-size_t vertex_attribute<AttrT>::size() const
+template <class AttrT>
+int vertex_attribute<AttrT>::size() const
 {
     return mMesh->vertices().size();
 }
 
-template <typename AttrT>
+template <class AttrT>
 void vertex_attribute<AttrT>::clear(AttrT const &value)
 {
     mData.clear();
     mData.resize(mMesh->vertices().size(), value);
 }
-template <typename AttrT>
+template <class AttrT>
 void vertex_attribute<AttrT>::clear()
 {
     clear(mDefaultValue);
 }
 
-template <typename AttrT>
-size_t face_attribute<AttrT>::size() const
+template <class AttrT>
+int face_attribute<AttrT>::size() const
 {
     return mMesh->vertices().size();
 }
 
-template <typename AttrT>
+template <class AttrT>
 void face_attribute<AttrT>::clear(AttrT const &value)
 {
     mData.clear();
     mData.resize(mMesh->vertices().size(), value);
 }
-template <typename AttrT>
+template <class AttrT>
 void face_attribute<AttrT>::clear()
 {
     clear(mDefaultValue);
 }
 
-template <typename AttrT>
-size_t edge_attribute<AttrT>::size() const
+template <class AttrT>
+int edge_attribute<AttrT>::size() const
 {
     return mMesh->vertices().size();
 }
 
-template <typename AttrT>
+template <class AttrT>
 void edge_attribute<AttrT>::clear(AttrT const &value)
 {
     mData.clear();
     mData.resize(mMesh->vertices().size(), value);
 }
-template <typename AttrT>
+template <class AttrT>
 void edge_attribute<AttrT>::clear()
 {
     clear(mDefaultValue);
 }
 
-template <typename AttrT>
-size_t halfedge_attribute<AttrT>::size() const
+template <class AttrT>
+int halfedge_attribute<AttrT>::size() const
 {
     return mMesh->vertices().size();
 }
 
-template <typename AttrT>
+template <class AttrT>
 void halfedge_attribute<AttrT>::clear(AttrT const &value)
 {
     mData.clear();
     mData.resize(mMesh->vertices().size(), value);
 }
-template <typename AttrT>
+template <class AttrT>
 void halfedge_attribute<AttrT>::clear()
 {
     clear(mDefaultValue);
+}
+
+template <class AttrT>
+template <class FuncT>
+auto vertex_attribute<AttrT>::map(FuncT f) const -> tmp::result_type_of<FuncT, AttrT>
+{
+    auto attr = mMesh->vertices().make_attribute<tmp::result_type_of<FuncT, AttrT>>();
+    auto s = size();
+    for (auto i = 0; i < s; ++i)
+        attr.mData[i] = f(mData[i]);
+    return attr; // copy elison
 }
 }

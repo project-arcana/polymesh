@@ -6,9 +6,7 @@
 
 // Basic mesh operations, including:
 // - elementary subdivision
-// - edge splits
 // - intersections
-// - collapses
 
 namespace polymesh
 {
