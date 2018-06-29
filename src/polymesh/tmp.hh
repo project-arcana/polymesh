@@ -10,7 +10,7 @@ namespace tmp
 template <class FuncT, class ArgT>
 struct result_of
 {
-    using type = typename std::decay<decltype((std::declval<FuncT>())(std::declval<ArgT>()))>::type;
+    using type = typename std::decay<decltype(std::declval<FuncT>()(std::declval<ArgT>()))>::type;
 };
 
 template <class FuncT, class ArgT>

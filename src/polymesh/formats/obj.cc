@@ -5,6 +5,16 @@
 
 using namespace polymesh;
 
+void polymesh::write_obj(const std::string &filename,
+                         const Mesh &mesh,
+                         const vertex_attribute<glm::vec3> &position,
+                         const vertex_attribute<glm::vec2> *tex_coord,
+                         const vertex_attribute<glm::vec3> *normal)
+{
+    obj_writer obj(filename);
+    obj.write_mesh(mesh, position, tex_coord, normal);
+}
+
 obj_writer::obj_writer(const std::string &filename)
 {
     tmp_out = new std::ofstream(filename);
@@ -80,16 +90,6 @@ void obj_writer::write_mesh(const Mesh &mesh,
     }
 }
 
-void write_obj(const std::string &filename,
-               const Mesh &mesh,
-               const vertex_attribute<glm::vec3> &position,
-               const vertex_attribute<glm::vec2> *tex_coord,
-               const vertex_attribute<glm::vec3> *normal)
-{
-    obj_writer obj(filename);
-    obj.write_mesh(mesh, position, tex_coord, normal);
-}
-
 obj_reader::obj_reader(const std::string &filename, Mesh &mesh)
   : positions(mesh.vertices().make_attribute<glm::vec4>()),
     tex_coords(mesh.halfedges().make_attribute<glm::vec3>()),
@@ -108,6 +108,26 @@ obj_reader::obj_reader(std::istream &in, Mesh &mesh)
     normals(mesh.halfedges().make_attribute<glm::vec3>())
 {
     parse(in, mesh);
+}
+
+vertex_attribute<glm::vec4> obj_reader::positions_vec4() const
+{
+    return positions;
+}
+
+vertex_attribute<glm::vec3> obj_reader::positions_vec3() const
+{
+    return positions.map([](glm::vec4 const &v) { return glm::vec3(v); });
+}
+
+halfedge_attribute<glm::vec3> obj_reader::tex_coords_vec3() const
+{
+    return tex_coords;
+}
+
+halfedge_attribute<glm::vec3> obj_reader::normals_vec3() const
+{
+    return tex_coords;
 }
 
 void obj_reader::parse(std::istream &in, Mesh &mesh)

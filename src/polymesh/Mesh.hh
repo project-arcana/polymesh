@@ -1983,12 +1983,14 @@ void halfedge_attribute<AttrT>::clear()
 
 template <class AttrT>
 template <class FuncT>
-auto vertex_attribute<AttrT>::map(FuncT f) const -> tmp::result_type_of<FuncT, AttrT>
+auto vertex_attribute<AttrT>::map(FuncT f) const -> vertex_attribute<tmp::result_type_of<FuncT, AttrT>>
 {
     auto attr = mMesh->vertices().make_attribute<tmp::result_type_of<FuncT, AttrT>>();
     auto s = size();
+    auto d_in = data();
+    auto d_out = attr.data();
     for (auto i = 0; i < s; ++i)
-        attr.mData[i] = f(mData[i]);
+        d_out[i] = f(d_in[i]);
     return attr; // copy elison
 }
 }

@@ -33,8 +33,8 @@ public:
     AttrT& operator[](vertex_index v) { return mData[v.value]; }
     AttrT const& operator[](vertex_index v) const { return mData[v.value]; }
 
-    AttrT* data() { return mData; }
-    AttrT const* data() const { return mData; }
+    AttrT* data() { return mData.data; }
+    AttrT const* data() const { return mData.data; }
     int size() const;
 
     // methods
@@ -44,7 +44,7 @@ public:
 
     /// returns a new attribute where the given function was applied to each entry
     template <class FuncT>
-    auto map(FuncT f) const -> tmp::result_type_of<FuncT, AttrT>;
+    auto map(FuncT f) const -> vertex_attribute<tmp::result_type_of<FuncT, AttrT>>;
     /// applies to given function to each attribute entry
     template <class FuncT>
     void apply(FuncT f);
@@ -61,6 +61,7 @@ private:
 private:
     vertex_attribute(Mesh const* mesh, AttrT const& def_value);
     friend struct vertex_collection;
+    friend struct const_vertex_collection;
 
     // move & copy
 public:
@@ -579,5 +580,4 @@ AttrT const& halfedge_handle::operator[](halfedge_attribute<AttrT> const* attr) 
 {
     return (*attr)[*this];
 }
-
 }
