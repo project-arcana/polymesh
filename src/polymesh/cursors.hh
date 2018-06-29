@@ -6,9 +6,9 @@
 
 namespace polymesh
 {
-// ======================== INDICES ========================
+// ======================== BASE ========================
 
-template <typename tag>
+template <class tag>
 struct primitive_index
 {
     template <class AttrT>
@@ -38,60 +38,64 @@ struct primitive_index
     AttrT const& operator[](attribute<AttrT> const* prop) const;
 };
 
+template <class tag>
+struct primitive_handle
+{
+    template <class AttrT>
+    using attribute = typename primitive<tag>::template attribute<AttrT>;
+    using index_t = typename primitive<tag>::index;
+    using handle_t = typename primitive<tag>::handle;
+
+    Mesh const* mesh = nullptr;
+    index_t idx;
+
+    primitive_handle() = default;
+    primitive_handle(Mesh const* mesh, index_t idx) : mesh(mesh), idx(idx) {}
+
+    bool operator==(index_t const& rhs) const { return idx == rhs; }
+    bool operator!=(index_t const& rhs) const { return idx != rhs; }
+    bool operator==(handle_t const& rhs) const { return mesh == rhs.mesh && idx == rhs.idx; }
+    bool operator!=(handle_t const& rhs) const { return mesh != rhs.mesh || idx != rhs.idx; }
+
+    template <class AttrT>
+    AttrT& operator[](attribute<AttrT>& prop) const;
+    template <class AttrT>
+    AttrT const& operator[](attribute<AttrT> const& prop) const;
+    template <class AttrT>
+    AttrT& operator[](attribute<AttrT>* prop) const;
+    template <class AttrT>
+    AttrT const& operator[](attribute<AttrT> const* prop) const;
+
+    bool is_valid() const { return idx.is_valid(); }    ///< valid idx (but could be deleted in some iterators)
+    bool is_invalid() const { return !idx.is_valid(); } ///< invalid idx
+};
+
+// ======================== INDICES ========================
+
 struct face_index : primitive_index<face_tag>
 {
     using primitive_index::primitive_index;
-    using primitive_index::operator=;
 };
 struct edge_index : primitive_index<edge_tag>
 {
     using primitive_index::primitive_index;
-    using primitive_index::operator=;
 };
 struct halfedge_index : primitive_index<halfedge_tag>
 {
     using primitive_index::primitive_index;
-    using primitive_index::operator=;
 };
 struct vertex_index : primitive_index<vertex_tag>
 {
     using primitive_index::primitive_index;
-    using primitive_index::operator=;
 };
-
-
-// ===========================================
-// OLD CODE:
-
 
 // ======================== HANDLES ========================
 
-struct face_handle
+struct face_handle : primitive_handle<face_tag>
 {
-    Mesh const* mesh = nullptr;
-    face_index idx;
+    using primitive_handle::primitive_handle;
 
-    face_handle() = default;
-    face_handle(Mesh const* mesh, face_index idx) : mesh(mesh), idx(idx) {}
-
-    bool operator==(face_index const& rhs) const { return idx == rhs; }
-    bool operator!=(face_index const& rhs) const { return idx != rhs; }
-    bool operator==(face_handle const& rhs) const { return mesh == rhs.mesh && idx == rhs.idx; }
-    bool operator!=(face_handle const& rhs) const { return mesh != rhs.mesh || idx != rhs.idx; }
-
-    template <class AttrT>
-    AttrT& operator[](face_attribute<AttrT>& prop) const;
-    template <class AttrT>
-    AttrT const& operator[](face_attribute<AttrT> const& prop) const;
-    template <class AttrT>
-    AttrT& operator[](face_attribute<AttrT>* prop) const;
-    template <class AttrT>
-    AttrT const& operator[](face_attribute<AttrT> const* prop) const;
-
-    bool is_valid() const { return idx.is_valid(); }    ///< valid idx (but could be deleted in some iterators)
-    bool is_invalid() const { return !idx.is_valid(); } ///< invalid idx
-    bool is_removed() const;                            ///< marked for deletion (but valid idx)
-
+    bool is_removed() const;  ///< marked for deletion (but valid idx)
     bool is_boundary() const; ///< true if this face lies at a boundary
 
     vertex_handle any_vertex() const;
@@ -103,32 +107,11 @@ struct face_handle
     face_face_ring adjacent_faces() const; ///< includes invalid ones for boundaries!
 };
 
-struct vertex_handle
+struct vertex_handle : primitive_handle<vertex_tag>
 {
-    Mesh const* mesh = nullptr;
-    vertex_index idx;
+    using primitive_handle::primitive_handle;
 
-    vertex_handle() = default;
-    vertex_handle(Mesh const* mesh, vertex_index idx) : mesh(mesh), idx(idx) {}
-
-    bool operator==(vertex_index const& rhs) const { return idx == rhs; }
-    bool operator!=(vertex_index const& rhs) const { return idx != rhs; }
-    bool operator==(vertex_handle const& rhs) const { return mesh == rhs.mesh && idx == rhs.idx; }
-    bool operator!=(vertex_handle const& rhs) const { return mesh != rhs.mesh || idx != rhs.idx; }
-
-    template <class AttrT>
-    AttrT& operator[](vertex_attribute<AttrT>& prop) const;
-    template <class AttrT>
-    AttrT const& operator[](vertex_attribute<AttrT> const& prop) const;
-    template <class AttrT>
-    AttrT& operator[](vertex_attribute<AttrT>* prop) const;
-    template <class AttrT>
-    AttrT const& operator[](vertex_attribute<AttrT> const* prop) const;
-
-    bool is_valid() const { return idx.is_valid(); }    ///< valid idx (but could be deleted in some iterators)
-    bool is_invalid() const { return !idx.is_valid(); } ///< invalid idx
-    bool is_removed() const;                            ///< marked for deletion (but valid idx)
-
+    bool is_removed() const;  ///< marked for deletion (but valid idx)
     bool is_isolated() const; ///< true if this vertex is not connected at all
     bool is_boundary() const; ///< true if this vertex lies at a boundary
 
@@ -145,32 +128,11 @@ struct vertex_handle
     vertex_vertex_ring adjacent_vertices() const;
 };
 
-struct edge_handle
+struct edge_handle : primitive_handle<edge_tag>
 {
-    Mesh const* mesh = nullptr;
-    edge_index idx;
+    using primitive_handle::primitive_handle;
 
-    edge_handle() = default;
-    edge_handle(Mesh const* mesh, edge_index idx) : mesh(mesh), idx(idx) {}
-
-    bool operator==(edge_index const& rhs) const { return idx == rhs; }
-    bool operator!=(edge_index const& rhs) const { return idx != rhs; }
-    bool operator==(edge_handle const& rhs) const { return mesh == rhs.mesh && idx == rhs.idx; }
-    bool operator!=(edge_handle const& rhs) const { return mesh != rhs.mesh || idx != rhs.idx; }
-
-    template <class AttrT>
-    AttrT& operator[](edge_attribute<AttrT>& prop) const;
-    template <class AttrT>
-    AttrT const& operator[](edge_attribute<AttrT> const& prop) const;
-    template <class AttrT>
-    AttrT& operator[](edge_attribute<AttrT>* prop) const;
-    template <class AttrT>
-    AttrT const& operator[](edge_attribute<AttrT> const* prop) const;
-
-    bool is_valid() const { return idx.is_valid(); }    ///< valid idx (but could be deleted in some iterators)
-    bool is_invalid() const { return !idx.is_valid(); } ///< invalid idx
-    bool is_removed() const;                            ///< marked for deletion (but valid idx)
-
+    bool is_removed() const;  ///< marked for deletion (but valid idx)
     bool is_isolated() const; ///< true if this edge has no faces
     bool is_boundary() const; ///< true if this edge is a boundary
 
@@ -182,32 +144,11 @@ struct edge_handle
     face_handle faceB() const; ///< can be invalid if boundary
 };
 
-struct halfedge_handle
+struct halfedge_handle : primitive_handle<halfedge_tag>
 {
-    Mesh const* mesh = nullptr;
-    halfedge_index idx;
+    using primitive_handle::primitive_handle;
 
-    halfedge_handle() = default;
-    halfedge_handle(Mesh const* mesh, halfedge_index idx) : mesh(mesh), idx(idx) {}
-
-    bool operator==(halfedge_index const& rhs) const { return idx == rhs; }
-    bool operator!=(halfedge_index const& rhs) const { return idx != rhs; }
-    bool operator==(halfedge_handle const& rhs) const { return mesh == rhs.mesh && idx == rhs.idx; }
-    bool operator!=(halfedge_handle const& rhs) const { return mesh != rhs.mesh || idx != rhs.idx; }
-
-    template <class AttrT>
-    AttrT& operator[](halfedge_attribute<AttrT>& prop) const;
-    template <class AttrT>
-    AttrT const& operator[](halfedge_attribute<AttrT> const& prop) const;
-    template <class AttrT>
-    AttrT& operator[](halfedge_attribute<AttrT>* prop) const;
-    template <class AttrT>
-    AttrT const& operator[](halfedge_attribute<AttrT> const* prop) const;
-
-    bool is_valid() const { return idx.is_valid(); }    ///< valid idx (but could be deleted in some iterators)
-    bool is_invalid() const { return !idx.is_valid(); } ///< invalid idx
-    bool is_removed() const;                            ///< marked for deletion (but valid idx)
-
+    bool is_removed() const;  ///< marked for deletion (but valid idx)
     bool is_boundary() const; ///< true if this half-edge is a boundary (CAUTION: its opposite might not be)
 
     vertex_handle vertex_to() const;
@@ -222,53 +163,19 @@ struct halfedge_handle
 
 /// ======== IMPLEMENTATION ========
 
-inline std::ostream& operator<<(std::ostream& out, vertex_index v)
+template <class tag>
+std::ostream& operator<<(std::ostream& out, primitive_index<tag> const& v)
 {
-    out << "vertex " << v.value;
+    out << primitive<tag>::name << " " << v.value;
     if (v.is_invalid())
         out << " (invalid)";
     return out;
 }
-inline std::ostream& operator<<(std::ostream& out, face_index f)
-{
-    out << "face " << f.value;
-    if (f.is_invalid())
-        out << " (invalid)";
-    return out;
-}
-inline std::ostream& operator<<(std::ostream& out, edge_index e)
-{
-    out << "edge " << e.value;
-    if (e.is_invalid())
-        out << " (invalid)";
-    return out;
-}
-inline std::ostream& operator<<(std::ostream& out, halfedge_index h)
-{
-    out << "half-edge " << h.value;
-    if (h.is_invalid())
-        out << " (invalid)";
-    return out;
-}
 
-inline std::ostream& operator<<(std::ostream& out, vertex_handle v)
+template <class tag>
+std::ostream& operator<<(std::ostream& out, primitive_handle<tag> const& v)
 {
     out << v.idx;
-    return out;
-}
-inline std::ostream& operator<<(std::ostream& out, face_handle f)
-{
-    out << f.idx;
-    return out;
-}
-inline std::ostream& operator<<(std::ostream& out, edge_handle e)
-{
-    out << e.idx;
-    return out;
-}
-inline std::ostream& operator<<(std::ostream& out, halfedge_handle h)
-{
-    out << h.idx;
     return out;
 }
 }

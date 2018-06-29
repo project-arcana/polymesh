@@ -10,6 +10,8 @@ struct primitive;
 template<>
 struct primitive<vertex_tag>
 {
+    static constexpr auto name = "vertex";
+
     using index = vertex_index;
     using handle = vertex_handle;
 
@@ -20,6 +22,8 @@ struct primitive<vertex_tag>
 template<>
 struct primitive<face_tag>
 {
+    static constexpr auto name = "face";
+
     using index = face_index;
     using handle = face_handle;
 
@@ -30,6 +34,8 @@ struct primitive<face_tag>
 template<>
 struct primitive<edge_tag>
 {
+    static constexpr auto name = "edge";
+
     using index = edge_index;
     using handle = edge_handle;
 
@@ -40,6 +46,8 @@ struct primitive<edge_tag>
 template<>
 struct primitive<halfedge_tag>
 {
+    static constexpr auto name = "half-edge";
+
     using index = halfedge_index;
     using handle = halfedge_handle;
 
