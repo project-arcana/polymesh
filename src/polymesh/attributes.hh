@@ -79,32 +79,32 @@ struct vertex_attribute : primitive_attribute<vertex_tag, AttrT>
 {
     using primitive_attribute<vertex_tag, AttrT>::primitive_attribute;
 
-    friend struct vertex_collection;
-    friend struct const_vertex_collection;
+    template<class mesh_ptr, class tag, class iterator>
+    friend struct smart_collection;
 };
 template <class AttrT>
 struct face_attribute : primitive_attribute<face_tag, AttrT>
 {
     using primitive_attribute<face_tag, AttrT>::primitive_attribute;
 
-    friend struct face_collection;
-    friend struct const_face_collection;
+    template<class mesh_ptr, class tag, class iterator>
+    friend struct smart_collection;
 };
 template <class AttrT>
 struct edge_attribute : primitive_attribute<edge_tag, AttrT>
 {
     using primitive_attribute<edge_tag, AttrT>::primitive_attribute;
 
-    friend struct edge_collection;
-    friend struct const_edge_collection;
+    template<class mesh_ptr, class tag, class iterator>
+    friend struct smart_collection;
 };
 template <class AttrT>
 struct halfedge_attribute : primitive_attribute<halfedge_tag, AttrT>
 {
     using primitive_attribute<halfedge_tag, AttrT>::primitive_attribute;
 
-    friend struct halfedge_collection;
-    friend struct const_halfedge_collection;
+    template<class mesh_ptr, class tag, class iterator>
+    friend struct smart_collection;
 };
 
 /// ======== IMPLEMENTATION ========

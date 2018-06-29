@@ -33,15 +33,25 @@ struct face_handle;
 struct edge_handle;
 struct halfedge_handle;
 
-struct vertex_collection;
-struct face_collection;
-struct edge_collection;
-struct halfedge_collection;
+struct all_vertex_collection;
+struct all_face_collection;
+struct all_edge_collection;
+struct all_halfedge_collection;
 
-struct const_vertex_collection;
-struct const_face_collection;
-struct const_edge_collection;
-struct const_halfedge_collection;
+struct valid_vertex_collection;
+struct valid_face_collection;
+struct valid_edge_collection;
+struct valid_halfedge_collection;
+
+struct all_vertex_const_collection;
+struct all_face_const_collection;
+struct all_edge_const_collection;
+struct all_halfedge_const_collection;
+
+struct valid_vertex_const_collection;
+struct valid_face_const_collection;
+struct valid_edge_const_collection;
+struct valid_halfedge_const_collection;
 
 struct face_vertex_ring;
 struct face_edge_ring;

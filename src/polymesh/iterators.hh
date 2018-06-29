@@ -44,6 +44,8 @@ struct valid_primitive_iterator
         return handle.idx != rhs.handle.idx;
     }
 
+    static int primitive_size(Mesh const& m) { return primitive<tag>::valid_size(); }
+
 private:
     handle_t handle;
 };
@@ -77,6 +79,8 @@ struct all_primitive_iterator
         assert(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
         return handle.idx != rhs.handle.idx;
     }
+
+    static int primitive_size(Mesh const& m) { return primitive<tag>::all_size(); }
 
 private:
     handle_t handle;

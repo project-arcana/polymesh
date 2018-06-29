@@ -7,7 +7,7 @@
 
 namespace polymesh
 {
-template<class tag, class iterator>
+template<class mesh_ptr, class tag, class iterator>
 struct smart_collection
 {
     template<typename AttrT>
@@ -15,10 +15,10 @@ struct smart_collection
 
     /// Number of primitives, INCLUDING those marked for deletion
     /// O(1) computation
-    int size() const;
+    int size() const { return iterator::primitive_size(*mesh); }
 
     /// Ensures that a given number of primitives can be stored without reallocation
-    void reserve(int capacity) const;
+    void reserve(int capacity) const { return primitive<tag>::reserve(*mesh, capacity); }
 
     /// Creates a new vertex attribute
     template <class PropT>
@@ -28,16 +28,17 @@ struct smart_collection
     iterator begin() const;
     iterator end() const;
 
-private:
+protected:
     /// Backreference to mesh
-    Mesh* mesh;
+    mesh_ptr mesh;
 
     friend class Mesh;
 };
 
-/// Collection of all vertices of a mesh, including deleted ones
+/// Collection of all vertices of a mesh
 /// Basically a smart std::vector
-struct vertex_collection : smart_collection<vertex_tag, primitive<vertex_tag>::all_iterator>
+template<class iterator>
+struct vertex_collection : smart_collection<Mesh *, vertex_tag, iterator>
 {
     /// Adds a new vertex and returns its handle
     /// Does NOT invalidate any iterator!
@@ -48,63 +49,22 @@ struct vertex_collection : smart_collection<vertex_tag, primitive<vertex_tag>::a
     void remove(vertex_handle v) const;
 };
 
-/// same as vertex_collection but const
-struct const_vertex_collection
-{
-    Mesh const* mesh;
-
-    /// Number of vertices, INCLUDING deleted/invalid ones
-    /// O(1) computation
-    int size() const;
-
-    /// Creates a new vertex attribute
-    template <class PropT>
-    vertex_attribute<PropT> make_attribute(PropT const& def_value = PropT());
-
-    // Iteration:
-    all_vertex_iterator begin() const;
-    all_vertex_iterator end() const;
-};
-
-/// Same as vertex_collection but only including valid, non-deleted vertices
-/// (a bit slower than the normal collection)
-/// (if mesh->is_compact(), identical to vertex_collection)
-struct valid_vertex_collection
-{
-    Mesh const* mesh;
-
-    /// Number of vertices, EXCLUDING deleted/invalid ones
-    /// O(1) computation
-    int size() const;
-
-    // Iteration:
-    valid_vertex_iterator begin() const;
-    valid_vertex_iterator end() const;
-};
-
-/// Collection of all faces of a mesh, including deleted ones
+/// Collection of all faces of a mesh
 /// Basically a smart std::vector
-struct face_collection
+template<class iterator>
+struct face_collection : smart_collection<Mesh *, face_tag, iterator>
 {
-    Mesh* mesh;
-
-    /// Number of vertices, INCLUDING deleted/invalid ones
-    /// O(1) computation
-    int size() const;
-    /// Ensures that a given number of faces can be stored without reallocation
-    void reserve(int capacity) const;
-
     /// Adds a face consisting of N vertices
     /// The vertices must already be sorted in CCW order
     /// (note: trying to add already existing halfedges triggers assertions)
     template <size_t N>
-    face_handle add(const vertex_handle (&v_handles)[N]) const;
+    face_handle add(const vertex_handle(&v_handles)[N]) const;
     face_handle add(vertex_handle v0, vertex_handle v1, vertex_handle v2) const;
     face_handle add(vertex_handle v0, vertex_handle v1, vertex_handle v2, vertex_handle v3) const;
     face_handle add(std::vector<vertex_handle> const& v_handles) const;
     face_handle add(vertex_handle const* v_handles, int vcnt) const;
     template <size_t N>
-    face_handle add(const halfedge_handle (&half_loop)[N]) const;
+    face_handle add(const halfedge_handle(&half_loop)[N]) const;
     face_handle add(halfedge_handle h0, halfedge_handle h1, halfedge_handle h2) const;
     face_handle add(halfedge_handle h0, halfedge_handle h1, halfedge_handle h2, halfedge_handle h3) const;
     face_handle add(std::vector<halfedge_handle> const& half_loop) const;
@@ -113,176 +73,114 @@ struct face_collection
     /// Removes a face (adjacent edges and vertices are NOT removed)
     /// (marks it as removed, compactify mesh to actually remove it)
     void remove(face_handle f) const;
-
-    /// Creates a new face attribute
-    template <class PropT>
-    face_attribute<PropT> make_attribute(PropT const& def_value = PropT());
-
-    // Iteration:
-    face_iterator begin() const;
-    face_iterator end() const;
 };
 
-/// same as face_collection but const
-struct const_face_collection
-{
-    Mesh const* mesh;
-
-    /// Number of faces, INCLUDING deleted/invalid ones
-    /// O(1) computation
-    int size() const;
-
-    /// Creates a new face attribute
-    template <class PropT>
-    face_attribute<PropT> make_attribute(PropT const& def_value = PropT());
-
-    // Iteration:
-    face_iterator begin() const;
-    face_iterator end() const;
-};
-
-/// Same as face_collection but only including valid, non-deleted faces
-/// (a bit slower than the normal collection)
-/// (if mesh->is_compact(), identical to face_collection)
-struct valid_face_collection
-{
-    Mesh const* mesh;
-
-    /// Number of faces, EXCLUDING deleted/invalid ones
-    /// O(1) computation
-    int size() const;
-
-    // Iteration:
-    valid_face_iterator begin() const;
-    valid_face_iterator end() const;
-};
-
-/// Collection of all edges of a mesh, including deleted ones
+/// Collection of all edges of a mesh
 /// Basically a smart std::vector
-struct edge_collection
+template<class iterator>
+struct edge_collection : smart_collection<Mesh *, edge_tag, iterator>
 {
-    Mesh* mesh;
-
-    /// Number of vertices, INCLUDING deleted/invalid ones
-    /// O(1) computation
-    int size() const;
-    /// Ensures that a given number of edges can be stored without reallocation
-    void reserve(int capacity) const;
-
     /// Adds an edge between two existing, distinct vertices
     /// if edge already exists, returns it
     edge_handle add_or_get(vertex_handle v_from, vertex_handle v_to);
 
+    // TODO: find
+
     /// Removes an edge (and both adjacent faces, vertices are NOT removed)
     /// (marks them as removed, compactify mesh to actually remove them)
     void remove(edge_handle e) const;
-
-    /// Creates a new edge attribute
-    template <class PropT>
-    edge_attribute<PropT> make_attribute(PropT const& def_value = PropT());
-
-    // Iteration:
-    edge_iterator begin() const;
-    edge_iterator end() const;
 };
 
-/// same as edge_collection but const
-struct const_edge_collection
-{
-    Mesh const* mesh;
-
-    /// Number of edges, INCLUDING deleted/invalid ones
-    /// O(1) computation
-    int size() const;
-
-    /// Creates a new edge attribute
-    template <class PropT>
-    edge_attribute<PropT> make_attribute(PropT const& def_value = PropT());
-
-    // Iteration:
-    edge_iterator begin() const;
-    edge_iterator end() const;
-};
-
-/// Same as edge_collection but only including valid, non-deleted edges
-/// (a bit slower than the normal collection)
-/// (if mesh->is_compact(), identical to edge_collection)
-struct valid_edge_collection
-{
-    Mesh const* mesh;
-
-    /// Number of edges, EXCLUDING deleted/invalid ones
-    /// O(1) computation
-    int size() const;
-
-    // Iteration:
-    valid_edge_iterator begin() const;
-    valid_edge_iterator end() const;
-};
-
-/// Collection of all half-edges of a mesh, including deleted ones
+/// Collection of all half-edges of a mesh
 /// Basically a smart std::vector
-struct halfedge_collection
+template<class iterator>
+struct halfedge_collection : smart_collection<Mesh *, halfedge_tag, iterator>
 {
-    Mesh* mesh;
-
-    /// Number of vertices, INCLUDING deleted/invalid ones
-    /// O(1) computation
-    int size() const;
-    /// Ensures that a given number of half-edges can be stored without reallocation
-    void reserve(int capacity) const;
-
     /// Adds an half-edge between two existing, distinct vertices
     /// if half-edge already exists, returns it
     /// (always adds opposite half-edge as well)
     halfedge_handle add_or_get(vertex_handle v_from, vertex_handle v_to);
 
+    // TODO: find
+
     /// Removes the edge and both half-edges belonging to it (and both adjacent faces, vertices are NOT removed)
     /// (marks them as removed, compactify mesh to actually remove them)
     void remove_edge(halfedge_handle h) const;
-
-    /// Creates a new half-edge attribute
-    template <class PropT>
-    halfedge_attribute<PropT> make_attribute(PropT const& def_value = PropT());
-
-    // Iteration:
-    halfedge_iterator begin() const;
-    halfedge_iterator end() const;
 };
 
-/// same as halfedge_collection but const
-struct const_halfedge_collection
+// vertices
+
+struct all_vertex_collection : vertex_collection<primitive<vertex_tag>::all_iterator>
 {
-    Mesh const* mesh;
-
-    /// Number of halfedges, INCLUDING deleted/invalid ones
-    /// O(1) computation
-    int size() const;
-
-    /// Creates a new half-edge attribute
-    template <class PropT>
-    halfedge_attribute<PropT> make_attribute(PropT const& def_value = PropT());
-
-    // Iteration:
-    halfedge_iterator begin() const;
-    halfedge_iterator end() const;
 };
 
-/// Same as halfedge_collection but only including valid, non-deleted halfedges
-/// (a bit slower than the normal collection)
-/// (if mesh->is_compact(), identical to halfedge_collection)
-struct valid_halfedge_collection
+struct all_vertex_const_collection : smart_collection<Mesh const*, vertex_tag, primitive<vertex_tag>::all_iterator>
 {
-    Mesh const* mesh;
-
-    /// Number of halfedges, EXCLUDING deleted/invalid ones
-    /// O(1) computation
-    int size() const;
-
-    // Iteration:
-    valid_halfedge_iterator begin() const;
-    valid_halfedge_iterator end() const;
 };
+
+struct valid_vertex_collection : vertex_collection<primitive<vertex_tag>::valid_iterator>
+{
+};
+
+struct valid_vertex_const_collection : smart_collection<Mesh const*, vertex_tag, primitive<vertex_tag>::valid_iterator>
+{
+};
+
+// faces
+
+struct all_face_collection : face_collection<primitive<face_tag>::all_iterator>
+{
+};
+
+struct all_face_const_collection : smart_collection<Mesh const*, face_tag, primitive<face_tag>::all_iterator>
+{
+};
+
+struct valid_face_collection : face_collection<primitive<face_tag>::valid_iterator>
+{
+};
+
+struct valid_face_const_collection : smart_collection<Mesh const*, face_tag, primitive<face_tag>::valid_iterator>
+{
+};
+
+// edges
+
+struct all_edge_collection : edge_collection<primitive<edge_tag>::all_iterator>
+{
+};
+
+struct all_edge_const_collection : smart_collection<Mesh const*, edge_tag, primitive<edge_tag>::all_iterator>
+{
+};
+
+struct valid_edge_collection : edge_collection<primitive<edge_tag>::valid_iterator>
+{
+};
+
+struct valid_edge_const_collection : smart_collection<Mesh const*, edge_tag, primitive<edge_tag>::valid_iterator>
+{
+};
+
+// half-edges
+
+struct all_halfedge_collection : halfedge_collection<primitive<halfedge_tag>::all_iterator>
+{
+};
+
+struct all_halfedge_const_collection : smart_collection<Mesh const*, halfedge_tag, primitive<halfedge_tag>::all_iterator>
+{
+};
+
+struct valid_halfedge_collection : halfedge_collection<primitive<halfedge_tag>::valid_iterator>
+{
+};
+
+struct valid_halfedge_const_collection : smart_collection<Mesh const*, halfedge_tag, primitive<halfedge_tag>::valid_iterator>
+{
+};
+
+// rings
 
 /// all vertices belonging to a face
 struct face_vertex_ring
