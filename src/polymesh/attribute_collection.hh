@@ -10,7 +10,7 @@ namespace polymesh
 struct attribute_collection
 {
 private:
-    std::map<std::string, vertex_attribute_base> mVertexAttrs;
+    std::map<std::string, primitive_attribute_base<vertex_tag>> mVertexAttrs;
     // TODO
 };
 }

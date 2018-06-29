@@ -331,19 +331,19 @@ private:
     // attributes
 private:
     // linked lists of all attributes
-    mutable vertex_attribute_base *mVertexAttrs = nullptr;
-    mutable face_attribute_base *mFaceAttrs = nullptr;
-    mutable edge_attribute_base *mEdgeAttrs = nullptr;
-    mutable halfedge_attribute_base *mHalfedgeAttrs = nullptr;
+    mutable primitive_attribute_base<vertex_tag> *mVertexAttrs = nullptr;
+    mutable primitive_attribute_base<face_tag> *mFaceAttrs = nullptr;
+    mutable primitive_attribute_base<edge_tag> *mEdgeAttrs = nullptr;
+    mutable primitive_attribute_base<halfedge_tag> *mHalfedgeAttrs = nullptr;
 
-    void register_attr(vertex_attribute_base *attr) const;
-    void deregister_attr(vertex_attribute_base *attr) const;
-    void register_attr(face_attribute_base *attr) const;
-    void deregister_attr(face_attribute_base *attr) const;
-    void register_attr(edge_attribute_base *attr) const;
-    void deregister_attr(edge_attribute_base *attr) const;
-    void register_attr(halfedge_attribute_base *attr) const;
-    void deregister_attr(halfedge_attribute_base *attr) const;
+    void register_attr(primitive_attribute_base<vertex_tag> *attr) const;
+    void deregister_attr(primitive_attribute_base<vertex_tag> *attr) const;
+    void register_attr(primitive_attribute_base<face_tag> *attr) const;
+    void deregister_attr(primitive_attribute_base<face_tag> *attr) const;
+    void register_attr(primitive_attribute_base<edge_tag> *attr) const;
+    void deregister_attr(primitive_attribute_base<edge_tag> *attr) const;
+    void register_attr(primitive_attribute_base<halfedge_tag> *attr) const;
+    void deregister_attr(primitive_attribute_base<halfedge_tag> *attr) const;
 
     // friends
 private:
@@ -378,6 +378,21 @@ private:
     friend struct valid_halfedge_collection;
     friend struct const_halfedge_collection;
     friend struct halfedge_attribute_base;
+
+    template <class tag>
+    friend struct primitive_handle;
+    template <class tag>
+    friend struct primitive_collection;
+    template <class tag>
+    friend struct primitive_iterator;
+    template <class tag>
+    friend struct valid_primitive_iterator;
+    template <class tag>
+    friend struct valid_primitive_collection;
+    template <class tag>
+    friend struct const_primitive_collection;
+    template <class tag>
+    friend struct primitive_attribute_base;
 };
 
 /// ======== IMPLEMENTATION ========
@@ -951,6 +966,46 @@ inline void valid_halfedge_iterator::move_to_valid()
 }
 
 /// ======== RANGES IMPLEMENTATION ========
+
+inline vertex_collection primitive<vertex_tag>::collection_of(Mesh &m)
+{
+    return m.vertices();
+}
+
+inline const_vertex_collection primitive<vertex_tag>::collection_of(const Mesh &m)
+{
+    return m.vertices();
+}
+
+inline face_collection primitive<face_tag>::collection_of(Mesh &m)
+{
+    return m.faces();
+}
+
+inline const_face_collection primitive<face_tag>::collection_of(const Mesh &m)
+{
+    return m.faces();
+}
+
+inline edge_collection primitive<edge_tag>::collection_of(Mesh &m)
+{
+    return m.edges();
+}
+
+inline const_edge_collection primitive<edge_tag>::collection_of(const Mesh &m)
+{
+    return m.edges();
+}
+
+inline halfedge_collection primitive<halfedge_tag>::collection_of(Mesh &m)
+{
+    return m.halfedges();
+}
+
+inline const_halfedge_collection primitive<halfedge_tag>::collection_of(const Mesh &m)
+{
+    return m.halfedges();
+}
 
 // - Vertices -
 
@@ -1693,7 +1748,7 @@ halfedge_attribute<AttrT> const_halfedge_collection::make_attribute(const AttrT 
     return halfedge_attribute<AttrT>(mesh, def_value);
 }
 
-inline void Mesh::register_attr(vertex_attribute_base *attr) const
+inline void Mesh::register_attr(primitive_attribute_base<vertex_tag> *attr) const
 {
     // insert in front
     auto nextAttrs = mVertexAttrs;
@@ -1706,7 +1761,7 @@ inline void Mesh::register_attr(vertex_attribute_base *attr) const
     attr->resize(vertices().size(), false);
 }
 
-inline void Mesh::deregister_attr(vertex_attribute_base *attr) const
+inline void Mesh::deregister_attr(primitive_attribute_base<vertex_tag> *attr) const
 {
     if (attr->mPrevAttribute)
         attr->mPrevAttribute->mNextAttribute = attr->mNextAttribute;
@@ -1721,7 +1776,7 @@ inline void Mesh::deregister_attr(vertex_attribute_base *attr) const
     attr->mPrevAttribute = nullptr;
 }
 
-inline void Mesh::register_attr(face_attribute_base *attr) const
+inline void Mesh::register_attr(primitive_attribute_base<face_tag> *attr) const
 {
     // insert in front
     auto nextAttrs = mFaceAttrs;
@@ -1734,7 +1789,7 @@ inline void Mesh::register_attr(face_attribute_base *attr) const
     attr->resize(faces().size(), false);
 }
 
-inline void Mesh::deregister_attr(face_attribute_base *attr) const
+inline void Mesh::deregister_attr(primitive_attribute_base<face_tag> *attr) const
 {
     if (attr->mPrevAttribute)
         attr->mPrevAttribute->mNextAttribute = attr->mNextAttribute;
@@ -1749,7 +1804,7 @@ inline void Mesh::deregister_attr(face_attribute_base *attr) const
     attr->mPrevAttribute = nullptr;
 }
 
-inline void Mesh::register_attr(edge_attribute_base *attr) const
+inline void Mesh::register_attr(primitive_attribute_base<edge_tag> *attr) const
 {
     // insert in front
     auto nextAttrs = mEdgeAttrs;
@@ -1762,7 +1817,7 @@ inline void Mesh::register_attr(edge_attribute_base *attr) const
     attr->resize(edges().size(), false);
 }
 
-inline void Mesh::deregister_attr(edge_attribute_base *attr) const
+inline void Mesh::deregister_attr(primitive_attribute_base<edge_tag> *attr) const
 {
     if (attr->mPrevAttribute)
         attr->mPrevAttribute->mNextAttribute = attr->mNextAttribute;
@@ -1777,7 +1832,7 @@ inline void Mesh::deregister_attr(edge_attribute_base *attr) const
     attr->mPrevAttribute = nullptr;
 }
 
-inline void Mesh::register_attr(halfedge_attribute_base *attr) const
+inline void Mesh::register_attr(primitive_attribute_base<halfedge_tag> *attr) const
 {
     // insert in front
     auto nextAttrs = mHalfedgeAttrs;
@@ -1790,7 +1845,7 @@ inline void Mesh::register_attr(halfedge_attribute_base *attr) const
     attr->resize(halfedges().size(), false);
 }
 
-inline void Mesh::deregister_attr(halfedge_attribute_base *attr) const
+inline void Mesh::deregister_attr(primitive_attribute_base<halfedge_tag> *attr) const
 {
     if (attr->mPrevAttribute)
         attr->mPrevAttribute->mNextAttribute = attr->mNextAttribute;
@@ -1805,27 +1860,14 @@ inline void Mesh::deregister_attr(halfedge_attribute_base *attr) const
     attr->mPrevAttribute = nullptr;
 }
 
-inline vertex_attribute_base::vertex_attribute_base(const Mesh *mesh) : mMesh(mesh)
+template <class tag>
+void primitive_attribute_base<tag>::register_attr()
 {
-    // mMesh->register_attr(this); TOO EARLY!
+    mMesh->register_attr(this);
 }
 
-inline face_attribute_base::face_attribute_base(const Mesh *mesh) : mMesh(mesh)
-{
-    // mMesh->register_attr(this); TOO EARLY!
-}
-
-inline edge_attribute_base::edge_attribute_base(const Mesh *mesh) : mMesh(mesh)
-{
-    // mMesh->register_attr(this); TOO EARLY!
-}
-
-inline halfedge_attribute_base::halfedge_attribute_base(const Mesh *mesh) : mMesh(mesh)
-{
-    // mMesh->register_attr(this); TOO EARLY!
-}
-
-inline void vertex_attribute_base::deregister_attr()
+template <class tag>
+void primitive_attribute_base<tag>::deregister_attr()
 {
     if (mMesh)
     {
@@ -1834,158 +1876,37 @@ inline void vertex_attribute_base::deregister_attr()
     }
 }
 
-inline void face_attribute_base::deregister_attr()
+template <class tag, class AttrT>
+primitive_attribute<tag, AttrT>::primitive_attribute(const Mesh *mesh, const AttrT &def_value)
+  : primitive_attribute_base<tag>(mesh), mDefaultValue(def_value)
 {
-    if (mMesh)
-    {
-        mMesh->deregister_attr(this);
-        mMesh = nullptr;
-    }
+    this->register_attr();
 }
 
-inline void edge_attribute_base::deregister_attr()
+template <class tag, class AttrT>
+int primitive_attribute<tag, AttrT>::size() const
 {
-    if (mMesh)
-    {
-        mMesh->deregister_attr(this);
-        mMesh = nullptr;
-    }
+    return primitive<tag>::collection_of(*this->mMesh).size();
 }
 
-inline void halfedge_attribute_base::deregister_attr()
+template <class tag, class AttrT>
+void primitive_attribute<tag, AttrT>::clear(AttrT const &value)
 {
-    if (mMesh)
-    {
-        mMesh->deregister_attr(this);
-        mMesh = nullptr;
-    }
+    this->mData.clear();
+    this->mData.resize(size(), value);
 }
 
-inline void vertex_attribute_base::register_attr()
+template <class tag, class AttrT>
+void primitive_attribute<tag, AttrT>::clear()
 {
-    mMesh->register_attr(this);
+    this->clear(this->mDefaultValue);
 }
 
-inline void face_attribute_base::register_attr()
-{
-    mMesh->register_attr(this);
-}
-
-inline void edge_attribute_base::register_attr()
-{
-    mMesh->register_attr(this);
-}
-
-inline void halfedge_attribute_base::register_attr()
-{
-    mMesh->register_attr(this);
-}
-
-template <class AttrT>
-vertex_attribute<AttrT>::vertex_attribute(const Mesh *mesh, const AttrT &def_value)
-  : vertex_attribute_base(mesh), mDefaultValue(def_value)
-{
-    register_attr();
-}
-
-template <class AttrT>
-face_attribute<AttrT>::face_attribute(const Mesh *mesh, const AttrT &def_value)
-  : face_attribute_base(mesh), mDefaultValue(def_value)
-{
-    register_attr();
-}
-
-template <class AttrT>
-edge_attribute<AttrT>::edge_attribute(const Mesh *mesh, const AttrT &def_value)
-  : edge_attribute_base(mesh), mDefaultValue(def_value)
-{
-    register_attr();
-}
-
-template <class AttrT>
-halfedge_attribute<AttrT>::halfedge_attribute(const Mesh *mesh, const AttrT &def_value)
-  : halfedge_attribute_base(mesh), mDefaultValue(def_value)
-{
-    register_attr();
-}
-
-template <class AttrT>
-int vertex_attribute<AttrT>::size() const
-{
-    return mMesh->vertices().size();
-}
-
-template <class AttrT>
-void vertex_attribute<AttrT>::clear(AttrT const &value)
-{
-    mData.clear();
-    mData.resize(mMesh->vertices().size(), value);
-}
-template <class AttrT>
-void vertex_attribute<AttrT>::clear()
-{
-    clear(mDefaultValue);
-}
-
-template <class AttrT>
-int face_attribute<AttrT>::size() const
-{
-    return mMesh->vertices().size();
-}
-
-template <class AttrT>
-void face_attribute<AttrT>::clear(AttrT const &value)
-{
-    mData.clear();
-    mData.resize(mMesh->vertices().size(), value);
-}
-template <class AttrT>
-void face_attribute<AttrT>::clear()
-{
-    clear(mDefaultValue);
-}
-
-template <class AttrT>
-int edge_attribute<AttrT>::size() const
-{
-    return mMesh->vertices().size();
-}
-
-template <class AttrT>
-void edge_attribute<AttrT>::clear(AttrT const &value)
-{
-    mData.clear();
-    mData.resize(mMesh->vertices().size(), value);
-}
-template <class AttrT>
-void edge_attribute<AttrT>::clear()
-{
-    clear(mDefaultValue);
-}
-
-template <class AttrT>
-int halfedge_attribute<AttrT>::size() const
-{
-    return mMesh->vertices().size();
-}
-
-template <class AttrT>
-void halfedge_attribute<AttrT>::clear(AttrT const &value)
-{
-    mData.clear();
-    mData.resize(mMesh->vertices().size(), value);
-}
-template <class AttrT>
-void halfedge_attribute<AttrT>::clear()
-{
-    clear(mDefaultValue);
-}
-
-template <class AttrT>
+template <class tag, class AttrT>
 template <class FuncT>
-auto vertex_attribute<AttrT>::map(FuncT f) const -> vertex_attribute<tmp::result_type_of<FuncT, AttrT>>
+auto primitive_attribute<tag, AttrT>::map(FuncT f) const -> attribute<tmp::result_type_of<FuncT, AttrT>>
 {
-    auto attr = mMesh->vertices().make_attribute<tmp::result_type_of<FuncT, AttrT>>();
+    auto attr = primitive<tag>::collection_of(*this->mMesh).template make_attribute<tmp::result_type_of<FuncT, AttrT>>();
     auto s = size();
     auto d_in = data();
     auto d_out = attr.data();

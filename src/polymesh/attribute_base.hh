@@ -85,11 +85,12 @@ struct attribute_data
     }
 };
 
-struct vertex_attribute_base
+template <class tag>
+struct primitive_attribute_base
 {
 private:
-    vertex_attribute_base* mNextAttribute = nullptr;
-    vertex_attribute_base* mPrevAttribute = nullptr;
+    primitive_attribute_base* mNextAttribute = nullptr;
+    primitive_attribute_base* mPrevAttribute = nullptr;
 
     void resize(int newSize, bool force)
     {
@@ -110,110 +111,8 @@ private:
 protected:
     int mDataSize = 0;
     Mesh const* mMesh;
-    vertex_attribute_base(Mesh const* mesh);
-    virtual ~vertex_attribute_base() { deregister_attr(); }
-    virtual void on_resize(int newSize) = 0;
-    virtual void apply_remapping(std::vector<int> const& map) = 0;
-    void register_attr();
-    void deregister_attr();
-    friend class Mesh;
-};
-
-struct face_attribute_base
-{
-private:
-    face_attribute_base* mNextAttribute = nullptr;
-    face_attribute_base* mPrevAttribute = nullptr;
-
-    void resize(int newSize, bool force)
-    {
-        if (force)
-        {
-            mDataSize = newSize;
-            on_resize(mDataSize);
-            return;
-        }
-
-        if (mDataSize < newSize)
-        {
-            mDataSize = std::max(newSize, 1 + mDataSize + (mDataSize >> 1)); // 1 + s * 1.5
-            on_resize(mDataSize);
-        }
-    }
-
-protected:
-    int mDataSize = 0;
-    Mesh const* mMesh;
-    face_attribute_base(Mesh const* mesh);
-    virtual ~face_attribute_base() { deregister_attr(); }
-    virtual void on_resize(int newSize) = 0;
-    virtual void apply_remapping(std::vector<int> const& map) = 0;
-    void register_attr();
-    void deregister_attr();
-    friend class Mesh;
-};
-
-struct edge_attribute_base
-{
-private:
-    edge_attribute_base* mNextAttribute = nullptr;
-    edge_attribute_base* mPrevAttribute = nullptr;
-
-    void resize(int newSize, bool force)
-    {
-        if (force)
-        {
-            mDataSize = newSize;
-            on_resize(mDataSize);
-            return;
-        }
-
-        if (mDataSize < newSize)
-        {
-            mDataSize = std::max(newSize, 1 + mDataSize + (mDataSize >> 1)); // 1 + s * 1.5
-            on_resize(mDataSize);
-        }
-    }
-
-protected:
-    int mDataSize = 0;
-    Mesh const* mMesh;
-    edge_attribute_base(Mesh const* mesh);
-    virtual ~edge_attribute_base() { deregister_attr(); }
-    virtual void on_resize(int newSize) = 0;
-    virtual void apply_remapping(std::vector<int> const& map) = 0;
-    void register_attr();
-    void deregister_attr();
-    friend class Mesh;
-};
-
-struct halfedge_attribute_base
-{
-private:
-    halfedge_attribute_base* mNextAttribute = nullptr;
-    halfedge_attribute_base* mPrevAttribute = nullptr;
-
-    void resize(int newSize, bool force)
-    {
-        if (force)
-        {
-            mDataSize = newSize;
-            on_resize(mDataSize);
-            return;
-        }
-
-        if (mDataSize < newSize)
-        {
-            mDataSize = std::max(newSize, 1 + mDataSize + (mDataSize >> 1)); // 1 + s * 1.5
-            on_resize(mDataSize);
-        }
-    }
-
-protected:
-    int mDataSize = 0;
-    Mesh const* mMesh;
-    halfedge_attribute_base(Mesh const* mesh);
-    virtual ~halfedge_attribute_base() { deregister_attr(); }
+    primitive_attribute_base(Mesh const* mesh) : mMesh(mesh) {} // no registration, it's too early!
+    virtual ~primitive_attribute_base() { deregister_attr(); }
     virtual void on_resize(int newSize) = 0;
     virtual void apply_remapping(std::vector<int> const& map) = 0;
     void register_attr();

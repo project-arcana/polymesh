@@ -10,10 +10,10 @@
 namespace polymesh
 {
 
-struct valid_primitive_iterator
-{
-
-};
+// struct valid_primitive_iterator
+// {
+//
+// };
 
 
 
