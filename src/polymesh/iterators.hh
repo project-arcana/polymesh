@@ -9,6 +9,19 @@
 
 namespace polymesh
 {
+
+struct valid_primitive_iterator
+{
+
+};
+
+
+
+
+
+// ===========================================
+// OLD CODE:
+
 struct valid_vertex_iterator
 {
     valid_vertex_iterator() = default;

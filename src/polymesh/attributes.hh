@@ -23,6 +23,16 @@
 
 namespace polymesh
 {
+template <class Primitive, class AttrT>
+struct primitive_attribute
+{
+};
+
+
+// ===========================================
+// OLD CODE:
+
+
 template <class AttrT>
 struct vertex_attribute : vertex_attribute_base
 {
@@ -413,16 +423,33 @@ halfedge_attribute<AttrT>& halfedge_attribute<AttrT>::operator=(halfedge_attribu
 
 /// ======== CURSOR IMPLEMENTATION ========
 
+template <class tag>
 template <class AttrT>
-AttrT& face_index::operator[](face_attribute<AttrT>& attr) const
+AttrT& primitive_index<tag>::operator[](primitive_index::attribute<AttrT>& attr) const
 {
     return attr[*this];
 }
+template <class tag>
 template <class AttrT>
-AttrT const& face_index::operator[](face_attribute<AttrT> const& attr) const
+AttrT const& primitive_index<tag>::operator[](primitive_index::attribute<AttrT> const& attr) const
 {
     return attr[*this];
 }
+template <class tag>
+template <class AttrT>
+AttrT& primitive_index<tag>::operator[](primitive_index::attribute<AttrT>* attr) const
+{
+    return (*attr)[*this];
+}
+template <class tag>
+template <class AttrT>
+AttrT const& primitive_index<tag>::operator[](primitive_index::attribute<AttrT> const* attr) const
+{
+    return (*attr)[*this];
+}
+
+
+
 template <class AttrT>
 AttrT& face_handle::operator[](face_attribute<AttrT>& attr) const
 {
@@ -435,16 +462,6 @@ AttrT const& face_handle::operator[](face_attribute<AttrT> const& attr) const
 }
 
 template <class AttrT>
-AttrT& vertex_index::operator[](vertex_attribute<AttrT>& attr) const
-{
-    return attr[*this];
-}
-template <class AttrT>
-AttrT const& vertex_index::operator[](vertex_attribute<AttrT> const& attr) const
-{
-    return attr[*this];
-}
-template <class AttrT>
 AttrT& vertex_handle::operator[](vertex_attribute<AttrT>& attr) const
 {
     return attr[*this];
@@ -455,16 +472,6 @@ AttrT const& vertex_handle::operator[](vertex_attribute<AttrT> const& attr) cons
     return attr[*this];
 }
 
-template <class AttrT>
-AttrT& edge_index::operator[](edge_attribute<AttrT>& attr) const
-{
-    return attr[*this];
-}
-template <class AttrT>
-AttrT const& edge_index::operator[](edge_attribute<AttrT> const& attr) const
-{
-    return attr[*this];
-}
 template <class AttrT>
 AttrT& edge_handle::operator[](edge_attribute<AttrT>& attr) const
 {
@@ -477,16 +484,6 @@ AttrT const& edge_handle::operator[](edge_attribute<AttrT> const& attr) const
 }
 
 template <class AttrT>
-AttrT& halfedge_index::operator[](halfedge_attribute<AttrT>& attr) const
-{
-    return attr[*this];
-}
-template <class AttrT>
-AttrT const& halfedge_index::operator[](halfedge_attribute<AttrT> const& attr) const
-{
-    return attr[*this];
-}
-template <class AttrT>
 AttrT& halfedge_handle::operator[](halfedge_attribute<AttrT>& attr) const
 {
     return attr[*this];
@@ -497,16 +494,6 @@ AttrT const& halfedge_handle::operator[](halfedge_attribute<AttrT> const& attr) 
     return attr[*this];
 }
 
-template <class AttrT>
-AttrT& face_index::operator[](face_attribute<AttrT>* attr) const
-{
-    return (*attr)[*this];
-}
-template <class AttrT>
-AttrT const& face_index::operator[](face_attribute<AttrT> const* attr) const
-{
-    return (*attr)[*this];
-}
 template <class AttrT>
 AttrT& face_handle::operator[](face_attribute<AttrT>* attr) const
 {
@@ -519,16 +506,6 @@ AttrT const& face_handle::operator[](face_attribute<AttrT> const* attr) const
 }
 
 template <class AttrT>
-AttrT& vertex_index::operator[](vertex_attribute<AttrT>* attr) const
-{
-    return (*attr)[*this];
-}
-template <class AttrT>
-AttrT const& vertex_index::operator[](vertex_attribute<AttrT> const* attr) const
-{
-    return (*attr)[*this];
-}
-template <class AttrT>
 AttrT& vertex_handle::operator[](vertex_attribute<AttrT>* attr) const
 {
     return (*attr)[*this];
@@ -540,16 +517,6 @@ AttrT const& vertex_handle::operator[](vertex_attribute<AttrT> const* attr) cons
 }
 
 template <class AttrT>
-AttrT& edge_index::operator[](edge_attribute<AttrT>* attr) const
-{
-    return (*attr)[*this];
-}
-template <class AttrT>
-AttrT const& edge_index::operator[](edge_attribute<AttrT> const* attr) const
-{
-    return (*attr)[*this];
-}
-template <class AttrT>
 AttrT& edge_handle::operator[](edge_attribute<AttrT>* attr) const
 {
     return (*attr)[*this];
@@ -560,16 +527,6 @@ AttrT const& edge_handle::operator[](edge_attribute<AttrT> const* attr) const
     return (*attr)[*this];
 }
 
-template <class AttrT>
-AttrT& halfedge_index::operator[](halfedge_attribute<AttrT>* attr) const
-{
-    return (*attr)[*this];
-}
-template <class AttrT>
-AttrT const& halfedge_index::operator[](halfedge_attribute<AttrT> const* attr) const
-{
-    return (*attr)[*this];
-}
 template <class AttrT>
 AttrT& halfedge_handle::operator[](halfedge_attribute<AttrT>* attr) const
 {

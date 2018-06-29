@@ -2,132 +2,67 @@
 
 #include <iostream>
 
+#include "primitives.hh"
+
 namespace polymesh
 {
-class Mesh;
-
-template <class PropT>
-struct vertex_attribute;
-template <class PropT>
-struct face_attribute;
-template <class PropT>
-struct edge_attribute;
-template <class PropT>
-struct halfedge_attribute;
-
-struct vertex_handle;
-struct face_handle;
-struct edge_handle;
-struct halfedge_handle;
-
-struct face_vertex_ring;
-struct face_edge_ring;
-struct face_halfedge_ring;
-struct face_face_ring;
-
-struct vertex_halfedge_out_ring;
-struct vertex_halfedge_in_ring;
-struct vertex_face_ring;
-struct vertex_edge_ring;
-struct vertex_vertex_ring;
-
 // ======================== INDICES ========================
 
-struct face_index
+template <typename tag>
+struct primitive_index
 {
+    template <class AttrT>
+    using attribute = typename primitive<tag>::template attribute<AttrT>;
+    using index_t = typename primitive<tag>::index;
+    using handle_t = typename primitive<tag>::handle;
+
     int value = -1;
 
-    face_index() = default;
-    explicit face_index(int idx) : value(idx) {}
+    primitive_index() = default;
+    explicit primitive_index(int idx) : value(idx) {}
 
     bool is_valid() const { return value >= 0; }
     bool is_invalid() const { return value < 0; }
-    static face_index invalid() { return {}; }
+    static index_t invalid() { return {}; }
 
-    bool operator==(face_index const& rhs) const { return value == rhs.value; }
-    bool operator!=(face_index const& rhs) const { return value != rhs.value; }
+    bool operator==(index_t const& rhs) const { return value == rhs.value; }
+    bool operator!=(index_t const& rhs) const { return value != rhs.value; }
 
-    template <class PropT>
-    PropT& operator[](face_attribute<PropT>& prop) const;
-    template <class PropT>
-    PropT const& operator[](face_attribute<PropT> const& prop) const;
-    template <class PropT>
-    PropT& operator[](face_attribute<PropT>* prop) const;
-    template <class PropT>
-    PropT const& operator[](face_attribute<PropT> const* prop) const;
+    template <class AttrT>
+    AttrT& operator[](attribute<AttrT>& prop) const;
+    template <class AttrT>
+    AttrT const& operator[](attribute<AttrT> const& prop) const;
+    template <class AttrT>
+    AttrT& operator[](attribute<AttrT>* prop) const;
+    template <class AttrT>
+    AttrT const& operator[](attribute<AttrT> const* prop) const;
 };
 
-struct vertex_index
+struct face_index : primitive_index<face_tag>
 {
-    int value = -1;
-
-    vertex_index() = default;
-    explicit vertex_index(int idx) : value(idx) {}
-
-    bool is_valid() const { return value >= 0; }
-    bool is_invalid() const { return value < 0; }
-    static vertex_index invalid() { return {}; }
-
-    bool operator==(vertex_index const& rhs) const { return value == rhs.value; }
-    bool operator!=(vertex_index const& rhs) const { return value != rhs.value; }
-
-    template <class PropT>
-    PropT& operator[](vertex_attribute<PropT>& prop) const;
-    template <class PropT>
-    PropT const& operator[](vertex_attribute<PropT> const& prop) const;
-    template <class PropT>
-    PropT& operator[](vertex_attribute<PropT>* prop) const;
-    template <class PropT>
-    PropT const& operator[](vertex_attribute<PropT> const* prop) const;
+    using primitive_index::primitive_index;
+    using primitive_index::operator=;
 };
-
-struct edge_index
+struct edge_index : primitive_index<edge_tag>
 {
-    int value = -1;
-
-    edge_index() = default;
-    explicit edge_index(int idx) : value(idx) {}
-
-    bool is_valid() const { return value >= 0; }
-    bool is_invalid() const { return value < 0; }
-    static edge_index invalid() { return {}; }
-
-    bool operator==(edge_index const& rhs) const { return value == rhs.value; }
-    bool operator!=(edge_index const& rhs) const { return value != rhs.value; }
-
-    template <class PropT>
-    PropT& operator[](edge_attribute<PropT>& prop) const;
-    template <class PropT>
-    PropT const& operator[](edge_attribute<PropT> const& prop) const;
-    template <class PropT>
-    PropT& operator[](edge_attribute<PropT>* prop) const;
-    template <class PropT>
-    PropT const& operator[](edge_attribute<PropT> const* prop) const;
+    using primitive_index::primitive_index;
+    using primitive_index::operator=;
 };
-
-struct halfedge_index
+struct halfedge_index : primitive_index<halfedge_tag>
 {
-    int value = -1;
-
-    halfedge_index() = default;
-    explicit halfedge_index(int idx) : value(idx) {}
-
-    bool is_valid() const { return value >= 0; }
-    bool is_invalid() const { return value < 0; }
-    static halfedge_index invalid() { return {}; }
-
-    bool operator==(halfedge_index const& rhs) const { return value == rhs.value; }
-    bool operator!=(halfedge_index const& rhs) const { return value != rhs.value; }
-
-    template <class PropT>
-    PropT& operator[](halfedge_attribute<PropT>& prop) const;
-    template <class PropT>
-    PropT const& operator[](halfedge_attribute<PropT> const& prop) const;
-    template <class PropT>
-    PropT& operator[](halfedge_attribute<PropT>* prop) const;
-    template <class PropT>
-    PropT const& operator[](halfedge_attribute<PropT> const* prop) const;
+    using primitive_index::primitive_index;
+    using primitive_index::operator=;
 };
+struct vertex_index : primitive_index<vertex_tag>
+{
+    using primitive_index::primitive_index;
+    using primitive_index::operator=;
+};
+
+
+// ===========================================
+// OLD CODE:
+
 
 // ======================== HANDLES ========================
 
@@ -144,14 +79,14 @@ struct face_handle
     bool operator==(face_handle const& rhs) const { return mesh == rhs.mesh && idx == rhs.idx; }
     bool operator!=(face_handle const& rhs) const { return mesh != rhs.mesh || idx != rhs.idx; }
 
-    template <class PropT>
-    PropT& operator[](face_attribute<PropT>& prop) const;
-    template <class PropT>
-    PropT const& operator[](face_attribute<PropT> const& prop) const;
-    template <class PropT>
-    PropT& operator[](face_attribute<PropT>* prop) const;
-    template <class PropT>
-    PropT const& operator[](face_attribute<PropT> const* prop) const;
+    template <class AttrT>
+    AttrT& operator[](face_attribute<AttrT>& prop) const;
+    template <class AttrT>
+    AttrT const& operator[](face_attribute<AttrT> const& prop) const;
+    template <class AttrT>
+    AttrT& operator[](face_attribute<AttrT>* prop) const;
+    template <class AttrT>
+    AttrT const& operator[](face_attribute<AttrT> const* prop) const;
 
     bool is_valid() const { return idx.is_valid(); }    ///< valid idx (but could be deleted in some iterators)
     bool is_invalid() const { return !idx.is_valid(); } ///< invalid idx
@@ -181,14 +116,14 @@ struct vertex_handle
     bool operator==(vertex_handle const& rhs) const { return mesh == rhs.mesh && idx == rhs.idx; }
     bool operator!=(vertex_handle const& rhs) const { return mesh != rhs.mesh || idx != rhs.idx; }
 
-    template <class PropT>
-    PropT& operator[](vertex_attribute<PropT>& prop) const;
-    template <class PropT>
-    PropT const& operator[](vertex_attribute<PropT> const& prop) const;
-    template <class PropT>
-    PropT& operator[](vertex_attribute<PropT>* prop) const;
-    template <class PropT>
-    PropT const& operator[](vertex_attribute<PropT> const* prop) const;
+    template <class AttrT>
+    AttrT& operator[](vertex_attribute<AttrT>& prop) const;
+    template <class AttrT>
+    AttrT const& operator[](vertex_attribute<AttrT> const& prop) const;
+    template <class AttrT>
+    AttrT& operator[](vertex_attribute<AttrT>* prop) const;
+    template <class AttrT>
+    AttrT const& operator[](vertex_attribute<AttrT> const* prop) const;
 
     bool is_valid() const { return idx.is_valid(); }    ///< valid idx (but could be deleted in some iterators)
     bool is_invalid() const { return !idx.is_valid(); } ///< invalid idx
@@ -223,14 +158,14 @@ struct edge_handle
     bool operator==(edge_handle const& rhs) const { return mesh == rhs.mesh && idx == rhs.idx; }
     bool operator!=(edge_handle const& rhs) const { return mesh != rhs.mesh || idx != rhs.idx; }
 
-    template <class PropT>
-    PropT& operator[](edge_attribute<PropT>& prop) const;
-    template <class PropT>
-    PropT const& operator[](edge_attribute<PropT> const& prop) const;
-    template <class PropT>
-    PropT& operator[](edge_attribute<PropT>* prop) const;
-    template <class PropT>
-    PropT const& operator[](edge_attribute<PropT> const* prop) const;
+    template <class AttrT>
+    AttrT& operator[](edge_attribute<AttrT>& prop) const;
+    template <class AttrT>
+    AttrT const& operator[](edge_attribute<AttrT> const& prop) const;
+    template <class AttrT>
+    AttrT& operator[](edge_attribute<AttrT>* prop) const;
+    template <class AttrT>
+    AttrT const& operator[](edge_attribute<AttrT> const* prop) const;
 
     bool is_valid() const { return idx.is_valid(); }    ///< valid idx (but could be deleted in some iterators)
     bool is_invalid() const { return !idx.is_valid(); } ///< invalid idx
@@ -260,14 +195,14 @@ struct halfedge_handle
     bool operator==(halfedge_handle const& rhs) const { return mesh == rhs.mesh && idx == rhs.idx; }
     bool operator!=(halfedge_handle const& rhs) const { return mesh != rhs.mesh || idx != rhs.idx; }
 
-    template <class PropT>
-    PropT& operator[](halfedge_attribute<PropT>& prop) const;
-    template <class PropT>
-    PropT const& operator[](halfedge_attribute<PropT> const& prop) const;
-    template <class PropT>
-    PropT& operator[](halfedge_attribute<PropT>* prop) const;
-    template <class PropT>
-    PropT const& operator[](halfedge_attribute<PropT> const* prop) const;
+    template <class AttrT>
+    AttrT& operator[](halfedge_attribute<AttrT>& prop) const;
+    template <class AttrT>
+    AttrT const& operator[](halfedge_attribute<AttrT> const& prop) const;
+    template <class AttrT>
+    AttrT& operator[](halfedge_attribute<AttrT>* prop) const;
+    template <class AttrT>
+    AttrT const& operator[](halfedge_attribute<AttrT> const* prop) const;
 
     bool is_valid() const { return idx.is_valid(); }    ///< valid idx (but could be deleted in some iterators)
     bool is_invalid() const { return !idx.is_valid(); } ///< invalid idx
