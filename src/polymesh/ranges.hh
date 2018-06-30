@@ -7,18 +7,18 @@
 
 namespace polymesh
 {
-template<class mesh_ptr, class tag, class iterator>
+template <class mesh_ptr, class tag, class iterator>
 struct smart_collection
 {
-    template<typename AttrT>
+    template <typename AttrT>
     using attribute = typename primitive<tag>::template attribute<AttrT>;
 
     /// Number of primitives, INCLUDING those marked for deletion
     /// O(1) computation
-    int size() const { return iterator::primitive_size(*mesh); }
+    int size() const;
 
     /// Ensures that a given number of primitives can be stored without reallocation
-    void reserve(int capacity) const { return primitive<tag>::reserve(*mesh, capacity); }
+    void reserve(int capacity) const;
 
     /// Creates a new vertex attribute
     template <class PropT>
@@ -37,8 +37,8 @@ protected:
 
 /// Collection of all vertices of a mesh
 /// Basically a smart std::vector
-template<class iterator>
-struct vertex_collection : smart_collection<Mesh *, vertex_tag, iterator>
+template <class iterator>
+struct vertex_collection : smart_collection<Mesh*, vertex_tag, iterator>
 {
     /// Adds a new vertex and returns its handle
     /// Does NOT invalidate any iterator!
@@ -51,20 +51,20 @@ struct vertex_collection : smart_collection<Mesh *, vertex_tag, iterator>
 
 /// Collection of all faces of a mesh
 /// Basically a smart std::vector
-template<class iterator>
-struct face_collection : smart_collection<Mesh *, face_tag, iterator>
+template <class iterator>
+struct face_collection : smart_collection<Mesh*, face_tag, iterator>
 {
     /// Adds a face consisting of N vertices
     /// The vertices must already be sorted in CCW order
     /// (note: trying to add already existing halfedges triggers assertions)
     template <size_t N>
-    face_handle add(const vertex_handle(&v_handles)[N]) const;
+    face_handle add(const vertex_handle (&v_handles)[N]) const;
     face_handle add(vertex_handle v0, vertex_handle v1, vertex_handle v2) const;
     face_handle add(vertex_handle v0, vertex_handle v1, vertex_handle v2, vertex_handle v3) const;
     face_handle add(std::vector<vertex_handle> const& v_handles) const;
     face_handle add(vertex_handle const* v_handles, int vcnt) const;
     template <size_t N>
-    face_handle add(const halfedge_handle(&half_loop)[N]) const;
+    face_handle add(const halfedge_handle (&half_loop)[N]) const;
     face_handle add(halfedge_handle h0, halfedge_handle h1, halfedge_handle h2) const;
     face_handle add(halfedge_handle h0, halfedge_handle h1, halfedge_handle h2, halfedge_handle h3) const;
     face_handle add(std::vector<halfedge_handle> const& half_loop) const;
@@ -77,8 +77,8 @@ struct face_collection : smart_collection<Mesh *, face_tag, iterator>
 
 /// Collection of all edges of a mesh
 /// Basically a smart std::vector
-template<class iterator>
-struct edge_collection : smart_collection<Mesh *, edge_tag, iterator>
+template <class iterator>
+struct edge_collection : smart_collection<Mesh*, edge_tag, iterator>
 {
     /// Adds an edge between two existing, distinct vertices
     /// if edge already exists, returns it
@@ -93,8 +93,8 @@ struct edge_collection : smart_collection<Mesh *, edge_tag, iterator>
 
 /// Collection of all half-edges of a mesh
 /// Basically a smart std::vector
-template<class iterator>
-struct halfedge_collection : smart_collection<Mesh *, halfedge_tag, iterator>
+template <class iterator>
+struct halfedge_collection : smart_collection<Mesh*, halfedge_tag, iterator>
 {
     /// Adds an half-edge between two existing, distinct vertices
     /// if half-edge already exists, returns it

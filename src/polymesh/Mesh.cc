@@ -30,68 +30,68 @@ void Mesh::assert_consistency() const
         auto invalid_edge_cnt = 0;
         auto invalid_halfedge_cnt = 0;
 
-        for (auto h : vertices())
+        for (auto h : all_vertices())
         {
             ++vertex_cnt;
             if (h.is_removed())
                 ++invalid_vertex_cnt;
         }
 
-        for (auto h : faces())
+        for (auto h : all_faces())
         {
             ++face_cnt;
             if (h.is_removed())
                 ++invalid_face_cnt;
         }
 
-        for (auto h : edges())
+        for (auto h : all_edges())
         {
             ++edge_cnt;
             if (h.is_removed())
                 ++invalid_edge_cnt;
         }
 
-        for (auto h : halfedges())
+        for (auto h : all_halfedges())
         {
             ++halfedge_cnt;
             if (h.is_removed())
                 ++invalid_halfedge_cnt;
         }
 
-        for (auto h : valid_vertices())
+        for (auto h : vertices())
         {
             assert(h.is_valid());
             assert(!h.is_removed());
             ++valid_vertex_cnt;
         }
-        for (auto h : valid_faces())
+        for (auto h : faces())
         {
             assert(h.is_valid());
             assert(!h.is_removed());
             ++valid_face_cnt;
         }
-        for (auto h : valid_edges())
+        for (auto h : edges())
         {
             assert(h.is_valid());
             assert(!h.is_removed());
             ++valid_edge_cnt;
         }
-        for (auto h : valid_halfedges())
+        for (auto h : halfedges())
         {
             assert(h.is_valid());
             assert(!h.is_removed());
             ++valid_halfedge_cnt;
         }
 
-        assert(vertex_cnt == vertices().size());
-        assert(face_cnt == faces().size());
-        assert(edge_cnt == edges().size());
-        assert(halfedge_cnt == halfedges().size());
+        assert(vertex_cnt == all_vertices().size());
+        assert(face_cnt == all_faces().size());
+        assert(edge_cnt == all_edges().size());
+        assert(halfedge_cnt == all_halfedges().size());
 
-        assert(valid_vertex_cnt == valid_vertices().size());
-        assert(valid_face_cnt == valid_faces().size());
-        assert(valid_edge_cnt == valid_edges().size());
-        assert(valid_halfedge_cnt == valid_halfedges().size());
+        assert(valid_vertex_cnt == vertices().size());
+        assert(valid_face_cnt == faces().size());
+        assert(valid_edge_cnt == edges().size());
+        assert(valid_halfedge_cnt == halfedges().size());
 
         assert(vertex_cnt == valid_vertex_cnt + invalid_vertex_cnt);
         assert(face_cnt == valid_face_cnt + invalid_face_cnt);
@@ -107,7 +107,7 @@ void Mesh::assert_consistency() const
     }
 
     // check only non-removed can be accessed topologically
-    for (auto f : valid_faces())
+    for (auto f : faces())
     {
         assert(!f.any_halfedge().is_removed());
         assert(!f.any_vertex().is_removed());
@@ -124,7 +124,7 @@ void Mesh::assert_consistency() const
         for (auto f : f.edges())
             assert(!f.is_removed());
     }
-    for (auto v : valid_vertices())
+    for (auto v : vertices())
     {
         assert(!v.any_face().is_removed());
         assert(!v.any_edge().is_removed());
@@ -146,7 +146,7 @@ void Mesh::assert_consistency() const
         for (auto f : v.edges())
             assert(!f.is_removed());
     }
-    for (auto e : valid_edges())
+    for (auto e : edges())
     {
         assert(!e.faceA().is_removed());
         assert(!e.faceB().is_removed());
@@ -157,7 +157,7 @@ void Mesh::assert_consistency() const
         assert(!e.halfedgeA().is_removed());
         assert(!e.halfedgeB().is_removed());
     }
-    for (auto h : valid_halfedges())
+    for (auto h : halfedges())
     {
         assert(!h.prev().is_removed());
         assert(!h.next().is_removed());
@@ -170,7 +170,7 @@ void Mesh::assert_consistency() const
     }
 
     // check half-edge consistencies
-    for (auto h : valid_halfedges())
+    for (auto h : halfedges())
     {
         assert(h.next().is_valid());
         assert(h.prev().is_valid());
@@ -192,7 +192,7 @@ void Mesh::assert_consistency() const
     }
 
     // check vertex consistencies
-    for (auto v : valid_vertices())
+    for (auto v : vertices())
     {
         if (!v.is_isolated())
         {
@@ -237,7 +237,7 @@ void Mesh::assert_consistency() const
     }
 
     // check face consistencies
-    for (auto f : valid_faces())
+    for (auto f : faces())
     {
         assert(f.any_halfedge().is_valid());
         assert(f.any_vertex().is_valid());
@@ -260,7 +260,7 @@ void Mesh::assert_consistency() const
     }
 
     // check edge consistencies
-    for (auto e : valid_edges())
+    for (auto e : edges())
     {
         assert(e.vertexA().is_valid());
         assert(e.vertexB().is_valid());
@@ -279,7 +279,7 @@ void Mesh::assert_consistency() const
     }
 
     // check boundaries
-    for (auto h : valid_halfedges())
+    for (auto h : halfedges())
         if (h.is_boundary())
         {
             assert(h.face().is_invalid());
@@ -304,11 +304,11 @@ void Mesh::assert_consistency() const
         auto v_e_sum = 0;
         auto f_h_sum = 0;
 
-        for (auto v : valid_vertices())
+        for (auto v : vertices())
         {
             v_e_sum += v.edges().size();
         }
-        for (auto f : valid_faces())
+        for (auto f : faces())
         {
             f_h_sum += f.halfedges().size();
         }
@@ -322,25 +322,25 @@ void Mesh::assert_consistency() const
     // compactness
     if (is_compact())
     {
-        for (auto v : vertices())
+        for (auto v : all_vertices())
         {
             assert(v.is_valid());
             assert(!v.is_removed());
         }
 
-        for (auto f : faces())
+        for (auto f : all_faces())
         {
             assert(f.is_valid());
             assert(!f.is_removed());
         }
 
-        for (auto e : edges())
+        for (auto e : all_edges())
         {
             assert(e.is_valid());
             assert(!e.is_removed());
         }
 
-        for (auto h : halfedges())
+        for (auto h : all_halfedges())
         {
             assert(h.is_valid());
             assert(!h.is_removed());
@@ -349,7 +349,7 @@ void Mesh::assert_consistency() const
 
     // check half-edge uniqueness
     std::map<int, std::set<int>> hes;
-    for (auto h : valid_halfedges())
+    for (auto h : halfedges())
     {
         auto v0 = h.vertex_from().idx.value;
         auto v1 = h.vertex_to().idx.value;

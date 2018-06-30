@@ -68,10 +68,10 @@ protected:
 
     // move & copy
 public:
-    primitive_attribute(primitive_attribute const&);
-    primitive_attribute(primitive_attribute&&);
-    primitive_attribute& operator=(primitive_attribute const&);
-    primitive_attribute& operator=(primitive_attribute&&);
+    primitive_attribute(primitive_attribute const&) noexcept;
+    primitive_attribute(primitive_attribute&&) noexcept;
+    primitive_attribute& operator=(primitive_attribute const&) noexcept;
+    primitive_attribute& operator=(primitive_attribute&&) noexcept;
 };
 
 template <class AttrT>
@@ -79,7 +79,7 @@ struct vertex_attribute : primitive_attribute<vertex_tag, AttrT>
 {
     using primitive_attribute<vertex_tag, AttrT>::primitive_attribute;
 
-    template<class mesh_ptr, class tag, class iterator>
+    template <class mesh_ptr, class tag, class iterator>
     friend struct smart_collection;
 };
 template <class AttrT>
@@ -87,7 +87,7 @@ struct face_attribute : primitive_attribute<face_tag, AttrT>
 {
     using primitive_attribute<face_tag, AttrT>::primitive_attribute;
 
-    template<class mesh_ptr, class tag, class iterator>
+    template <class mesh_ptr, class tag, class iterator>
     friend struct smart_collection;
 };
 template <class AttrT>
@@ -95,7 +95,7 @@ struct edge_attribute : primitive_attribute<edge_tag, AttrT>
 {
     using primitive_attribute<edge_tag, AttrT>::primitive_attribute;
 
-    template<class mesh_ptr, class tag, class iterator>
+    template <class mesh_ptr, class tag, class iterator>
     friend struct smart_collection;
 };
 template <class AttrT>
@@ -103,7 +103,7 @@ struct halfedge_attribute : primitive_attribute<halfedge_tag, AttrT>
 {
     using primitive_attribute<halfedge_tag, AttrT>::primitive_attribute;
 
-    template<class mesh_ptr, class tag, class iterator>
+    template <class mesh_ptr, class tag, class iterator>
     friend struct smart_collection;
 };
 
@@ -117,7 +117,7 @@ void primitive_attribute<tag, AttrT>::apply_remapping(const std::vector<int>& ma
 }
 
 template <class tag, class AttrT>
-primitive_attribute<tag, AttrT>::primitive_attribute(primitive_attribute const& rhs) : primitive_attribute_base<tag>(rhs.mMesh) // copy
+primitive_attribute<tag, AttrT>::primitive_attribute(primitive_attribute const& rhs) noexcept : primitive_attribute_base<tag>(rhs.mMesh) // copy
 {
     this->mDefaultValue = rhs.mDefaultValue;
     this->mData = rhs.mData;
@@ -127,7 +127,7 @@ primitive_attribute<tag, AttrT>::primitive_attribute(primitive_attribute const& 
 }
 
 template <class tag, class AttrT>
-primitive_attribute<tag, AttrT>::primitive_attribute(primitive_attribute&& rhs) : primitive_attribute_base<tag>(rhs.mMesh) // move
+primitive_attribute<tag, AttrT>::primitive_attribute(primitive_attribute&& rhs) noexcept : primitive_attribute_base<tag>(rhs.mMesh) // move
 {
     this->mDefaultValue = std::move(rhs.mDefaultValue);
     this->mData = std::move(rhs.mData);
@@ -138,7 +138,7 @@ primitive_attribute<tag, AttrT>::primitive_attribute(primitive_attribute&& rhs) 
 }
 
 template <class tag, class AttrT>
-primitive_attribute<tag, AttrT>& primitive_attribute<tag, AttrT>::operator=(primitive_attribute const& rhs) // copy
+primitive_attribute<tag, AttrT>& primitive_attribute<tag, AttrT>::operator=(primitive_attribute const& rhs) noexcept // copy
 {
     this->deregister_attr();
 
@@ -148,10 +148,12 @@ primitive_attribute<tag, AttrT>& primitive_attribute<tag, AttrT>::operator=(prim
     this->mDataSize = rhs.mDataSize;
 
     this->register_attr();
+
+    return *this;
 }
 
 template <class tag, class AttrT>
-primitive_attribute<tag, AttrT>& primitive_attribute<tag, AttrT>::operator=(primitive_attribute&& rhs) // move
+primitive_attribute<tag, AttrT>& primitive_attribute<tag, AttrT>::operator=(primitive_attribute&& rhs) noexcept // move
 {
     this->deregister_attr();
 
@@ -162,58 +164,59 @@ primitive_attribute<tag, AttrT>& primitive_attribute<tag, AttrT>::operator=(prim
 
     rhs.deregister_attr();
     this->register_attr();
+
+    return *this;
 }
 
 /// ======== CURSOR IMPLEMENTATION ========
 
 template <class tag>
 template <class AttrT>
-AttrT& primitive_index<tag>::operator[](primitive_index::attribute<AttrT>& attr) const
+AttrT& primitive_index<tag>::operator[](attribute<AttrT>& attr) const
 {
     return attr[*this];
 }
 template <class tag>
 template <class AttrT>
-AttrT const& primitive_index<tag>::operator[](primitive_index::attribute<AttrT> const& attr) const
+AttrT const& primitive_index<tag>::operator[](attribute<AttrT> const& attr) const
 {
     return attr[*this];
 }
 template <class tag>
 template <class AttrT>
-AttrT& primitive_index<tag>::operator[](primitive_index::attribute<AttrT>* attr) const
+AttrT& primitive_index<tag>::operator[](attribute<AttrT>* attr) const
 {
     return (*attr)[*this];
 }
 template <class tag>
 template <class AttrT>
-AttrT const& primitive_index<tag>::operator[](primitive_index::attribute<AttrT> const* attr) const
+AttrT const& primitive_index<tag>::operator[](attribute<AttrT> const* attr) const
 {
     return (*attr)[*this];
 }
 
 template <class tag>
 template <class AttrT>
-AttrT& primitive_handle<tag>::operator[](primitive_handle::attribute<AttrT>& attr) const
+AttrT& primitive_handle<tag>::operator[](attribute<AttrT>& attr) const
 {
     return attr[idx];
 }
 template <class tag>
 template <class AttrT>
-AttrT const& primitive_handle<tag>::operator[](primitive_handle::attribute<AttrT> const& attr) const
+AttrT const& primitive_handle<tag>::operator[](attribute<AttrT> const& attr) const
 {
     return attr[idx];
 }
 template <class tag>
 template <class AttrT>
-AttrT& primitive_handle<tag>::operator[](primitive_handle::attribute<AttrT>* attr) const
+AttrT& primitive_handle<tag>::operator[](attribute<AttrT>* attr) const
 {
     return (*attr)[idx];
 }
 template <class tag>
 template <class AttrT>
-AttrT const& primitive_handle<tag>::operator[](primitive_handle::attribute<AttrT> const* attr) const
+AttrT const& primitive_handle<tag>::operator[](attribute<AttrT> const* attr) const
 {
     return (*attr)[idx];
 }
-
 }

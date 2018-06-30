@@ -4,55 +4,6 @@
 
 namespace polymesh
 {
-
-template <class AttrT>
-vertex_attribute<AttrT> vertex_collection::make_attribute(const AttrT &def_value)
-{
-    return vertex_attribute<AttrT>(mesh, def_value);
-}
-
-template <class AttrT>
-vertex_attribute<AttrT> const_vertex_collection::make_attribute(const AttrT &def_value)
-{
-    return vertex_attribute<AttrT>(mesh, def_value);
-}
-
-template <class AttrT>
-face_attribute<AttrT> face_collection::make_attribute(const AttrT &def_value)
-{
-    return face_attribute<AttrT>(mesh, def_value);
-}
-
-template <class AttrT>
-face_attribute<AttrT> const_face_collection::make_attribute(const AttrT &def_value)
-{
-    return face_attribute<AttrT>(mesh, def_value);
-}
-
-template <class AttrT>
-edge_attribute<AttrT> edge_collection::make_attribute(const AttrT &def_value)
-{
-    return edge_attribute<AttrT>(mesh, def_value);
-}
-
-template <class AttrT>
-edge_attribute<AttrT> const_edge_collection::make_attribute(const AttrT &def_value)
-{
-    return edge_attribute<AttrT>(mesh, def_value);
-}
-
-template <class AttrT>
-halfedge_attribute<AttrT> halfedge_collection::make_attribute(const AttrT &def_value)
-{
-    return halfedge_attribute<AttrT>(mesh, def_value);
-}
-
-template <class AttrT>
-halfedge_attribute<AttrT> const_halfedge_collection::make_attribute(const AttrT &def_value)
-{
-    return halfedge_attribute<AttrT>(mesh, def_value);
-}
-
 inline void Mesh::register_attr(primitive_attribute_base<vertex_tag> *attr) const
 {
     // insert in front
@@ -191,7 +142,7 @@ primitive_attribute<tag, AttrT>::primitive_attribute(const Mesh *mesh, const Att
 template <class tag, class AttrT>
 int primitive_attribute<tag, AttrT>::size() const
 {
-    return primitive<tag>::collection_of(*this->mMesh).size();
+    return primitive<tag>::all_collection_of(*this->mMesh).size();
 }
 
 template <class tag, class AttrT>
@@ -211,7 +162,7 @@ template <class tag, class AttrT>
 template <class FuncT>
 auto primitive_attribute<tag, AttrT>::map(FuncT f) const -> attribute<tmp::result_type_of<FuncT, AttrT>>
 {
-    auto attr = primitive<tag>::collection_of(*this->mMesh).template make_attribute<tmp::result_type_of<FuncT, AttrT>>();
+    auto attr = primitive<tag>::all_collection_of(*this->mMesh).template make_attribute<tmp::result_type_of<FuncT, AttrT>>();
     auto s = size();
     auto d_in = data();
     auto d_out = attr.data();
@@ -219,5 +170,4 @@ auto primitive_attribute<tag, AttrT>::map(FuncT f) const -> attribute<tmp::resul
         d_out[i] = f(d_in[i]);
     return attr; // copy elison
 }
-
 }

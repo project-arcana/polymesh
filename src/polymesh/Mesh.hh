@@ -136,27 +136,6 @@ private:
     face_index prev_valid_idx_from(face_index idx) const;
     halfedge_index prev_valid_idx_from(halfedge_index idx) const;
 
-    // Iterators
-    all_vertex_iterator vertices_begin() const { return {{this, vertex_index(0)}}; }
-    all_vertex_iterator vertices_end() const { return {{this, vertex_index(size_vertices())}}; }
-    valid_vertex_iterator valid_vertices_begin() const { return {{this, vertex_index(0)}}; }
-    valid_vertex_iterator valid_vertices_end() const { return {{this, vertex_index(size_vertices())}}; }
-
-    face_iterator faces_begin() const { return {{this, face_index(0)}}; }
-    face_iterator faces_end() const { return {{this, face_index(size_faces())}}; }
-    valid_face_iterator valid_faces_begin() const { return {{this, face_index(0)}}; }
-    valid_face_iterator valid_faces_end() const { return {{this, face_index(size_faces())}}; }
-
-    edge_iterator edges_begin() const { return {{this, edge_index(0)}}; }
-    edge_iterator edges_end() const { return {{this, edge_index(size_edges())}}; }
-    valid_edge_iterator valid_edges_begin() const { return {{this, edge_index(0)}}; }
-    valid_edge_iterator valid_edges_end() const { return {{this, edge_index(size_edges())}}; }
-
-    halfedge_iterator halfedges_begin() const { return {{this, halfedge_index(0)}}; }
-    halfedge_iterator halfedges_end() const { return {{this, halfedge_index(size_halfedges())}}; }
-    valid_halfedge_iterator valid_halfedges_begin() const { return {{this, halfedge_index(0)}}; }
-    valid_halfedge_iterator valid_halfedges_end() const { return {{this, halfedge_index(size_halfedges())}}; }
-
     /// Adds a single non-connected vertex
     /// Does NOT invalidate iterators!
     vertex_index add_vertex();
@@ -382,18 +361,17 @@ private:
     friend struct const_primitive_collection;
     template <class tag>
     friend struct primitive_attribute_base;
-    template<class mesh_ptr, class tag, class iterator>
+    template <class mesh_ptr, class tag, class iterator>
     friend struct smart_collection;
-    template<class iterator>
-    struct vertex_collection;
-    template<class iterator>
-    struct face_collection;
-    template<class iterator>
-    struct edge_collection;
-    template<class iterator>
-    struct halfedge_collection;
+    template <class iterator>
+    friend struct vertex_collection;
+    template <class iterator>
+    friend struct face_collection;
+    template <class iterator>
+    friend struct edge_collection;
+    template <class iterator>
+    friend struct halfedge_collection;
 };
-
 }
 
 /// ======== IMPLEMENTATIONS ========
@@ -403,3 +381,4 @@ private:
 #include "impl/impl_iterators.hh"
 #include "impl/impl_mesh.hh"
 #include "impl/impl_ranges.hh"
+#include "impl/impl_primitive.hh"

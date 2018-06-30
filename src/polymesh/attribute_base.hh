@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <cstddef>
 #include <vector>
 
@@ -19,7 +20,7 @@ struct attribute_data
     DataT const& operator[](int i) const { return data[i]; }
 
     attribute_data() = default;
-    attribute_data(attribute_data<DataT> const& rhs) // copy
+    attribute_data(attribute_data<DataT> const& rhs) noexcept // copy
     {
         size = rhs.size;
         data = new DataT[size];
@@ -27,7 +28,7 @@ struct attribute_data
         for (int i = 0; i < size; ++i)
             data[i] = rhs.data[i];
     }
-    attribute_data(attribute_data<DataT>&& rhs) // move
+    attribute_data(attribute_data<DataT>&& rhs) noexcept // move
     {
         size = rhs.size;
         data = rhs.data;
@@ -35,7 +36,7 @@ struct attribute_data
         rhs.size = 0;
         rhs.data = nullptr;
     }
-    attribute_data<DataT>& operator=(attribute_data<DataT> const& rhs) // copy
+    attribute_data<DataT>& operator=(attribute_data<DataT> const& rhs) noexcept // copy
     {
         delete[] data;
 
@@ -47,7 +48,7 @@ struct attribute_data
 
         return *this;
     }
-    attribute_data<DataT>& operator=(attribute_data<DataT>&& rhs) // move
+    attribute_data<DataT>& operator=(attribute_data<DataT>&& rhs) noexcept // move
     {
         delete[] data;
 
@@ -67,15 +68,15 @@ struct attribute_data
 
         if (new_size < size)
         {
-            for (int i = 0; i < new_size; ++i)
+            for (auto i = 0; i < new_size; ++i)
                 new_data[i] = data[i];
         }
         else
         {
-            for (int i = 0; i < size; ++i)
+            for (auto i = 0; i < size; ++i)
                 new_data[i] = data[i];
 
-            for (int i = size; i < new_size; ++i)
+            for (auto i = size; i < new_size; ++i)
                 new_data[i] = default_value;
         }
 
@@ -92,18 +93,18 @@ private:
     primitive_attribute_base* mNextAttribute = nullptr;
     primitive_attribute_base* mPrevAttribute = nullptr;
 
-    void resize(int newSize, bool force)
+    void resize(int new_size, bool force)
     {
         if (force)
         {
-            mDataSize = newSize;
+            mDataSize = new_size;
             on_resize(mDataSize);
             return;
         }
 
-        if (mDataSize < newSize)
+        if (mDataSize < new_size)
         {
-            mDataSize = std::max(newSize, 1 + mDataSize + (mDataSize >> 1)); // 1 + s * 1.5
+            mDataSize = std::max(new_size, 1 + mDataSize + (mDataSize >> 1)); // 1 + s * 1.5
             on_resize(mDataSize);
         }
     }
@@ -113,7 +114,7 @@ protected:
     Mesh const* mMesh;
     primitive_attribute_base(Mesh const* mesh) : mMesh(mesh) {} // no registration, it's too early!
     virtual ~primitive_attribute_base() { deregister_attr(); }
-    virtual void on_resize(int newSize) = 0;
+    virtual void on_resize(int new_size) = 0;
     virtual void apply_remapping(std::vector<int> const& map) = 0;
     void register_attr();
     void deregister_attr();

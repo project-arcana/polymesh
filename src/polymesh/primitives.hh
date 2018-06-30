@@ -4,10 +4,10 @@
 
 namespace polymesh
 {
-template<typename tag>
+template <typename tag>
 struct primitive;
 
-template<>
+template <>
 struct primitive<vertex_tag>
 {
     static constexpr auto name = "vertex";
@@ -23,7 +23,7 @@ struct primitive<vertex_tag>
     using valid_collection = valid_vertex_collection;
     using valid_const_collection = valid_vertex_const_collection;
 
-    template<class AttrT>
+    template <class AttrT>
     using attribute = vertex_attribute<AttrT>;
 
     static int all_size(Mesh const& m);
@@ -33,7 +33,7 @@ struct primitive<vertex_tag>
     static all_const_collection all_collection_of(Mesh const& m);
 };
 
-template<>
+template <>
 struct primitive<face_tag>
 {
     static constexpr auto name = "face";
@@ -49,7 +49,7 @@ struct primitive<face_tag>
     using valid_collection = valid_face_collection;
     using valid_const_collection = valid_face_const_collection;
 
-    template<class AttrT>
+    template <class AttrT>
     using attribute = face_attribute<AttrT>;
 
     static int all_size(Mesh const& m);
@@ -59,7 +59,7 @@ struct primitive<face_tag>
     static all_const_collection all_collection_of(Mesh const& m);
 };
 
-template<>
+template <>
 struct primitive<edge_tag>
 {
     static constexpr auto name = "edge";
@@ -75,7 +75,7 @@ struct primitive<edge_tag>
     using valid_collection = valid_edge_collection;
     using valid_const_collection = valid_edge_const_collection;
 
-    template<class AttrT>
+    template <class AttrT>
     using attribute = edge_attribute<AttrT>;
 
     static int all_size(Mesh const& m);
@@ -85,7 +85,7 @@ struct primitive<edge_tag>
     static all_const_collection all_collection_of(Mesh const& m);
 };
 
-template<>
+template <>
 struct primitive<halfedge_tag>
 {
     static constexpr auto name = "half-edge";
@@ -101,7 +101,7 @@ struct primitive<halfedge_tag>
     using valid_collection = valid_halfedge_collection;
     using valid_const_collection = valid_halfedge_const_collection;
 
-    template<class AttrT>
+    template <class AttrT>
     using attribute = halfedge_attribute<AttrT>;
 
     static int all_size(Mesh const& m);
@@ -110,5 +110,4 @@ struct primitive<halfedge_tag>
     static all_collection all_collection_of(Mesh& m);
     static all_const_collection all_collection_of(Mesh const& m);
 };
-
 }

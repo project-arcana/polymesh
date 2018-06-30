@@ -21,20 +21,11 @@ obj_writer::obj_writer(const std::string &filename)
     out = tmp_out;
 }
 
-obj_writer::obj_writer(std::ostream &out)
-{
-    this->out = &out;
-}
+obj_writer::obj_writer(std::ostream &out) { this->out = &out; }
 
-obj_writer::~obj_writer()
-{
-    delete tmp_out;
-}
+obj_writer::~obj_writer() { delete tmp_out; }
 
-void obj_writer::write_object_name(std::string object_name)
-{
-    *out << "o " << object_name << "\n";
-}
+void obj_writer::write_object_name(std::string object_name) { *out << "o " << object_name << "\n"; }
 
 void obj_writer::write_mesh(const Mesh &mesh,
                             vertex_attribute<glm::vec3> const &position,
@@ -45,7 +36,7 @@ void obj_writer::write_mesh(const Mesh &mesh,
     auto base_t = texture_idx;
     auto base_n = normal_idx;
 
-    for (auto v : mesh.vertices())
+    for (auto v : mesh.all_vertices())
     {
         auto pos = v[position];
         *out << "v " << pos.x << " " << pos.y << " " << pos.z << "\n";
@@ -53,7 +44,7 @@ void obj_writer::write_mesh(const Mesh &mesh,
     }
 
     if (tex_coord)
-        for (auto v : mesh.vertices())
+        for (auto v : mesh.all_vertices())
         {
             auto t = v[*tex_coord];
             *out << "vt " << t.x << " " << t.y << "\n";
@@ -61,14 +52,14 @@ void obj_writer::write_mesh(const Mesh &mesh,
         }
 
     if (normal)
-        for (auto v : mesh.vertices())
+        for (auto v : mesh.all_vertices())
         {
             auto n = v[*normal];
             *out << "vn " << n.x << " " << n.y << " " << n.z << "\n";
             ++normal_idx;
         }
 
-    for (auto f : mesh.valid_faces())
+    for (auto f : mesh.faces())
     {
         *out << "f";
         for (auto v : f.vertices())
@@ -110,25 +101,16 @@ obj_reader::obj_reader(std::istream &in, Mesh &mesh)
     parse(in, mesh);
 }
 
-vertex_attribute<glm::vec4> obj_reader::positions_vec4() const
-{
-    return positions;
-}
+vertex_attribute<glm::vec4> obj_reader::positions_vec4() const { return positions; }
 
 vertex_attribute<glm::vec3> obj_reader::positions_vec3() const
 {
     return positions.map([](glm::vec4 const &v) { return glm::vec3(v); });
 }
 
-halfedge_attribute<glm::vec3> obj_reader::tex_coords_vec3() const
-{
-    return tex_coords;
-}
+halfedge_attribute<glm::vec3> obj_reader::tex_coords_vec3() const { return tex_coords; }
 
-halfedge_attribute<glm::vec3> obj_reader::normals_vec3() const
-{
-    return tex_coords;
-}
+halfedge_attribute<glm::vec3> obj_reader::normals_vec3() const { return tex_coords; }
 
 void obj_reader::parse(std::istream &in, Mesh &mesh)
 {

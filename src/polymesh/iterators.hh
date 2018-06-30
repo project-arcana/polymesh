@@ -9,17 +9,13 @@
 
 namespace polymesh
 {
-
 template <typename tag>
 struct valid_primitive_iterator
 {
     using handle_t = typename primitive<tag>::handle;
 
     valid_primitive_iterator() = default;
-    valid_primitive_iterator(handle_t handle) : handle(handle)
-    {
-        handle.idx = handle.mesh->next_valid_idx_from(handle.idx);
-    }
+    valid_primitive_iterator(handle_t handle) : handle(handle) { handle.idx = handle.mesh->next_valid_idx_from(handle.idx); }
 
     handle_t operator*() const { return handle; }
     valid_primitive_iterator& operator++()
@@ -44,7 +40,7 @@ struct valid_primitive_iterator
         return handle.idx != rhs.handle.idx;
     }
 
-    static int primitive_size(Mesh const& m) { return primitive<tag>::valid_size(); }
+    static int primitive_size(Mesh const& m) { return primitive<tag>::valid_size(m); }
 
 private:
     handle_t handle;
@@ -80,7 +76,7 @@ struct all_primitive_iterator
         return handle.idx != rhs.handle.idx;
     }
 
-    static int primitive_size(Mesh const& m) { return primitive<tag>::all_size(); }
+    static int primitive_size(Mesh const& m) { return primitive<tag>::all_size(m); }
 
 private:
     handle_t handle;
@@ -93,10 +89,7 @@ private:
 struct face_vertex_circulator
 {
     face_vertex_circulator() = default;
-    face_vertex_circulator(face_handle handle, bool not_at_begin)
-      : handle(handle.any_halfedge()), not_at_begin(not_at_begin)
-    {
-    }
+    face_vertex_circulator(face_handle handle, bool not_at_begin) : handle(handle.any_halfedge()), not_at_begin(not_at_begin) {}
 
     vertex_handle operator*() const { return handle.vertex_to(); }
     face_vertex_circulator& operator++()
@@ -130,10 +123,7 @@ private:
 struct face_halfedge_circulator
 {
     face_halfedge_circulator() = default;
-    face_halfedge_circulator(face_handle handle, bool not_at_begin)
-      : handle(handle.any_halfedge()), not_at_begin(not_at_begin)
-    {
-    }
+    face_halfedge_circulator(face_handle handle, bool not_at_begin) : handle(handle.any_halfedge()), not_at_begin(not_at_begin) {}
 
     halfedge_handle operator*() const { return handle; }
     face_halfedge_circulator& operator++()
@@ -167,10 +157,7 @@ private:
 struct face_edge_circulator
 {
     face_edge_circulator() = default;
-    face_edge_circulator(face_handle handle, bool not_at_begin)
-      : handle(handle.any_halfedge()), not_at_begin(not_at_begin)
-    {
-    }
+    face_edge_circulator(face_handle handle, bool not_at_begin) : handle(handle.any_halfedge()), not_at_begin(not_at_begin) {}
 
     edge_handle operator*() const { return handle.edge(); }
     face_edge_circulator& operator++()
@@ -204,10 +191,7 @@ private:
 struct face_face_circulator
 {
     face_face_circulator() = default;
-    face_face_circulator(face_handle handle, bool not_at_begin)
-      : handle(handle.any_halfedge()), not_at_begin(not_at_begin)
-    {
-    }
+    face_face_circulator(face_handle handle, bool not_at_begin) : handle(handle.any_halfedge()), not_at_begin(not_at_begin) {}
 
     face_handle operator*() const { return handle.opposite_face(); }
     face_face_circulator& operator++()
@@ -241,10 +225,7 @@ private:
 struct vertex_halfedge_out_circulator
 {
     vertex_halfedge_out_circulator() = default;
-    vertex_halfedge_out_circulator(vertex_handle handle, bool not_at_begin)
-      : handle(handle.any_outgoing_halfedge()), not_at_begin(not_at_begin)
-    {
-    }
+    vertex_halfedge_out_circulator(vertex_handle handle, bool not_at_begin) : handle(handle.any_outgoing_halfedge()), not_at_begin(not_at_begin) {}
 
     halfedge_handle operator*() const { return handle; }
     vertex_halfedge_out_circulator& operator++()
@@ -278,10 +259,7 @@ private:
 struct vertex_halfedge_in_circulator
 {
     vertex_halfedge_in_circulator() = default;
-    vertex_halfedge_in_circulator(vertex_handle handle, bool not_at_begin)
-      : handle(handle.any_outgoing_halfedge()), not_at_begin(not_at_begin)
-    {
-    }
+    vertex_halfedge_in_circulator(vertex_handle handle, bool not_at_begin) : handle(handle.any_outgoing_halfedge()), not_at_begin(not_at_begin) {}
 
     halfedge_handle operator*() const { return handle.opposite(); }
     vertex_halfedge_in_circulator& operator++()
@@ -315,10 +293,7 @@ private:
 struct vertex_face_circulator
 {
     vertex_face_circulator() = default;
-    vertex_face_circulator(vertex_handle handle, bool not_at_begin)
-      : handle(handle.any_outgoing_halfedge()), not_at_begin(not_at_begin)
-    {
-    }
+    vertex_face_circulator(vertex_handle handle, bool not_at_begin) : handle(handle.any_outgoing_halfedge()), not_at_begin(not_at_begin) {}
 
     face_handle operator*() const { return handle.face(); }
     vertex_face_circulator& operator++()
@@ -352,10 +327,7 @@ private:
 struct vertex_vertex_circulator
 {
     vertex_vertex_circulator() = default;
-    vertex_vertex_circulator(vertex_handle handle, bool not_at_begin)
-      : handle(handle.any_outgoing_halfedge()), not_at_begin(not_at_begin)
-    {
-    }
+    vertex_vertex_circulator(vertex_handle handle, bool not_at_begin) : handle(handle.any_outgoing_halfedge()), not_at_begin(not_at_begin) {}
 
     vertex_handle operator*() const { return handle.vertex_to(); }
     vertex_vertex_circulator& operator++()
@@ -389,10 +361,7 @@ private:
 struct vertex_edge_circulator
 {
     vertex_edge_circulator() = default;
-    vertex_edge_circulator(vertex_handle handle, bool not_at_begin)
-      : handle(handle.any_outgoing_halfedge()), not_at_begin(not_at_begin)
-    {
-    }
+    vertex_edge_circulator(vertex_handle handle, bool not_at_begin) : handle(handle.any_outgoing_halfedge()), not_at_begin(not_at_begin) {}
 
     edge_handle operator*() const { return handle.edge(); }
     vertex_edge_circulator& operator++()

@@ -4,32 +4,13 @@
 
 namespace polymesh
 {
-
-inline void primitive<vertex_tag>::reserve(Mesh& m, int capacity)
-{
-    m.reserve_vertices(capacity);
-}
-inline void primitive<face_tag>::reserve(Mesh& m, int capacity)
-{
-    m.reserve_faces(capacity);
-}
-inline void primitive<edge_tag>::reserve(Mesh& m, int capacity)
-{
-    m.reserve_edges(capacity);
-}
-inline void primitive<halfedge_tag>::reserve(Mesh& m, int capacity)
-{
-    m.reserve_halfedges(capacity);
-}
-
-
 inline vertex_index Mesh::add_vertex()
 {
     auto idx = vertex_index((int)mVertices.size());
     mVertices.push_back(vertex_info());
 
     // notify attributes
-    auto vCnt = mVertices.size();
+    auto vCnt = (int)mVertices.size();
     for (auto p = mVertexAttrs; p; p = p->mNextAttribute)
         p->resize(vCnt, false);
 
@@ -108,7 +89,7 @@ inline face_index Mesh::add_face(const halfedge_index *half_loop, int vcnt)
     fix_boundary_state_of(fidx);
 
     // notify attributes
-    auto fCnt = mFaces.size();
+    auto fCnt = (int)mFaces.size();
     for (auto p = mFaceAttrs; p; p = p->mNextAttribute)
         p->resize(fCnt, false);
 
@@ -182,7 +163,7 @@ inline edge_index Mesh::add_or_get_edge(vertex_index v_from, vertex_index v_to)
     mHalfedges.push_back(h_to_from);
 
     // notify attributes
-    auto hCnt = mHalfedges.size();
+    auto hCnt = (int)mHalfedges.size();
     auto eCnt = hCnt >> 1;
     for (auto p = mHalfedgeAttrs; p; p = p->mNextAttribute)
         p->resize(hCnt, false);
@@ -451,15 +432,9 @@ inline bool Mesh::is_boundary(vertex_index idx) const
     return v.outgoing_halfedge.is_valid() && is_boundary(v.outgoing_halfedge);
 }
 
-inline bool Mesh::is_boundary(halfedge_index idx) const
-{
-    return halfedge(idx).is_free();
-}
+inline bool Mesh::is_boundary(halfedge_index idx) const { return halfedge(idx).is_free(); }
 
-inline halfedge_index Mesh::opposite(halfedge_index he) const
-{
-    return halfedge_index(he.value ^ 1);
-}
+inline halfedge_index Mesh::opposite(halfedge_index he) const { return halfedge_index(he.value ^ 1); }
 
 inline vertex_index Mesh::next_valid_idx_from(vertex_index idx) const
 {
@@ -550,14 +525,14 @@ inline void Mesh::compactify()
     for (auto i = 0; i < v_cnt; ++i)
         if (mVertices[i].is_valid())
         {
-            v_old_to_new[i] = v_new_to_old.size();
+            v_old_to_new[i] = (int)v_new_to_old.size();
             v_new_to_old.push_back(i);
         }
 
     for (auto i = 0; i < f_cnt; ++i)
         if (mFaces[i].is_valid())
         {
-            f_old_to_new[i] = f_new_to_old.size();
+            f_old_to_new[i] = (int)f_new_to_old.size();
             f_new_to_old.push_back(i);
         }
 
@@ -568,7 +543,7 @@ inline void Mesh::compactify()
     for (auto i = 0; i < h_cnt; ++i)
         if (mHalfedges[i].is_valid())
         {
-            h_old_to_new[i] = h_new_to_old.size();
+            h_old_to_new[i] = (int)h_new_to_old.size();
             h_new_to_old.push_back(i);
         }
 
@@ -686,5 +661,4 @@ inline void Mesh::reserve_halfedges(int capacity)
 
     mHalfedges.reserve(capacity);
 }
-
 }
