@@ -7,6 +7,8 @@
 
 namespace polymesh
 {
+// ================= COLLECTION =================
+
 template <class mesh_ptr, class tag, class iterator>
 struct smart_collection
 {
@@ -180,6 +182,8 @@ struct valid_halfedge_const_collection : smart_collection<Mesh const*, halfedge_
 {
 };
 
+// ================= RINGS =================
+
 // rings
 
 /// all vertices belonging to a face
@@ -194,8 +198,8 @@ struct face_vertex_ring
     bool contains(vertex_handle v) const;
 
     // Iteration:
-    face_vertex_circulator begin() const { return {face, false}; }
-    face_vertex_circulator end() const { return {face, true}; }
+    face_vertex_circulator begin() const { return {face.any_halfedge(), false}; }
+    face_vertex_circulator end() const { return {face.any_halfedge(), true}; }
 };
 
 /// all halfedges belonging to a face
@@ -210,8 +214,8 @@ struct face_halfedge_ring
     bool contains(halfedge_handle h) const;
 
     // Iteration:
-    face_halfedge_circulator begin() const { return {face, false}; }
-    face_halfedge_circulator end() const { return {face, true}; }
+    face_halfedge_circulator begin() const { return {face.any_halfedge(), false}; }
+    face_halfedge_circulator end() const { return {face.any_halfedge(), true}; }
 };
 
 /// all edges belonging to a face
@@ -226,8 +230,8 @@ struct face_edge_ring
     bool contains(edge_handle e) const;
 
     // Iteration:
-    face_edge_circulator begin() const { return {face, false}; }
-    face_edge_circulator end() const { return {face, true}; }
+    face_edge_circulator begin() const { return {face.any_halfedge(), false}; }
+    face_edge_circulator end() const { return {face.any_halfedge(), true}; }
 };
 
 /// all adjacent faces belonging to a face
@@ -242,8 +246,8 @@ struct face_face_ring
     bool contains(face_handle f) const;
 
     // Iteration:
-    face_face_circulator begin() const { return {face, false}; }
-    face_face_circulator end() const { return {face, true}; }
+    face_face_circulator begin() const { return {face.any_halfedge(), false}; }
+    face_face_circulator end() const { return {face.any_halfedge(), true}; }
 };
 
 /// all outgoing half-edges from a vertex
@@ -258,8 +262,8 @@ struct vertex_halfedge_out_ring
     bool contains(halfedge_handle h) const;
 
     // Iteration:
-    vertex_halfedge_out_circulator begin() const { return {vertex, vertex.is_isolated()}; }
-    vertex_halfedge_out_circulator end() const { return {vertex, true}; }
+    vertex_halfedge_out_circulator begin() const { return {vertex.any_outgoing_halfedge(), vertex.is_isolated()}; }
+    vertex_halfedge_out_circulator end() const { return {vertex.any_outgoing_halfedge(), true}; }
 };
 
 /// all incoming half-edges from a vertex
@@ -274,8 +278,8 @@ struct vertex_halfedge_in_ring
     bool contains(halfedge_handle h) const;
 
     // Iteration:
-    vertex_halfedge_in_circulator begin() const { return {vertex, vertex.is_isolated()}; }
-    vertex_halfedge_in_circulator end() const { return {vertex, true}; }
+    vertex_halfedge_in_circulator begin() const { return {vertex.any_outgoing_halfedge(), vertex.is_isolated()}; }
+    vertex_halfedge_in_circulator end() const { return {vertex.any_outgoing_halfedge(), true}; }
 };
 
 /// all adjacent vertices of a vertex
@@ -290,8 +294,8 @@ struct vertex_vertex_ring
     bool contains(vertex_handle v) const;
 
     // Iteration:
-    vertex_vertex_circulator begin() const { return {vertex, vertex.is_isolated()}; }
-    vertex_vertex_circulator end() const { return {vertex, true}; }
+    vertex_vertex_circulator begin() const { return {vertex.any_outgoing_halfedge(), vertex.is_isolated()}; }
+    vertex_vertex_circulator end() const { return {vertex.any_outgoing_halfedge(), true}; }
 };
 
 /// all adjacent edges of a vertex
@@ -306,8 +310,8 @@ struct vertex_edge_ring
     bool contains(edge_handle e) const;
 
     // Iteration:
-    vertex_edge_circulator begin() const { return {vertex, vertex.is_isolated()}; }
-    vertex_edge_circulator end() const { return {vertex, true}; }
+    vertex_edge_circulator begin() const { return {vertex.any_outgoing_halfedge(), vertex.is_isolated()}; }
+    vertex_edge_circulator end() const { return {vertex.any_outgoing_halfedge(), true}; }
 };
 
 /// all adjacent faces of a vertex (INCLUDES invalid ones for boundaries)
@@ -322,8 +326,8 @@ struct vertex_face_ring
     bool contains(face_handle f) const;
 
     // Iteration:
-    vertex_face_circulator begin() const { return {vertex, vertex.is_isolated()}; }
-    vertex_face_circulator end() const { return {vertex, true}; }
+    vertex_face_circulator begin() const { return {vertex.any_outgoing_halfedge(), vertex.is_isolated()}; }
+    vertex_face_circulator end() const { return {vertex.any_outgoing_halfedge(), true}; }
 };
 
 
