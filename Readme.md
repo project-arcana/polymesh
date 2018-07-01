@@ -17,5 +17,6 @@ Best used with glm and glow.
 * Switch primitives and valid_primitives, check if compact flag is inlined
 * Test self-adjacent faces
 * smart ranges: average, min, max, any, all, first, last ...
+* smart ranges: filter, map
 * mid-level topo API: edge-rotate-next/prev, edge-split, edge-collapse, halfedge-split, halfedge-collapse, vertex-collapse
 * annotate property preservation for mid-level topo API

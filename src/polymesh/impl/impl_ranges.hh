@@ -4,6 +4,52 @@
 
 namespace polymesh
 {
+template <class this_t, class tag>
+typename smart_range<this_t, tag>::handle smart_range<this_t, tag>::first() const
+{
+    for (auto h : static_cast<this_t const *>(this))
+        return h;
+    return handle::invalid();
+}
+template <class this_t, class tag>
+typename smart_range<this_t, tag>::handle smart_range<this_t, tag>::last() const
+{
+    handle result;
+    for (auto h : static_cast<this_t const *>(this))
+        result = h;
+    return result;
+}
+
+template <class this_t, class tag>
+bool smart_range<this_t, tag>::any() const
+{
+    for (auto h : static_cast<this_t const *>(this))
+        return true;
+    return false;
+}
+
+template <class this_t, class tag>
+template <typename PredT>
+bool smart_range<this_t, tag>::any(PredT&& p) const
+{
+    for (auto h : static_cast<this_t const *>(this))
+        if (p(h))
+            return true;
+    return false;
+}
+
+template <class this_t, class tag>
+int smart_range<this_t, tag>::count() const
+{
+    auto cnt = 0;
+    for (auto h : static_cast<this_t const *>(this))
+    {
+        (void)h; // unused
+        ++cnt;
+    }
+    return cnt;
+}
+
 template <class mesh_ptr, class tag, class iterator>
 int smart_collection<mesh_ptr, tag, iterator>::size() const
 {

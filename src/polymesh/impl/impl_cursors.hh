@@ -4,6 +4,20 @@
 
 namespace polymesh
 {
+template <class tag>
+template <class FuncT>
+auto primitive_index<tag>::operator[](FuncT&& f) const -> tmp::result_type_of<FuncT, index_t>
+{
+    return f(*static_cast<typename primitive<tag>::index const*>(this));
+}
+
+template <class tag>
+template <class FuncT>
+auto primitive_handle<tag>::operator[](FuncT&& f) const -> tmp::result_type_of<FuncT, handle_t>
+{
+    return f(*static_cast<typename primitive<tag>::handle const*>(this));
+}
+
 inline bool vertex_handle::is_removed() const { return idx.is_valid() && !mesh->vertex(idx).is_valid(); }
 inline bool face_handle::is_removed() const { return idx.is_valid() && !mesh->face(idx).is_valid(); }
 inline bool edge_handle::is_removed() const { return idx.is_valid() && !mesh->halfedge(idx, 0).is_valid(); }
@@ -13,7 +27,7 @@ inline bool vertex_handle::is_isolated() const { return mesh->vertex(idx).is_iso
 
 inline bool vertex_handle::is_boundary() const
 {
-    auto const &v = mesh->vertex(idx);
+    auto const& v = mesh->vertex(idx);
     if (v.is_isolated())
         return true;
     return mesh->halfedge(v.outgoing_halfedge).is_free();

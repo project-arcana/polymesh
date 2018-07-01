@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "primitives.hh"
+#include "tmp.hh"
 
 namespace polymesh
 {
@@ -28,14 +29,11 @@ struct primitive_index
     bool operator==(index_t const& rhs) const { return value == rhs.value; }
     bool operator!=(index_t const& rhs) const { return value != rhs.value; }
 
-    template <class AttrT>
-    AttrT& operator[](attribute<AttrT>& prop) const;
-    template <class AttrT>
-    AttrT const& operator[](attribute<AttrT> const& prop) const;
-    template <class AttrT>
-    AttrT& operator[](attribute<AttrT>* prop) const;
-    template <class AttrT>
-    AttrT const& operator[](attribute<AttrT> const* prop) const;
+    /// indexes this primitive by a functor
+    /// also works for attributes
+    /// - e.g. v[position] or f[area]
+    template <class FuncT>
+    auto operator[](FuncT&& f) const -> tmp::result_type_of<FuncT, index_t>;
 };
 
 template <class tag>
@@ -57,14 +55,11 @@ struct primitive_handle
     bool operator==(handle_t const& rhs) const { return mesh == rhs.mesh && idx == rhs.idx; }
     bool operator!=(handle_t const& rhs) const { return mesh != rhs.mesh || idx != rhs.idx; }
 
-    template <class AttrT>
-    AttrT& operator[](attribute<AttrT>& prop) const;
-    template <class AttrT>
-    AttrT const& operator[](attribute<AttrT> const& prop) const;
-    template <class AttrT>
-    AttrT& operator[](attribute<AttrT>* prop) const;
-    template <class AttrT>
-    AttrT const& operator[](attribute<AttrT> const* prop) const;
+    /// indexes this primitive by a functor
+    /// also works for attributes
+    /// - e.g. v[position] or f[area]
+    template <class FuncT>
+    auto operator[](FuncT&& f) const -> tmp::result_type_of<FuncT, handle_t>;
 
     bool is_valid() const { return idx.is_valid(); }    ///< valid idx (but could be deleted in some iterators)
     bool is_invalid() const { return !idx.is_valid(); } ///< invalid idx

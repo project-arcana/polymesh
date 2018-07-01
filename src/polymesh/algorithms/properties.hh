@@ -15,8 +15,23 @@
 // - face normal
 // - vertex normal
 // - curvature
+// - topological properties
 namespace polymesh
 {
+/// returns true if the vertex lies at a boundary
+bool is_boundary(vertex_handle v);
+/// returns true if the face lies at a boundary
+bool is_boundary(face_handle v);
+/// returns true if the edge lies at a boundary
+bool is_boundary(edge_handle v);
+/// returns true if the half-edge lies at a boundary (NOTE: a half-edge is boundary if it has no face)
+bool is_boundary(halfedge_handle v);
+
+/// returns true if the vertex has no neighbors
+bool is_isolated(vertex_handle v);
+/// returns true if the edge has no neighboring faces
+bool is_isolated(edge_handle v);
+
 /// returns the vertex valence (number of adjacent vertices)
 int valence_of(vertex_handle v);
 
@@ -38,10 +53,19 @@ Vec3 triangle_centroid(face_handle f, vertex_attribute<Vec3> const& position);
 
 /// ======== IMPLEMENTATION ========
 
-inline int valence_of(vertex_handle v)
-{
-    return v.adjacent_vertices().size();
-}
+inline bool is_boundary(vertex_handle v) { return v.is_boundary(); }
+
+inline bool is_boundary(face_handle v) { return v.is_boundary(); }
+
+inline bool is_boundary(edge_handle v) { return v.is_boundary(); }
+
+inline bool is_boundary(halfedge_handle v) { return v.is_boundary(); }
+
+inline bool is_isolated(vertex_handle v) { return v.is_isolated(); }
+
+inline bool is_isolated(edge_handle v) { return v.is_isolated(); }
+
+inline int valence_of(vertex_handle v) { return v.adjacent_vertices().size(); }
 
 template <class Vec3>
 typename field_3d<Vec3>::Scalar triangle_area(face_handle f, vertex_attribute<Vec3> const& position)

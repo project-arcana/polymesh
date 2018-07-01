@@ -38,6 +38,11 @@ public:
     AttrT& operator[](index_t v) { return mData[v.value]; }
     AttrT const& operator[](index_t v) const { return mData[v.value]; }
 
+    AttrT& operator()(handle_t v) { return mData[v.idx.value]; }
+    AttrT const& operator()(handle_t v) const { return mData[v.idx.value]; }
+    AttrT& operator()(index_t v) { return mData[v.value]; }
+    AttrT const& operator()(index_t v) const { return mData[v.value]; }
+
     AttrT* data() { return mData.data; }
     AttrT const* data() const { return mData.data; }
     int size() const;
@@ -49,10 +54,10 @@ public:
 
     /// returns a new attribute where the given function was applied to each entry
     template <class FuncT>
-    auto map(FuncT f) const -> attribute<tmp::result_type_of<FuncT, AttrT>>;
+    auto map(FuncT&& f) const -> attribute<tmp::decayed_result_type_of<FuncT, AttrT>>;
     /// applies to given function to each attribute entry
     template <class FuncT>
-    void apply(FuncT f);
+    void apply(FuncT&& f);
 
     // data
 protected:
@@ -166,57 +171,5 @@ primitive_attribute<tag, AttrT>& primitive_attribute<tag, AttrT>::operator=(prim
     this->register_attr();
 
     return *this;
-}
-
-/// ======== CURSOR IMPLEMENTATION ========
-
-template <class tag>
-template <class AttrT>
-AttrT& primitive_index<tag>::operator[](attribute<AttrT>& attr) const
-{
-    return attr[*this];
-}
-template <class tag>
-template <class AttrT>
-AttrT const& primitive_index<tag>::operator[](attribute<AttrT> const& attr) const
-{
-    return attr[*this];
-}
-template <class tag>
-template <class AttrT>
-AttrT& primitive_index<tag>::operator[](attribute<AttrT>* attr) const
-{
-    return (*attr)[*this];
-}
-template <class tag>
-template <class AttrT>
-AttrT const& primitive_index<tag>::operator[](attribute<AttrT> const* attr) const
-{
-    return (*attr)[*this];
-}
-
-template <class tag>
-template <class AttrT>
-AttrT& primitive_handle<tag>::operator[](attribute<AttrT>& attr) const
-{
-    return attr[idx];
-}
-template <class tag>
-template <class AttrT>
-AttrT const& primitive_handle<tag>::operator[](attribute<AttrT> const& attr) const
-{
-    return attr[idx];
-}
-template <class tag>
-template <class AttrT>
-AttrT& primitive_handle<tag>::operator[](attribute<AttrT>* attr) const
-{
-    return (*attr)[idx];
-}
-template <class tag>
-template <class AttrT>
-AttrT const& primitive_handle<tag>::operator[](attribute<AttrT> const* attr) const
-{
-    return (*attr)[idx];
 }
 }

@@ -160,14 +160,24 @@ void primitive_attribute<tag, AttrT>::clear()
 
 template <class tag, class AttrT>
 template <class FuncT>
-auto primitive_attribute<tag, AttrT>::map(FuncT f) const -> attribute<tmp::result_type_of<FuncT, AttrT>>
+auto primitive_attribute<tag, AttrT>::map(FuncT &&f) const -> attribute<tmp::decayed_result_type_of<FuncT, AttrT>>
 {
-    auto attr = primitive<tag>::all_collection_of(*this->mMesh).template make_attribute<tmp::result_type_of<FuncT, AttrT>>();
+    auto attr = primitive<tag>::all_collection_of(*this->mMesh).template make_attribute<tmp::decayed_result_type_of<FuncT, AttrT>>();
     auto s = size();
     auto d_in = data();
     auto d_out = attr.data();
     for (auto i = 0; i < s; ++i)
         d_out[i] = f(d_in[i]);
     return attr; // copy elison
+}
+
+template <class tag, class AttrT>
+template <class FuncT>
+void primitive_attribute<tag, AttrT>::apply(FuncT &&f)
+{
+    auto s = size();
+    auto d = data();
+    for (auto i = 0; i < s; ++i)
+        d[i] = f(d[i]);
 }
 }
