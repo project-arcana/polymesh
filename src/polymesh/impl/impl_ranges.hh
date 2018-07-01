@@ -137,6 +137,26 @@ auto smart_range<this_t, ElementT>::avg(FuncT &&f) const -> tmp::decayed_result_
 }
 
 template <class this_t, class ElementT>
+template <class FuncT, class WeightT>
+auto smart_range<this_t, ElementT>::weighted_avg(FuncT &&f, WeightT &&w) const -> tmp::decayed_result_type_of<FuncT, ElementT>
+{
+    auto it_begin = static_cast<this_t const *>(this)->begin();
+    auto it_end = static_cast<this_t const *>(this)->end();
+    assert(it_begin != it_end && "requires non-empty range");
+    auto e = *it_begin;
+    auto s = f(e);
+    auto ws = w(e);
+    ++it_begin;
+    while (it_begin != it_end)
+    {
+        auto ee = *it_begin;
+        s = s + f(ee);
+        ws = ws + w(ee);
+    }
+    return s / ws;
+}
+
+template <class this_t, class ElementT>
 template <class FuncT>
 auto smart_range<this_t, ElementT>::aabb(FuncT &&f) const -> polymesh::aabb<typename tmp::decayed_result_of<FuncT, ElementT>::type>
 {
@@ -144,7 +164,7 @@ auto smart_range<this_t, ElementT>::aabb(FuncT &&f) const -> polymesh::aabb<type
     auto it_end = static_cast<this_t const *>(this)->end();
     assert(it_begin != it_end && "requires non-empty range");
     auto v = f(*it_begin);
-    polymesh::aabb<typename tmp::decayed_result_of<FuncT, ElementT>::type> r = { v, v };
+    polymesh::aabb<typename tmp::decayed_result_of<FuncT, ElementT>::type> r = {v, v};
     ++it_begin;
     while (it_begin != it_end)
     {
@@ -160,6 +180,54 @@ template <class FuncT>
 auto smart_range<this_t, ElementT>::minmax(FuncT &&f) const -> polymesh::aabb<typename tmp::decayed_result_of<FuncT, ElementT>::type>
 {
     return aabb(f);
+}
+
+template <class this_t, class ElementT>
+std::vector<ElementT> smart_range<this_t, ElementT>::to_vector() const
+{
+    std::vector<ElementT> v;
+    for (auto h : *static_cast<this_t const *>(this))
+        v.push_back(h);
+    return v;
+}
+
+template <class this_t, class ElementT>
+std::set<ElementT> smart_range<this_t, ElementT>::to_set() const
+{
+    std::set<ElementT> s;
+    for (auto h : *static_cast<this_t const *>(this))
+        s.insert(h);
+    return s;
+}
+
+template <class this_t, class ElementT>
+template <class FuncT>
+auto smart_range<this_t, ElementT>::to_vector(FuncT &&f) const -> std::vector<tmp::decayed_result_type_of<FuncT, ElementT>>
+{
+    std::vector<tmp::decayed_result_type_of<FuncT, ElementT>> v;
+    for (auto h : *static_cast<this_t const *>(this))
+        v.push_back(f(h));
+    return v;
+}
+
+template <class this_t, class ElementT>
+template <class FuncT>
+auto smart_range<this_t, ElementT>::to_set(FuncT &&f) const -> std::set<tmp::decayed_result_type_of<FuncT, ElementT>>
+{
+    std::set<tmp::decayed_result_type_of<FuncT, ElementT>> s;
+    for (auto h : *static_cast<this_t const *>(this))
+        s.insert(f(h));
+    return s;
+}
+
+template <class this_t, class ElementT>
+template <class FuncT>
+auto smart_range<this_t, ElementT>::to_map(FuncT &&f) const -> std::map<ElementT, tmp::decayed_result_type_of<FuncT, ElementT>>
+{
+    std::map<ElementT, tmp::decayed_result_type_of<FuncT, ElementT>> m;
+    for (auto h : *static_cast<this_t const *>(this))
+        m[h] = f(h);
+    return m;
 }
 
 template <class mesh_ptr, class tag, class iterator>

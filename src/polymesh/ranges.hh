@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstddef>
+#include <map>
+#include <set>
 #include <vector>
 
 #include "iterators.hh"
@@ -12,6 +14,13 @@ struct aabb
 {
     T min;
     T max;
+};
+
+template <class V, class W>
+struct weighted_sample
+{
+    V value;
+    W weight;
 };
 
 template <class this_t, class ElementT>
@@ -62,6 +71,12 @@ struct smart_range
     template <class FuncT>
     auto avg(FuncT&& f) const -> tmp::decayed_result_type_of<FuncT, ElementT>;
 
+    /// calculates the weighted avg of f(e) with weight w(e) over all elements
+    /// undefined behavior if range is empty
+    /// requires operator+ for the elements and weights as well as operator/(ElementT, WeightT)
+    template <class FuncT, class WeightT>
+    auto weighted_avg(FuncT&& f, WeightT&& w) const -> tmp::decayed_result_type_of<FuncT, ElementT>;
+
     /// calculates the aabb (min and max) of f(e) over all elements
     /// undefined behavior if range is empty
     /// works for std::min/max and everything reachable by ADL (calls min/max(_, _))
@@ -71,11 +86,26 @@ struct smart_range
     template <class FuncT>
     auto minmax(FuncT&& f) const -> polymesh::aabb<tmp::decayed_result_type_of<FuncT, ElementT>>;
 
+    /// converts this range to a vector
+    std::vector<ElementT> to_vector() const;
+    /// converts this range to a set
+    std::set<ElementT> to_set() const;
+    /// converts this range to a vector containing f(v) entries
+    template <class FuncT>
+    auto to_vector(FuncT&& f) const -> std::vector<tmp::decayed_result_type_of<FuncT, ElementT>>;
+    /// converts this range to a set containing f(v) entries
+    template <class FuncT>
+    auto to_set(FuncT&& f) const -> std::set<tmp::decayed_result_type_of<FuncT, ElementT>>;
+    /// converts this range to a map containing {v, f(v)} entries
+    template <class FuncT>
+    auto to_map(FuncT&& f) const -> std::map<ElementT, tmp::decayed_result_type_of<FuncT, ElementT>>;
+    
     // TODO: (requires new ranges)
     // - filter (or where?)
     // - map
     // - skip
     // - only_valid
+    // - conversions from vector/set/map
 };
 
 // ================= COLLECTION =================

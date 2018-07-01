@@ -20,5 +20,6 @@ Best used with glm and glow.
 * mid-level topo API: edge-rotate-next/prev, edge-split, edge-collapse, halfedge-split, halfedge-collapse, vertex-collapse
 * annotate property preservation for mid-level topo API
 * vector, set, map -> range
-* range -> vector, set, map
-* weighted avg
+* opposite edges (from vertex)
+* cotangens weights etc.
+* smoothing
