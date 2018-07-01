@@ -7,39 +7,42 @@
 
 namespace polymesh
 {
+template <class T>
+struct aabb
+{
+    T min;
+    T max;
+};
 
-template<class this_t, class tag>
+template <class this_t, class ElementT>
 struct smart_range
 {
-    template<class AttrT>
-    using attribute = typename primitive<tag>::template attribute<AttrT>;
-    using handle = typename primitive<tag>::handle;
-
     /// returns the first element in this range
-    /// returns invalid on empty ranges
-    handle first() const;
-    /// returns the last element in this range 
-    /// returns invalid on empty ranges
+    /// returns invalid on empty ranges (or default ctor'd one)
+    ElementT first() const;
+    /// returns the last element in this range
+    /// returns invalid on empty ranges (or default ctor'd one)
     /// TODO: how to make this O(1)
-    handle last() const;
+    ElementT last() const;
 
     /// returns true if the range is non-empty
     bool any() const;
     /// returns true if any handle fulfils p(h)
-    template<typename PredT>
+    /// also works for boolean attributes
+    template <class PredT>
     bool any(PredT&& p) const;
-    /// returns true if any attribute is true for this range
-    // bool any(attribute<bool> const& a) const;
     /// returns true if all handles fulfil p(h)
-    template<typename PredT>
+    /// also works for boolean attributes
+    template <class PredT>
     bool all(PredT&& p) const;
-    /// returns true if all attributes are true for this range
-    // bool all(attribute<bool> const& a) const;
 
     /// returns the number of elements in this range
     /// NOTE: this is an O(n) operation, prefer size() if available
     /// TODO: maybe SFINAE to implement this via size() if available?
     int count() const;
+
+    // template<class T>
+    // T min() const;
 
     // TODO:
     // - average
@@ -51,15 +54,14 @@ struct smart_range
     // - map
     // - skip
     // - only_valid
-    // - count
 };
 
 // ================= COLLECTION =================
 
 template <class mesh_ptr, class tag, class iterator>
-struct smart_collection : smart_range<smart_collection<mesh_ptr, tag, iterator>, tag>
+struct smart_collection : smart_range<smart_collection<mesh_ptr, tag, iterator>, typename primitive<tag>::handle>
 {
-    template <typename AttrT>
+    template <class AttrT>
     using attribute = typename primitive<tag>::template attribute<AttrT>;
 
     /// Number of primitives, INCLUDING those marked for deletion
@@ -232,7 +234,7 @@ struct valid_halfedge_const_collection : smart_collection<Mesh const*, halfedge_
 // ================= RINGS =================
 
 template <class this_t, class tag>
-struct primitive_ring : smart_range<this_t, tag>
+struct primitive_ring : smart_range<this_t, typename primitive<tag>::handle>
 {
     using handle = typename primitive<tag>::handle;
 

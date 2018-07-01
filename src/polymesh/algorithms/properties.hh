@@ -16,6 +16,9 @@
 // - vertex normal
 // - curvature
 // - topological properties
+//
+// Note: unary properties should be usable as free functions OR as index into handles
+// e.g. valence(v) is the same as v[valence]
 namespace polymesh
 {
 /// returns true if the vertex lies at a boundary
@@ -33,7 +36,7 @@ bool is_isolated(vertex_handle v);
 bool is_isolated(edge_handle v);
 
 /// returns the vertex valence (number of adjacent vertices)
-int valence_of(vertex_handle v);
+int valence(vertex_handle v);
 
 /// returns the area of the (flat) polygonal face
 template <class Vec3>
@@ -65,7 +68,7 @@ inline bool is_isolated(vertex_handle v) { return v.is_isolated(); }
 
 inline bool is_isolated(edge_handle v) { return v.is_isolated(); }
 
-inline int valence_of(vertex_handle v) { return v.adjacent_vertices().size(); }
+inline int valence(vertex_handle v) { return v.adjacent_vertices().size(); }
 
 template <class Vec3>
 typename field_3d<Vec3>::Scalar triangle_area(face_handle f, vertex_attribute<Vec3> const& position)

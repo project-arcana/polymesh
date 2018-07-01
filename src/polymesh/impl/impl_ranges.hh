@@ -4,33 +4,33 @@
 
 namespace polymesh
 {
-template <class this_t, class tag>
-typename smart_range<this_t, tag>::handle smart_range<this_t, tag>::first() const
+template <class this_t, class ElementT>
+ElementT smart_range<this_t, ElementT>::first() const
 {
     for (auto h : static_cast<this_t const *>(this))
         return h;
-    return handle::invalid();
+    return {};
 }
-template <class this_t, class tag>
-typename smart_range<this_t, tag>::handle smart_range<this_t, tag>::last() const
+template <class this_t, class ElementT>
+ElementT smart_range<this_t, ElementT>::last() const
 {
-    handle result;
+    ElementT result;
     for (auto h : static_cast<this_t const *>(this))
         result = h;
     return result;
 }
 
-template <class this_t, class tag>
-bool smart_range<this_t, tag>::any() const
+template <class this_t, class ElementT>
+bool smart_range<this_t, ElementT>::any() const
 {
     for (auto h : static_cast<this_t const *>(this))
         return true;
     return false;
 }
 
-template <class this_t, class tag>
-template <typename PredT>
-bool smart_range<this_t, tag>::any(PredT&& p) const
+template <class this_t, class ElementT>
+template <class PredT>
+bool smart_range<this_t, ElementT>::any(PredT &&p) const
 {
     for (auto h : static_cast<this_t const *>(this))
         if (p(h))
@@ -38,8 +38,18 @@ bool smart_range<this_t, tag>::any(PredT&& p) const
     return false;
 }
 
-template <class this_t, class tag>
-int smart_range<this_t, tag>::count() const
+template <class this_t, class ElementT>
+template <class PredT>
+bool smart_range<this_t, ElementT>::all(PredT &&p) const
+{
+    for (auto h : static_cast<this_t const *>(this))
+        if (!p(h))
+            return false;
+    return true;
+}
+
+template <class this_t, class ElementT>
+int smart_range<this_t, ElementT>::count() const
 {
     auto cnt = 0;
     for (auto h : static_cast<this_t const *>(this))
