@@ -27,11 +27,11 @@ struct smart_range
 
     /// returns true if the range is non-empty
     bool any() const;
-    /// returns true if any handle fulfils p(h)
+    /// returns true if any value fulfils p(v)
     /// also works for boolean attributes
     template <class PredT>
     bool any(PredT&& p) const;
-    /// returns true if all handles fulfil p(h)
+    /// returns true if all values fulfil p(v)
     /// also works for boolean attributes
     template <class PredT>
     bool all(PredT&& p) const;
@@ -41,15 +41,37 @@ struct smart_range
     /// TODO: maybe SFINAE to implement this via size() if available?
     int count() const;
 
-    // template<class T>
-    // T min() const;
+    /// calculates min(f(e)) over all elements
+    /// undefined behavior if range is empty
+    /// works for std::min and everything reachable by ADL (calls min(_, _))
+    template <class FuncT>
+    auto min(FuncT&& f) const -> tmp::decayed_result_type_of<FuncT, ElementT>;
+    /// calculates max(f(e)) over all elements
+    /// undefined behavior if range is empty
+    /// works for std::max and everything reachable by ADL (calls max(_, _))
+    template <class FuncT>
+    auto max(FuncT&& f) const -> tmp::decayed_result_type_of<FuncT, ElementT>;
+    /// calculates the sum of f(e) over all elements
+    /// undefined behavior if range is empty
+    /// requires operator+ for the elements
+    template <class FuncT>
+    auto sum(FuncT&& f) const -> tmp::decayed_result_type_of<FuncT, ElementT>;
+    /// calculates the avg of f(e) over all elements
+    /// undefined behavior if range is empty
+    /// requires operator+ for the elements as well as operator/(ElementT, int)
+    template <class FuncT>
+    auto avg(FuncT&& f) const -> tmp::decayed_result_type_of<FuncT, ElementT>;
 
-    // TODO:
-    // - average
-    // - sum
-    // - min
-    // - max
-    // - minmax (return struct {min, max})
+    /// calculates the aabb (min and max) of f(e) over all elements
+    /// undefined behavior if range is empty
+    /// works for std::min/max and everything reachable by ADL (calls min/max(_, _))
+    template <class FuncT>
+    auto aabb(FuncT&& f) const -> polymesh::aabb<tmp::decayed_result_type_of<FuncT, ElementT>>;
+    /// same as aabb(...)
+    template <class FuncT>
+    auto minmax(FuncT&& f) const -> polymesh::aabb<tmp::decayed_result_type_of<FuncT, ElementT>>;
+
+    // TODO: (requires new ranges)
     // - filter (or where?)
     // - map
     // - skip
