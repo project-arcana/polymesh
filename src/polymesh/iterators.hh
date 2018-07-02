@@ -178,4 +178,11 @@ struct vertex_edge_circulator : primitive_circulator<vertex_edge_circulator>
     edge_handle operator*() const { return handle.edge(); }
     void advance() { handle = handle.opposite().next(); }
 };
+
+struct halfedge_ring_circulator : primitive_circulator<halfedge_ring_circulator>
+{
+    using primitive_circulator<halfedge_ring_circulator>::primitive_circulator;
+    halfedge_handle operator*() const { return handle; }
+    void advance() { handle = handle.next(); }
+};
 }

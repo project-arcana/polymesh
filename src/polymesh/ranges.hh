@@ -366,6 +366,17 @@ struct vertex_primitive_ring : primitive_ring<vertex_primitive_ring<tag, circula
     circulator end() const { return {vertex.any_outgoing_halfedge(), true}; }
 };
 
+template <class tag, class circulator>
+struct halfedge_primitive_ring : primitive_ring<halfedge_primitive_ring<tag, circulator>, tag>
+{
+    halfedge_handle halfedge;
+    halfedge_primitive_ring(halfedge_handle h) { halfedge = h; }
+
+    // Iteration:
+    circulator begin() const { return {halfedge, false}; }
+    circulator end() const { return {halfedge, true}; }
+};
+
 /// all vertices belonging to a face
 struct face_vertex_ring : face_primitive_ring<vertex_tag, face_vertex_circulator>
 {
@@ -420,4 +431,9 @@ struct vertex_face_ring : vertex_primitive_ring<face_tag, vertex_face_circulator
     using vertex_primitive_ring<face_tag, vertex_face_circulator>::vertex_primitive_ring;
 };
 
+/// all half-edges along a ring (next -> next -> ...)
+struct halfedge_ring : halfedge_primitive_ring<halfedge_tag, halfedge_ring_circulator>
+{
+    using halfedge_primitive_ring<halfedge_tag, halfedge_ring_circulator>::halfedge_primitive_ring;
+};
 }

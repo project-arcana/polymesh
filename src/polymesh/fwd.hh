@@ -63,4 +63,6 @@ struct vertex_halfedge_in_ring;
 struct vertex_face_ring;
 struct vertex_edge_ring;
 struct vertex_vertex_ring;
+
+struct halfedge_ring;
 }

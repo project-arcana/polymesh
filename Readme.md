@@ -17,11 +17,9 @@ Best used with glm and glow.
 * Test self-adjacent faces
 * smart ranges: filter, map
 * mid-level topo API: edge-rotate-next/prev, edge-split, edge-collapse, halfedge-split, halfedge-collapse, vertex-collapse
-* annotate property preservation for mid-level topo API
 * vector, set, map -> range
 * opposite edges (from vertex)
 * cotangens weights etc.
 * smoothing
 * make handle.<primitives>() contain only valid ones and provide an all_<primitives>() version
-* boundary iterators
 * _copy versions of topological operations that copy attributes

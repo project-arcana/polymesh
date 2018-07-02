@@ -192,6 +192,10 @@ void Mesh::assert_consistency() const
 
         assert(h.next().vertex_from() == h.vertex_to());
         assert(h.prev().vertex_to() == h.vertex_from());
+
+        auto ref_face = h.face();
+        for (auto h : h.ring())
+            assert(h.face() == ref_face);
     }
 
     // check vertex consistencies

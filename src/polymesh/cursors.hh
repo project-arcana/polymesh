@@ -154,23 +154,7 @@ struct halfedge_handle : primitive_handle<halfedge_tag>
     halfedge_handle prev() const;
     halfedge_handle opposite() const;
     face_handle opposite_face() const; ///< invalid if opposite boundary
+
+    halfedge_ring ring() const; ///< all half-edges along the same ring
 };
-
-/// ======== IMPLEMENTATION ========
-
-template <class tag>
-std::ostream& operator<<(std::ostream& out, primitive_index<tag> const& v)
-{
-    out << primitive<tag>::name << " " << v.value;
-    if (v.is_invalid())
-        out << " (invalid)";
-    return out;
-}
-
-template <class tag>
-std::ostream& operator<<(std::ostream& out, primitive_handle<tag> const& v)
-{
-    out << v.idx;
-    return out;
-}
 }

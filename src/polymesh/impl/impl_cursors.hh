@@ -118,4 +118,22 @@ inline vertex_edge_ring vertex_handle::edges() const { return {*this}; }
 inline vertex_face_ring vertex_handle::faces() const { return {*this}; }
 
 inline vertex_vertex_ring vertex_handle::adjacent_vertices() const { return {*this}; }
+
+inline halfedge_ring halfedge_handle::ring() const { return {*this}; }
+
+template <class tag>
+std::ostream& operator<<(std::ostream& out, primitive_index<tag> const& v)
+{
+    out << primitive<tag>::name << " " << v.value;
+    if (v.is_invalid())
+        out << " (invalid)";
+    return out;
+}
+
+template <class tag>
+std::ostream& operator<<(std::ostream& out, primitive_handle<tag> const& v)
+{
+    out << v.idx;
+    return out;
+}
 }
