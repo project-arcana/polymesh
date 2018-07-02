@@ -17,6 +17,36 @@ inline vertex_index Mesh::add_vertex()
     return idx;
 }
 
+inline face_index Mesh::alloc_face()
+{
+    auto idx = face_index((int)mFaces.size());
+    mFaces.push_back(face_info());
+
+    // notify attributes
+    auto fCnt = (int)mFaces.size();
+    for (auto p = mFaceAttrs; p; p = p->mNextAttribute)
+        p->resize(fCnt, false);
+
+    return idx;
+}
+
+inline edge_index Mesh::alloc_edge()
+{
+    auto idx = edge_index((int)mHalfedges.size() >> 1);
+    mHalfedges.push_back(halfedge_info());
+    mHalfedges.push_back(halfedge_info());
+
+    // notify attributes
+    auto hCnt = (int)mHalfedges.size();
+    auto eCnt = (int)mHalfedges.size() >> 1;
+    for (auto p = mEdgeAttrs; p; p = p->mNextAttribute)
+        p->resize(eCnt, false);
+    for (auto p = mHalfedgeAttrs; p; p = p->mNextAttribute)
+        p->resize(hCnt, false);
+
+    return idx;
+}
+
 inline face_index Mesh::add_face(const vertex_handle *v_handles, int vcnt)
 {
     mFaceInsertCache.resize(vcnt);
@@ -498,6 +528,284 @@ inline halfedge_index Mesh::prev_valid_idx_from(halfedge_index idx) const
         if (mHalfedges[i].is_valid())
             return halfedge_index(i);
     return {}; // invalid
+}
+
+inline vertex_index Mesh::face_split(face_index f)
+{
+    // TODO: can be made more performant
+
+    auto h_begin = face(f).halfedge;
+
+    // remove face
+    remove_face(f);
+
+    // add vertex
+    vertex_index vs[3];
+    vs[0] = add_vertex();
+
+    // add triangles
+    auto h = h_begin;
+    do
+    {
+        vs[1] = from_vertex_of(h);
+        vs[2] = to_vertex_of(h);
+
+        add_face(vs, 3);
+
+        h = halfedge(h).next_halfedge;
+    } while (h != h_begin);
+
+    return vs[0];
+}
+
+inline vertex_index Mesh::edge_split(edge_index f)
+{
+    // remove edge
+
+    // add vertex
+
+    // add two new edges
+
+    assert(0 && "not implemented");
+    return {};
+}
+
+inline vertex_index Mesh::halfedge_split(halfedge_index f)
+{
+    // add vertex
+
+    // add new half-edge
+
+    assert(0 && "not implemented");
+    return {};
+}
+
+inline void Mesh::edge_rotate_next(edge_index e)
+{
+    assert(!handle_of(e).is_boundary() && "does not work on boundaries");
+    assert(handle_of(e).vertexA().adjacent_vertices().size() > 2 && "does not work on valence <= 2 vertices");
+    assert(handle_of(e).vertexB().adjacent_vertices().size() > 2 && "does not work on valence <= 2 vertices");
+
+    auto h0 = halfedge_of(e, 0);
+    auto h1 = halfedge_of(e, 1);
+    auto &h0_ref = halfedge(h0);
+    auto &h1_ref = halfedge(h1);
+
+    auto h0_next = h0_ref.next_halfedge;
+    auto h0_prev = h0_ref.prev_halfedge;
+    auto h1_next = h1_ref.next_halfedge;
+    auto h1_prev = h1_ref.prev_halfedge;
+    auto &h0_next_ref = halfedge(h0_next);
+    auto &h0_prev_ref = halfedge(h0_prev);
+    auto &h1_next_ref = halfedge(h1_next);
+    auto &h1_prev_ref = halfedge(h1_prev);
+
+    auto h0_next_next = h0_next_ref.next_halfedge;
+    auto &h0_next_next_ref = halfedge(h0_next_next);
+    auto h1_next_next = h1_next_ref.next_halfedge;
+    auto &h1_next_next_ref = halfedge(h1_next_next);
+
+    // fix vertices
+    auto &v0 = vertex(h0_ref.to_vertex);
+    if (v0.outgoing_halfedge == h1)
+        v0.outgoing_halfedge = h0_next;
+    auto &v1 = vertex(h1_ref.to_vertex);
+    if (v1.outgoing_halfedge == h0)
+        v1.outgoing_halfedge = h1_next;
+
+    // fix faces
+    face(h0_ref.face).halfedge = h0;
+    face(h1_ref.face).halfedge = h1;
+
+    // fix half-edges
+    h0_ref.to_vertex = h0_next_ref.to_vertex;
+    h1_ref.to_vertex = h1_next_ref.to_vertex;
+    h0_next_ref.face = h1_ref.face;
+    h1_next_ref.face = h0_ref.face;
+
+    // move to next
+    h1_prev_ref.next_halfedge = h0_next;
+    h0_next_ref.prev_halfedge = h1_prev;
+
+    h0_prev_ref.next_halfedge = h1_next;
+    h1_next_ref.prev_halfedge = h0_prev;
+
+    h0_next_ref.next_halfedge = h1;
+    h1_ref.prev_halfedge = h0_next;
+
+    h1_next_ref.next_halfedge = h0;
+    h0_ref.prev_halfedge = h1_next;
+
+    h0_ref.next_halfedge = h0_next_next;
+    h0_next_next_ref.prev_halfedge = h0;
+
+    h1_ref.next_halfedge = h1_next_next;
+    h1_next_next_ref.prev_halfedge = h1;
+
+    // fix boundary state
+    fix_boundary_state_of(h0_ref.face);
+    fix_boundary_state_of(h1_ref.face);
+}
+
+inline void Mesh::edge_rotate_prev(edge_index e)
+{
+    assert(!handle_of(e).is_boundary() && "does not work on boundaries");
+    assert(handle_of(e).vertexA().adjacent_vertices().size() > 2 && "does not work on valence <= 2 vertices");
+    assert(handle_of(e).vertexB().adjacent_vertices().size() > 2 && "does not work on valence <= 2 vertices");
+
+    auto h0 = halfedge_of(e, 0);
+    auto h1 = halfedge_of(e, 1);
+    auto &h0_ref = halfedge(h0);
+    auto &h1_ref = halfedge(h1);
+
+    auto h0_next = h0_ref.next_halfedge;
+    auto h0_prev = h0_ref.prev_halfedge;
+    auto h1_next = h1_ref.next_halfedge;
+    auto h1_prev = h1_ref.prev_halfedge;
+    auto &h0_next_ref = halfedge(h0_next);
+    auto &h0_prev_ref = halfedge(h0_prev);
+    auto &h1_next_ref = halfedge(h1_next);
+    auto &h1_prev_ref = halfedge(h1_prev);
+
+    auto h0_prev_prev = h0_prev_ref.prev_halfedge;
+    auto &h0_prev_prev_ref = halfedge(h0_prev_prev);
+    auto h1_prev_prev = h1_prev_ref.prev_halfedge;
+    auto &h1_prev_prev_ref = halfedge(h1_prev_prev);
+
+    // fix vertex
+    auto &v0 = vertex(h0_ref.to_vertex);
+    if (v0.outgoing_halfedge == h1)
+        v0.outgoing_halfedge = h0_next;
+    auto &v1 = vertex(h1_ref.to_vertex);
+    if (v1.outgoing_halfedge == h0)
+        v1.outgoing_halfedge = h1_next;
+
+    // fix faces
+    face(h0_ref.face).halfedge = h0;
+    face(h1_ref.face).halfedge = h1;
+
+    // fix half-edge
+    h1_ref.to_vertex = h0_prev_prev_ref.to_vertex;
+    h0_ref.to_vertex = h1_prev_prev_ref.to_vertex;
+    h0_prev_ref.face = h1_ref.face;
+    h1_prev_ref.face = h0_ref.face;
+
+    // move to next
+    h0_prev_ref.next_halfedge = h1_next;
+    h1_next_ref.prev_halfedge = h0_prev;
+
+    h1_prev_ref.next_halfedge = h0_next;
+    h0_next_ref.prev_halfedge = h1_prev;
+
+    h1_ref.next_halfedge = h0_prev;
+    h0_prev_ref.prev_halfedge = h1;
+
+    h0_ref.next_halfedge = h1_prev;
+    h1_prev_ref.prev_halfedge = h0;
+
+    h0_prev_prev_ref.next_halfedge = h0;
+    h0_ref.prev_halfedge = h0_prev_prev;
+
+    h1_prev_prev_ref.next_halfedge = h1;
+    h1_ref.prev_halfedge = h1_prev_prev;
+
+    // fix boundary state
+    fix_boundary_state_of(h0_ref.face);
+    fix_boundary_state_of(h1_ref.face);
+}
+
+inline void Mesh::halfedge_rotate_next(halfedge_index h)
+{
+    assert(handle_of(h).next().next().next() != h && "does not work for triangles");
+    assert(!handle_of(h).edge().is_boundary() && "does not work on boundaries");
+    assert(handle_of(h).vertex_to().adjacent_vertices().size() > 2 && "does not work on valence <= 2 vertices");
+
+    auto h0 = h;
+    auto h1 = opposite(h);
+    auto &h0_ref = halfedge(h0);
+    auto &h1_ref = halfedge(h1);
+
+    auto h0_next = h0_ref.next_halfedge;
+    auto h1_prev = h1_ref.prev_halfedge;
+    auto &h0_next_ref = halfedge(h0_next);
+    auto &h1_prev_ref = halfedge(h1_prev);
+
+    auto h0_next_next = h0_next_ref.next_halfedge;
+    auto &h0_next_next_ref = halfedge(h0_next_next);
+
+    // fix vertex
+    auto &v = vertex(h0_ref.to_vertex);
+    if (v.outgoing_halfedge == h1)
+        v.outgoing_halfedge = h0_next;
+
+    // fix faces
+    face(h0_ref.face).halfedge = h0;
+    face(h1_ref.face).halfedge = h1;
+
+    // fix half-edges
+    h0_ref.to_vertex = h0_next_ref.to_vertex;
+    h0_next_ref.face = h1_ref.face;
+
+    // move to next
+    h1_prev_ref.next_halfedge = h0_next;
+    h0_next_ref.prev_halfedge = h1_prev;
+
+    h0_next_ref.next_halfedge = h1;
+    h1_ref.prev_halfedge = h0_next;
+
+    h0_ref.next_halfedge = h0_next_next;
+    h0_next_next_ref.prev_halfedge = h0;
+
+    // fix boundary state
+    fix_boundary_state_of(h0_ref.face);
+    fix_boundary_state_of(h1_ref.face);
+}
+
+inline void Mesh::halfedge_rotate_prev(halfedge_index h)
+{
+    assert(handle_of(h).prev().prev().prev() != h && "does not work for triangles");
+    assert(!handle_of(h).edge().is_boundary() && "does not work on boundaries");
+    assert(handle_of(h).vertex_from().adjacent_vertices().size() > 2 && "does not work on valence <= 2 vertices");
+
+    auto h0 = h;
+    auto h1 = opposite(h);
+    auto &h0_ref = halfedge(h0);
+    auto &h1_ref = halfedge(h1);
+
+    auto h0_prev = h0_ref.prev_halfedge;
+    auto h1_next = h1_ref.next_halfedge;
+    auto &h0_prev_ref = halfedge(h0_prev);
+    auto &h1_next_ref = halfedge(h1_next);
+
+    auto h0_prev_prev = h0_prev_ref.prev_halfedge;
+    auto &h0_prev_prev_ref = halfedge(h0_prev_prev);
+
+    // fix vertex
+    auto &v = vertex(h1_ref.to_vertex);
+    if (v.outgoing_halfedge == h0)
+        v.outgoing_halfedge = h1_next;
+
+    // fix faces
+    face(h0_ref.face).halfedge = h0;
+    face(h1_ref.face).halfedge = h1;
+
+    // fix half-edge
+    h1_ref.to_vertex = h0_prev_prev_ref.to_vertex;
+    h0_prev_ref.face = h1_ref.face;
+
+    // move to next
+    h0_prev_ref.next_halfedge = h1_next;
+    h1_next_ref.prev_halfedge = h0_prev;
+
+    h1_ref.next_halfedge = h0_prev;
+    h0_prev_ref.prev_halfedge = h1;
+
+    h0_prev_prev_ref.next_halfedge = h0;
+    h0_ref.prev_halfedge = h0_prev_prev;
+
+    // fix boundary state
+    fix_boundary_state_of(h0_ref.face);
+    fix_boundary_state_of(h1_ref.face);
 }
 
 inline void Mesh::compactify()

@@ -23,3 +23,5 @@ Best used with glm and glow.
 * cotangens weights etc.
 * smoothing
 * make handle.<primitives>() contain only valid ones and provide an all_<primitives>() version
+* boundary iterators
+* _copy versions of topological operations that copy attributes

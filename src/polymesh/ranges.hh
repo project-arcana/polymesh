@@ -99,7 +99,7 @@ struct smart_range
     /// converts this range to a map containing {v, f(v)} entries
     template <class FuncT>
     auto to_map(FuncT&& f) const -> std::map<ElementT, tmp::decayed_result_type_of<FuncT, ElementT>>;
-    
+
     // TODO: (requires new ranges)
     // - filter (or where?)
     // - map
@@ -180,6 +180,11 @@ struct face_collection : smart_collection<Mesh*, face_tag, iterator>
     face_handle add(std::vector<halfedge_handle> const& half_loop) const;
     face_handle add(halfedge_handle const* half_loop, int vcnt) const;
 
+    /// Splits a face by inserting a vertex (which is returned) and creating triangles towards it
+    /// Preserves half-edge attributes
+    /// The face itself is deleted and multiple new ones are created
+    vertex_handle split(face_handle f) const;
+
     /// Removes a face (adjacent edges and vertices are NOT removed)
     /// (marks it as removed, compactify mesh to actually remove it)
     void remove(face_handle f) const;
@@ -192,9 +197,25 @@ struct edge_collection : smart_collection<Mesh*, edge_tag, iterator>
 {
     /// Adds an edge between two existing, distinct vertices
     /// if edge already exists, returns it
-    edge_handle add_or_get(vertex_handle v_from, vertex_handle v_to);
+    edge_handle add_or_get(vertex_handle v_from, vertex_handle v_to) const;
 
-    // TODO: find
+    /// Returns the edge handle between two vertices (invalid if not found)
+    /// O(valence) computation
+    edge_handle find(vertex_handle v_from, vertex_handle v_to) const;
+
+    /// Splits this edge in half by inserting a vertex (which is returned)
+    /// Preserves face attributes
+    /// The edge itself is deleted and two new ones are created
+    vertex_handle split(edge_handle e) const;
+
+    /// Moves both half-edges vertices to their next half-edge vertex
+    /// Equivalent to an edge flip if both faces are triangular
+    /// Preserves all attributes
+    /// NOTE: does not work on boundaries!
+    /// TODO: image
+    void rotate_next(edge_handle e) const;
+    /// Same as rotate_next but with the previous half-edge
+    void rotate_prev(edge_handle e) const;
 
     /// Removes an edge (and both adjacent faces, vertices are NOT removed)
     /// (marks them as removed, compactify mesh to actually remove them)
@@ -209,9 +230,26 @@ struct halfedge_collection : smart_collection<Mesh*, halfedge_tag, iterator>
     /// Adds an half-edge between two existing, distinct vertices
     /// if half-edge already exists, returns it
     /// (always adds opposite half-edge as well)
-    halfedge_handle add_or_get(vertex_handle v_from, vertex_handle v_to);
+    halfedge_handle add_or_get(vertex_handle v_from, vertex_handle v_to) const;
 
-    // TODO: find
+    /// Returns the half-edge handle between two vertices (invalid if not found)
+    /// O(valence) computation
+    halfedge_handle find(vertex_handle v_from, vertex_handle v_to) const;
+
+    /// Splits this half-edge in half by inserting a vertex (which is returned)
+    /// Preserves face attributes
+    /// Contraty to edges().split, the edge is preserved and a single new one is inserted AFTER h
+    /// (thus h->next() is the newly inserted edge and h->vertex_to() is the returned vertex)
+    vertex_handle split(halfedge_handle h) const;
+
+    /// Moves the to-vertex of this half-edge to the same as the next half-edge
+    /// Preserves all attributes
+    /// NOTE: does not work on boundaries!
+    /// NOTE: does not work on triangles!
+    /// TODO: image
+    void rotate_next(halfedge_handle h) const;
+    /// Same as rotate_next but with the previous half-edge
+    void rotate_prev(halfedge_handle h) const;
 
     /// Removes the edge and both half-edges belonging to it (and both adjacent faces, vertices are NOT removed)
     /// (marks them as removed, compactify mesh to actually remove them)
@@ -381,29 +419,5 @@ struct vertex_face_ring : vertex_primitive_ring<face_tag, vertex_face_circulator
 {
     using vertex_primitive_ring<face_tag, vertex_face_circulator>::vertex_primitive_ring;
 };
-
-
-/// ======== IMPLEMENTATION ========
-
-template <class this_t, class element_handle>
-int primitive_ring<this_t, element_handle>::size() const
-{
-    auto cnt = 0;
-    for (auto v : *static_cast<this_t const*>(this))
-    {
-        (void)v; // unused
-        cnt++;
-    }
-    return cnt;
-}
-
-template <class this_t, class tag>
-bool primitive_ring<this_t, tag>::contains(handle v) const
-{
-    for (auto v2 : *static_cast<this_t const*>(this))
-        if (v == v2)
-            return true;
-    return false;
-}
 
 }

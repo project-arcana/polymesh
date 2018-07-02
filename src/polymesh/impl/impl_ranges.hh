@@ -245,6 +245,27 @@ auto smart_range<this_t, ElementT>::to_map(FuncT &&f) const -> std::map<ElementT
     return m;
 }
 
+template <class this_t, class element_handle>
+int primitive_ring<this_t, element_handle>::size() const
+{
+    auto cnt = 0;
+    for (auto v : *static_cast<this_t const *>(this))
+    {
+        (void)v; // unused
+        cnt++;
+    }
+    return cnt;
+}
+
+template <class this_t, class tag>
+bool primitive_ring<this_t, tag>::contains(handle v) const
+{
+    for (auto v2 : *static_cast<this_t const *>(this))
+        if (v == v2)
+            return true;
+    return false;
+}
+
 template <class mesh_ptr, class tag, class iterator>
 int smart_collection<mesh_ptr, tag, iterator>::size() const
 {
@@ -272,7 +293,7 @@ typename primitive<tag>::template attribute<PropT> smart_collection<mesh_ptr, ta
 
 template <class mesh_ptr, class tag, class iterator>
 template <class FuncT, class PropT>
-typename primitive<tag>::template attribute<PropT> smart_collection<mesh_ptr, tag, iterator>::make_attribute(FuncT &&f, PropT const& def_value) const
+typename primitive<tag>::template attribute<PropT> smart_collection<mesh_ptr, tag, iterator>::make_attribute(FuncT &&f, PropT const &def_value) const
 {
     auto attr = make_attribute_default<PropT>(def_value);
     for (auto h : *this)
@@ -502,14 +523,68 @@ face_handle face_collection<iterator>::add(const halfedge_handle (&half_loop)[N]
 }
 
 template <class iterator>
-edge_handle edge_collection<iterator>::add_or_get(vertex_handle v_from, vertex_handle v_to)
+edge_handle edge_collection<iterator>::add_or_get(vertex_handle v_from, vertex_handle v_to) const
 {
     return this->mesh->handle_of(this->mesh->add_or_get_edge(v_from.idx, v_to.idx));
 }
 
 template <class iterator>
-halfedge_handle halfedge_collection<iterator>::add_or_get(vertex_handle v_from, vertex_handle v_to)
+halfedge_handle halfedge_collection<iterator>::add_or_get(vertex_handle v_from, vertex_handle v_to) const
 {
     return this->mesh->handle_of(this->mesh->add_or_get_halfedge(v_from.idx, v_to.idx));
+}
+
+template <class iterator>
+edge_handle edge_collection<iterator>::find(vertex_handle v_from, vertex_handle v_to) const
+{
+    return this->mesh->handle_of(this->mesh->edge_of(this->mesh->find_halfedge(v_from.idx, v_to.idx)));
+}
+
+template <class iterator>
+halfedge_handle halfedge_collection<iterator>::find(vertex_handle v_from, vertex_handle v_to) const
+{
+    return this->mesh->handle_of(this->mesh->find_halfedge(v_from.idx, v_to.idx));
+}
+
+template <class iterator>
+vertex_handle face_collection<iterator>::split(face_handle f) const
+{
+    return this->mesh->handle_of(this->mesh->face_split(f.idx));
+}
+
+template <class iterator>
+vertex_handle edge_collection<iterator>::split(edge_handle e) const
+{
+    return this->mesh->handle_of(this->mesh->edge_split(e.idx));
+}
+
+template <class iterator>
+void edge_collection<iterator>::rotate_next(edge_handle e) const
+{
+    this->mesh->edge_rotate_next(e.idx);
+}
+
+template <class iterator>
+void edge_collection<iterator>::rotate_prev(edge_handle e) const
+{
+    this->mesh->edge_rotate_prev(e.idx);
+}
+
+template <class iterator>
+vertex_handle halfedge_collection<iterator>::split(halfedge_handle h) const
+{
+    return this->mesh->handle_of(this->mesh->halfedge_split(h.idx));
+}
+
+template <class iterator>
+void halfedge_collection<iterator>::rotate_next(halfedge_handle h) const
+{
+    this->mesh->halfedge_rotate_next(h.idx);
+}
+
+template <class iterator>
+void halfedge_collection<iterator>::rotate_prev(halfedge_handle h) const
+{
+    this->mesh->halfedge_rotate_prev(h.idx);
 }
 }

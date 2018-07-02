@@ -140,6 +140,11 @@ private:
     /// Does NOT invalidate iterators!
     vertex_index add_vertex();
 
+    /// Allocates a new face
+    face_index alloc_face();
+    /// Allocates a new edge
+    edge_index alloc_edge();
+
     /// Adds a face consisting of N vertices
     /// The vertices must already be sorted in CCW order
     /// (note: trying to add already existing halfedges triggers assertions)
@@ -154,6 +159,22 @@ private:
 
     /// same as add_or_get_edge but returns the apattrriate half-edge
     halfedge_index add_or_get_halfedge(vertex_index v_from, vertex_index v_to);
+
+    /// splits a face
+    vertex_index face_split(face_index f);
+    /// splits an edge
+    vertex_index edge_split(edge_index f);
+    /// splits a half-edge
+    vertex_index halfedge_split(halfedge_index f);
+
+    /// rotates an edge to next
+    void edge_rotate_next(edge_index e);
+    /// rotates an edge to prev
+    void edge_rotate_prev(edge_index e);
+    /// rotates a half-edge to next
+    void halfedge_rotate_next(halfedge_index h);
+    /// rotates a half-edge to prev
+    void halfedge_rotate_prev(halfedge_index h);
 
     /// removes a face (actually sets the removed status)
     /// modifies all adjacent vertices so that they correctly report is_boundary true

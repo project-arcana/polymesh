@@ -189,6 +189,9 @@ void Mesh::assert_consistency() const
         assert(h.vertex_from().outgoing_halfedges().contains(h));
 
         assert(h.edge().halfedgeA() == h || h.edge().halfedgeB() == h);
+
+        assert(h.next().vertex_from() == h.vertex_to());
+        assert(h.prev().vertex_to() == h.vertex_from());
     }
 
     // check vertex consistencies
