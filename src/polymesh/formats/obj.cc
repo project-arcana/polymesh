@@ -110,6 +110,11 @@ vertex_attribute<glm::vec3> obj_reader::positions_vec3() const
 
 halfedge_attribute<glm::vec3> obj_reader::tex_coords_vec3() const { return tex_coords; }
 
+halfedge_attribute<glm::vec2> obj_reader::tex_coords_vec2() const
+{
+    return tex_coords.map([](glm::vec3 const &v) { return glm::vec2(v); });
+}
+
 halfedge_attribute<glm::vec3> obj_reader::normals_vec3() const { return tex_coords; }
 
 void obj_reader::parse(std::istream &in, Mesh &mesh)

@@ -259,9 +259,25 @@ void smart_collection<mesh_ptr, tag, iterator>::reserve(int capacity) const
 
 template <class mesh_ptr, class tag, class iterator>
 template <class PropT>
-typename primitive<tag>::template attribute<PropT> smart_collection<mesh_ptr, tag, iterator>::make_attribute(PropT const &def_value)
+typename primitive<tag>::template attribute<PropT> smart_collection<mesh_ptr, tag, iterator>::make_attribute() const
+{
+    return typename primitive<tag>::template attribute<PropT>(mesh, PropT());
+}
+template <class mesh_ptr, class tag, class iterator>
+template <class PropT>
+typename primitive<tag>::template attribute<PropT> smart_collection<mesh_ptr, tag, iterator>::make_attribute_default(PropT const &def_value) const
 {
     return typename primitive<tag>::template attribute<PropT>(mesh, def_value);
+}
+
+template <class mesh_ptr, class tag, class iterator>
+template <class FuncT, class PropT>
+typename primitive<tag>::template attribute<PropT> smart_collection<mesh_ptr, tag, iterator>::make_attribute(FuncT &&f, PropT const& def_value) const
+{
+    auto attr = make_attribute_default<PropT>(def_value);
+    for (auto h : *this)
+        attr[h] = f(h);
+    return attr; // copy elison
 }
 
 template <class mesh_ptr, class tag, class iterator>

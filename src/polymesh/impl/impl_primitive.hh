@@ -31,4 +31,14 @@ inline all_edge_collection primitive<edge_tag>::all_collection_of(Mesh &m) { ret
 inline all_edge_const_collection primitive<edge_tag>::all_collection_of(const Mesh &m) { return m.all_edges(); }
 inline all_halfedge_collection primitive<halfedge_tag>::all_collection_of(Mesh &m) { return m.all_halfedges(); }
 inline all_halfedge_const_collection primitive<halfedge_tag>::all_collection_of(const Mesh &m) { return m.all_halfedges(); }
+
+// primitive::valid_collection_of
+inline valid_vertex_collection primitive<vertex_tag>::valid_collection_of(Mesh &m) { return m.vertices(); }
+inline valid_vertex_const_collection primitive<vertex_tag>::valid_collection_of(const Mesh &m) { return m.vertices(); }
+inline valid_face_collection primitive<face_tag>::valid_collection_of(Mesh &m) { return m.faces(); }
+inline valid_face_const_collection primitive<face_tag>::valid_collection_of(const Mesh &m) { return m.faces(); }
+inline valid_edge_collection primitive<edge_tag>::valid_collection_of(Mesh &m) { return m.edges(); }
+inline valid_edge_const_collection primitive<edge_tag>::valid_collection_of(const Mesh &m) { return m.edges(); }
+inline valid_halfedge_collection primitive<halfedge_tag>::valid_collection_of(Mesh &m) { return m.halfedges(); }
+inline valid_halfedge_const_collection primitive<halfedge_tag>::valid_collection_of(const Mesh &m) { return m.halfedges(); }
 }

@@ -115,6 +115,7 @@ struct smart_collection : smart_range<smart_collection<mesh_ptr, tag, iterator>,
 {
     template <class AttrT>
     using attribute = typename primitive<tag>::template attribute<AttrT>;
+    using handle = typename primitive<tag>::handle;
 
     /// Number of primitives, INCLUDING those marked for deletion
     /// O(1) computation
@@ -123,9 +124,15 @@ struct smart_collection : smart_range<smart_collection<mesh_ptr, tag, iterator>,
     /// Ensures that a given number of primitives can be stored without reallocation
     void reserve(int capacity) const;
 
-    /// Creates a new vertex attribute
+    /// Creates a new primitive attribute
     template <class PropT>
-    attribute<PropT> make_attribute(PropT const& def_value = PropT());
+    attribute<PropT> make_attribute() const;
+    /// Creates a new primitive attribute with a given default value
+    template <class PropT>
+    attribute<PropT> make_attribute_default(PropT const& def_value) const;
+    /// Creates a new primitive attribute and initializes it with f(h) for each handle h
+    template <class FuncT, class PropT = tmp::decayed_result_type_of<FuncT, handle>>
+    attribute<PropT> make_attribute(FuncT&& f, PropT const& def_value = PropT()) const;
 
     // Iteration:
     iterator begin() const;
@@ -398,4 +405,5 @@ bool primitive_ring<this_t, tag>::contains(handle v) const
             return true;
     return false;
 }
+
 }

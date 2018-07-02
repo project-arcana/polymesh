@@ -52,6 +52,7 @@ public:
     vertex_attribute<glm::vec4> positions_vec4() const;
     vertex_attribute<glm::vec3> positions_vec3() const;
     halfedge_attribute<glm::vec3> tex_coords_vec3() const;
+    halfedge_attribute<glm::vec2> tex_coords_vec2() const;
     halfedge_attribute<glm::vec3> normals_vec3() const;
 
 private:
