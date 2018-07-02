@@ -40,7 +40,10 @@ template <class this_t, class ElementT>
 bool smart_range<this_t, ElementT>::any() const
 {
     for (auto h : *static_cast<this_t const *>(this))
+    {
+        (void)h; // unused
         return true;
+    }
     return false;
 }
 
@@ -86,7 +89,10 @@ auto smart_range<this_t, ElementT>::min(FuncT &&f) const -> tmp::decayed_result_
     auto v = f(*it_begin);
     ++it_begin;
     while (it_begin != it_end)
+    {
         v = detail::helper_min(v, f(*it_begin));
+        ++it_begin;
+    }
     return v;
 }
 
@@ -100,7 +106,10 @@ auto smart_range<this_t, ElementT>::max(FuncT &&f) const -> tmp::decayed_result_
     auto v = f(*it_begin);
     ++it_begin;
     while (it_begin != it_end)
+    {
         v = detail::helper_max(v, f(*it_begin));
+        ++it_begin;
+    }
     return v;
 }
 
@@ -114,7 +123,10 @@ auto smart_range<this_t, ElementT>::sum(FuncT &&f) const -> tmp::decayed_result_
     auto s = f(*it_begin);
     ++it_begin;
     while (it_begin != it_end)
+    {
         s = s + f(*it_begin);
+        ++it_begin;
+    }
     return s;
 }
 
@@ -132,6 +144,7 @@ auto smart_range<this_t, ElementT>::avg(FuncT &&f) const -> tmp::decayed_result_
     {
         s = s + f(*it_begin);
         ++cnt;
+        ++it_begin;
     }
     return s / cnt;
 }
@@ -152,6 +165,7 @@ auto smart_range<this_t, ElementT>::weighted_avg(FuncT &&f, WeightT &&w) const -
         auto ee = *it_begin;
         s = s + f(ee);
         ws = ws + w(ee);
+        ++it_begin;
     }
     return s / ws;
 }
@@ -171,6 +185,7 @@ auto smart_range<this_t, ElementT>::aabb(FuncT &&f) const -> polymesh::aabb<type
         auto vv = f(*it_begin);
         r.min = detail::helper_min(r.min, vv);
         r.max = detail::helper_max(r.max, vv);
+        ++it_begin;
     }
     return r;
 }
@@ -239,7 +254,7 @@ int smart_collection<mesh_ptr, tag, iterator>::size() const
 template <class mesh_ptr, class tag, class iterator>
 void smart_collection<mesh_ptr, tag, iterator>::reserve(int capacity) const
 {
-    return primitive<tag>::reserve(*mesh, capacity);
+    return typename primitive<tag>::reserve(*mesh, capacity);
 }
 
 template <class mesh_ptr, class tag, class iterator>
@@ -252,13 +267,13 @@ typename primitive<tag>::template attribute<PropT> smart_collection<mesh_ptr, ta
 template <class mesh_ptr, class tag, class iterator>
 iterator smart_collection<mesh_ptr, tag, iterator>::begin() const
 {
-    return {{this->mesh, primitive<tag>::index(0)}};
+    return {{this->mesh, typename primitive<tag>::index(0)}};
 }
 
 template <class mesh_ptr, class tag, class iterator>
 iterator smart_collection<mesh_ptr, tag, iterator>::end() const
 {
-    return {{this->mesh, primitive<tag>::index(primitive<tag>::all_size(*this->mesh))}};
+    return {{this->mesh, typename primitive<tag>::index(primitive<tag>::all_size(*this->mesh))}};
 }
 
 template <class iterator>

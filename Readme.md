@@ -23,3 +23,4 @@ Best used with glm and glow.
 * opposite edges (from vertex)
 * cotangens weights etc.
 * smoothing
+* make handle.<primitives>() contain only valid ones and provide an all_<primitives>() version
