@@ -532,8 +532,8 @@ inline halfedge_index Mesh::prev_valid_idx_from(halfedge_index idx) const
 
 inline void Mesh::connect_prev_next(halfedge_index prev, halfedge_index next)
 {
-    auto& prev_ref = halfedge(prev);
-    auto& next_ref = halfedge(next);
+    auto &prev_ref = halfedge(prev);
+    auto &next_ref = halfedge(next);
 
     prev_ref.next_halfedge = next;
     next_ref.prev_halfedge = prev;
@@ -628,12 +628,18 @@ inline vertex_index Mesh::edge_split(edge_index e)
         v1_ref.outgoing_halfedge = e2h0;
 
     // rewire faces
-    auto &f0_ref = face(f0);
-    auto &f1_ref = face(f1);
-    if (f0_ref.halfedge == h0)
-        f0_ref.halfedge = e1h0;
-    if (f1_ref.halfedge == h1)
-        f1_ref.halfedge = e2h1;
+    if (f0.is_valid())
+    {
+        auto &f0_ref = face(f0);
+        if (f0_ref.halfedge == h0)
+            f0_ref.halfedge = e1h0;
+    }
+    if (f1.is_valid())
+    {
+        auto &f1_ref = face(f1);
+        if (f1_ref.halfedge == h1)
+            f1_ref.halfedge = e2h1;
+    }
 
     // remove edge
     h0_ref.set_removed();
@@ -646,12 +652,55 @@ inline vertex_index Mesh::edge_split(edge_index e)
 
 inline vertex_index Mesh::halfedge_split(halfedge_index h)
 {
-    // add vertex
+    // add vertex and edge
+    auto v = add_vertex();
+    auto e = alloc_edge();
 
-    // add new half-edge
+    auto h0 = h;
+    auto h1 = opposite(h);
+    auto h2 = halfedge_of(e, 0);
+    auto h3 = halfedge_of(e, 1);
 
-    assert(0 && "not implemented");
-    return {};
+    auto v0 = halfedge(h0).to_vertex;
+    auto v1 = halfedge(h1).to_vertex;
+
+    // rewire edges
+    auto &h0_ref = halfedge(h0);
+    auto &h1_ref = halfedge(h1);
+    auto &h2_ref = halfedge(h2);
+    auto &h3_ref = halfedge(h3);
+
+    auto h0_next = h0_ref.next_halfedge;
+    auto h1_prev = h1_ref.prev_halfedge;
+
+    auto f0 = h0_ref.face;
+    auto f1 = h1_ref.face;
+
+    h2_ref.face = f0;
+    h3_ref.face = f1;
+
+    h0_ref.to_vertex = v;
+    h1_ref.to_vertex = v1; //< already there
+    h2_ref.to_vertex = v0;
+    h3_ref.to_vertex = v;
+
+    connect_prev_next(h0, h2);
+    connect_prev_next(h2, h0_next);
+
+    connect_prev_next(h1_prev, h3);
+    connect_prev_next(h3, h1);
+
+    // rewire vertices
+    auto &v0_ref = vertex(v0);
+    if (v0_ref.outgoing_halfedge == h1)
+        v0_ref.outgoing_halfedge = h3;
+
+    vertex(v).outgoing_halfedge = h1_ref.is_free() ? h1 : h2; // boundary
+
+    // rewire faces
+    // -> already ok
+
+    return v;
 }
 
 inline void Mesh::vertex_collapse(vertex_handle v) const { assert(0 && "not implemented"); }

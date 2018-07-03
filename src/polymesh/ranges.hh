@@ -251,7 +251,7 @@ struct halfedge_collection : smart_collection<Mesh*, halfedge_tag, iterator>
 
     /// Splits this half-edge in half by inserting a vertex (which is returned)
     /// Preserves face attributes
-    /// Contraty to edges().split, the edge is preserved and a single new one is inserted AFTER h
+    /// Contrary to edges().split, the edge is preserved and a single new one is inserted AFTER h
     /// (thus h->next() is the newly inserted edge and h->vertex_to() is the returned vertex)
     vertex_handle split(halfedge_handle h) const;
 
