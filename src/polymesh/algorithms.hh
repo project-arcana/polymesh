@@ -19,6 +19,9 @@
 // - intersections
 #include "algorithms/operations.hh"
 
+// Geodesics
+#include "algorithms/geodesic_nnf.hh"
+
 // TODO:
 // - decimation
 // - subdivision

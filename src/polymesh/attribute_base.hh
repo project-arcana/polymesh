@@ -113,11 +113,13 @@ protected:
     int mDataSize = 0;
     Mesh const* mMesh;
     primitive_attribute_base(Mesh const* mesh) : mMesh(mesh) {} // no registration, it's too early!
-    virtual ~primitive_attribute_base() { deregister_attr(); }
     virtual void on_resize(int new_size) = 0;
     virtual void apply_remapping(std::vector<int> const& map) = 0;
     void register_attr();
     void deregister_attr();
     friend class Mesh;
+
+public:
+    virtual ~primitive_attribute_base() { deregister_attr(); }
 };
 }

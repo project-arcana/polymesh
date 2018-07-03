@@ -125,14 +125,20 @@ struct smart_collection : smart_range<smart_collection<mesh_ptr, tag, iterator>,
     void reserve(int capacity) const;
 
     /// Creates a new primitive attribute
-    template <class PropT>
-    attribute<PropT> make_attribute() const;
+    template <class AttrT>
+    attribute<AttrT> make_attribute() const;
     /// Creates a new primitive attribute with a given default value
-    template <class PropT>
-    attribute<PropT> make_attribute_default(PropT const& def_value) const;
+    template <class AttrT>
+    attribute<AttrT> make_attribute_with_default(AttrT const& def_value) const;
+    /// Creates a new primitive attribute and copies the given data
+    template <class AttrT>
+    attribute<AttrT> make_attribute_from_data(std::vector<AttrT> const& data) const;
+    /// Creates a new primitive attribute and copies the given data
+    template <class AttrT>
+    attribute<AttrT> make_attribute_from_data(AttrT const* data, int cnt) const;
     /// Creates a new primitive attribute and initializes it with f(h) for each handle h
-    template <class FuncT, class PropT = tmp::decayed_result_type_of<FuncT, handle>>
-    attribute<PropT> make_attribute(FuncT&& f, PropT const& def_value = PropT()) const;
+    template <class FuncT, class AttrT = tmp::decayed_result_type_of<FuncT, handle>>
+    attribute<AttrT> make_attribute(FuncT&& f, AttrT const& def_value = AttrT()) const;
 
     // Iteration:
     iterator begin() const;
@@ -445,5 +451,4 @@ struct halfedge_ring : halfedge_primitive_ring<halfedge_tag, halfedge_ring_circu
 {
     using halfedge_primitive_ring<halfedge_tag, halfedge_ring_circulator>::halfedge_primitive_ring;
 };
-
 }

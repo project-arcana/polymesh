@@ -24,3 +24,4 @@ Best used with glm and glow.
 * _copy versions of topological operations that copy attributes
 * vertex split?
 * half-edge collapse
+* normal, tangent, bitangent computation

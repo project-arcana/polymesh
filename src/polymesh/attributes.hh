@@ -59,6 +59,11 @@ public:
     template <class FuncT>
     void apply(FuncT&& f);
 
+    /// copies as much data as possible from the given vector
+    void copy_from(std::vector<AttrT> const& data);
+    /// copies as much data as possible from the given array
+    void copy_from(AttrT const* data, int cnt);
+
     // data
 protected:
     attribute_data<AttrT> mData;
@@ -112,64 +117,4 @@ struct halfedge_attribute : primitive_attribute<halfedge_tag, AttrT>
     friend struct smart_collection;
 };
 
-/// ======== IMPLEMENTATION ========
-
-template <class tag, class AttrT>
-void primitive_attribute<tag, AttrT>::apply_remapping(const std::vector<int>& map)
-{
-    for (auto i = 0u; i < map.size(); ++i)
-        this->mData[i] = this->mData[map[i]];
-}
-
-template <class tag, class AttrT>
-primitive_attribute<tag, AttrT>::primitive_attribute(primitive_attribute const& rhs) noexcept : primitive_attribute_base<tag>(rhs.mMesh) // copy
-{
-    this->mDefaultValue = rhs.mDefaultValue;
-    this->mData = rhs.mData;
-    this->mDataSize = rhs.mDataSize;
-
-    this->register_attr();
-}
-
-template <class tag, class AttrT>
-primitive_attribute<tag, AttrT>::primitive_attribute(primitive_attribute&& rhs) noexcept : primitive_attribute_base<tag>(rhs.mMesh) // move
-{
-    this->mDefaultValue = std::move(rhs.mDefaultValue);
-    this->mData = std::move(rhs.mData);
-    this->mDataSize = rhs.mDataSize;
-
-    rhs.deregister_attr();
-    this->register_attr();
-}
-
-template <class tag, class AttrT>
-primitive_attribute<tag, AttrT>& primitive_attribute<tag, AttrT>::operator=(primitive_attribute const& rhs) noexcept // copy
-{
-    this->deregister_attr();
-
-    this->mMesh = rhs.mMesh;
-    this->mDefaultValue = rhs.mDefaultValue;
-    this->mData = rhs.mData;
-    this->mDataSize = rhs.mDataSize;
-
-    this->register_attr();
-
-    return *this;
-}
-
-template <class tag, class AttrT>
-primitive_attribute<tag, AttrT>& primitive_attribute<tag, AttrT>::operator=(primitive_attribute&& rhs) noexcept // move
-{
-    this->deregister_attr();
-
-    this->mMesh = rhs.mMesh;
-    this->mDefaultValue = std::move(rhs.mDefaultValue);
-    this->mData = std::move(rhs.mData);
-    this->mDataSize = rhs.mDataSize;
-
-    rhs.deregister_attr();
-    this->register_attr();
-
-    return *this;
-}
 }

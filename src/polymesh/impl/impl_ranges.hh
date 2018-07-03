@@ -279,23 +279,41 @@ void smart_collection<mesh_ptr, tag, iterator>::reserve(int capacity) const
 }
 
 template <class mesh_ptr, class tag, class iterator>
-template <class PropT>
-typename primitive<tag>::template attribute<PropT> smart_collection<mesh_ptr, tag, iterator>::make_attribute() const
+template <class AttrT>
+typename primitive<tag>::template attribute<AttrT> smart_collection<mesh_ptr, tag, iterator>::make_attribute() const
 {
-    return typename primitive<tag>::template attribute<PropT>(mesh, PropT());
+    return typename primitive<tag>::template attribute<AttrT>(mesh, AttrT());
 }
 template <class mesh_ptr, class tag, class iterator>
-template <class PropT>
-typename primitive<tag>::template attribute<PropT> smart_collection<mesh_ptr, tag, iterator>::make_attribute_default(PropT const &def_value) const
+template <class AttrT>
+typename primitive<tag>::template attribute<AttrT> smart_collection<mesh_ptr, tag, iterator>::make_attribute_with_default(AttrT const &def_value) const
 {
-    return typename primitive<tag>::template attribute<PropT>(mesh, def_value);
+    return typename primitive<tag>::template attribute<AttrT>(mesh, def_value);
 }
 
 template <class mesh_ptr, class tag, class iterator>
-template <class FuncT, class PropT>
-typename primitive<tag>::template attribute<PropT> smart_collection<mesh_ptr, tag, iterator>::make_attribute(FuncT &&f, PropT const &def_value) const
+template <class AttrT>
+typename primitive<tag>::template attribute<AttrT> smart_collection<mesh_ptr, tag, iterator>::make_attribute_from_data(std::vector<AttrT> const &data) const
 {
-    auto attr = make_attribute_default<PropT>(def_value);
+    auto attr = make_attribute<AttrT>();
+    attr.copy_from(data);
+    return attr; // copy elison
+}
+
+template <class mesh_ptr, class tag, class iterator>
+template <class AttrT>
+typename primitive<tag>::template attribute<AttrT> smart_collection<mesh_ptr, tag, iterator>::make_attribute_from_data(AttrT const *data, int cnt) const
+{
+    auto attr = make_attribute<AttrT>();
+    attr.copy_from(data, cnt);
+    return attr; // copy elison
+}
+
+template <class mesh_ptr, class tag, class iterator>
+template <class FuncT, class AttrT>
+typename primitive<tag>::template attribute<AttrT> smart_collection<mesh_ptr, tag, iterator>::make_attribute(FuncT &&f, AttrT const &def_value) const
+{
+    auto attr = make_attribute_with_default<AttrT>(def_value);
     for (auto h : *this)
         attr[h] = f(h);
     return attr; // copy elison
@@ -564,7 +582,7 @@ void vertex_collection<iterator>::collapse(vertex_handle v) const
     this->mesh->vertex_collapse(v.idx);
 }
 
-template<class iterator>
+template <class iterator>
 void halfedge_collection<iterator>::collapse(halfedge_handle h) const
 {
     this->mesh->halfedge_collapse(h.idx);
