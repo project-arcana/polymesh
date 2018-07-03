@@ -559,6 +559,24 @@ vertex_handle edge_collection<iterator>::split(edge_handle e) const
 }
 
 template <class iterator>
+void vertex_collection<iterator>::collapse(vertex_handle v) const
+{
+    this->mesh->vertex_collapse(v.idx);
+}
+
+template<class iterator>
+void edge_collection<iterator>::collapse(edge_handle e) const
+{
+    this->mesh->edge_collapse(e.idx);
+}
+
+template<class iterator>
+void halfedge_collection<iterator>::collapse(halfedge_handle h) const
+{
+    this->mesh->halfedge_collapse(h.idx);
+}
+
+template <class iterator>
 void edge_collection<iterator>::rotate_next(edge_handle e) const
 {
     this->mesh->edge_rotate_next(e.idx);

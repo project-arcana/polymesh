@@ -160,12 +160,22 @@ private:
     /// same as add_or_get_edge but returns the apattrriate half-edge
     halfedge_index add_or_get_halfedge(vertex_index v_from, vertex_index v_to);
 
+    /// connect two half-edges in a prev-next relation
+    void connect_prev_next(halfedge_index prev, halfedge_index next);
+
     /// splits a face
     vertex_index face_split(face_index f);
     /// splits an edge
-    vertex_index edge_split(edge_index f);
+    vertex_index edge_split(edge_index e);
     /// splits a half-edge
-    vertex_index halfedge_split(halfedge_index f);
+    vertex_index halfedge_split(halfedge_index h);
+
+    /// collapse a vertex
+    void vertex_collapse(vertex_handle v) const;
+    /// collapse an edge
+    void edge_collapse(edge_handle e) const;
+    /// collapse a half-edge
+    void halfedge_collapse(halfedge_handle h) const;
 
     /// rotates an edge to next
     void edge_rotate_next(edge_index e);

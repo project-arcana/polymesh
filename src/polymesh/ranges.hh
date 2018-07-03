@@ -154,6 +154,10 @@ struct vertex_collection : smart_collection<Mesh*, vertex_tag, iterator>
     /// Does NOT invalidate any iterator!
     vertex_handle add() const;
 
+    /// Collapsed the given vertex by removing it and merging the adjacent faces
+    /// Preserves half-edge properties but not face ones
+    void collapse(vertex_handle v) const;
+
     /// Removes a vertex (and all adjacent faces and edges)
     /// (marks them as removed, compactify mesh to actually remove them)
     void remove(vertex_handle v) const;
@@ -208,6 +212,10 @@ struct edge_collection : smart_collection<Mesh*, edge_tag, iterator>
     /// The edge itself is deleted and two new ones are created
     vertex_handle split(edge_handle e) const;
 
+    /// Collapsed the given edge by removing it, adding a new vertex, and triangles for each opposite edge
+    /// Preserves half-edge properties but not face or vertex ones
+    void collapse(edge_handle e) const;
+
     /// Moves both half-edges vertices to their next half-edge vertex
     /// Equivalent to an edge flip if both faces are triangular
     /// Preserves all attributes
@@ -235,6 +243,11 @@ struct halfedge_collection : smart_collection<Mesh*, halfedge_tag, iterator>
     /// Returns the half-edge handle between two vertices (invalid if not found)
     /// O(valence) computation
     halfedge_handle find(vertex_handle v_from, vertex_handle v_to) const;
+
+    /// Collapsed the given half-edge by removing it, keeping the to_vertex, and creating new triangles
+    /// Preserves half-edge properties but not face or vertex ones
+    /// Similar to a vertex collapse of the `from` vertex with triangulation towards `to`
+    void collapse(halfedge_handle h) const;
 
     /// Splits this half-edge in half by inserting a vertex (which is returned)
     /// Preserves face attributes
@@ -436,4 +449,5 @@ struct halfedge_ring : halfedge_primitive_ring<halfedge_tag, halfedge_ring_circu
 {
     using halfedge_primitive_ring<halfedge_tag, halfedge_ring_circulator>::halfedge_primitive_ring;
 };
+
 }

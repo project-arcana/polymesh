@@ -530,6 +530,15 @@ inline halfedge_index Mesh::prev_valid_idx_from(halfedge_index idx) const
     return {}; // invalid
 }
 
+inline void Mesh::connect_prev_next(halfedge_index prev, halfedge_index next)
+{
+    auto& prev_ref = halfedge(prev);
+    auto& next_ref = halfedge(next);
+
+    prev_ref.next_halfedge = next;
+    next_ref.prev_halfedge = prev;
+}
+
 inline vertex_index Mesh::face_split(face_index f)
 {
     // TODO: can be made more performant
@@ -558,19 +567,84 @@ inline vertex_index Mesh::face_split(face_index f)
     return vs[0];
 }
 
-inline vertex_index Mesh::edge_split(edge_index f)
+inline vertex_index Mesh::edge_split(edge_index e)
 {
-    // remove edge
+    auto h0 = halfedge_of(e, 0);
+    auto h1 = halfedge_of(e, 1);
+    auto &h0_ref = halfedge(h0);
+    auto &h1_ref = halfedge(h1);
+
+    auto v0 = h0_ref.to_vertex;
+    auto v1 = h1_ref.to_vertex;
+    auto f0 = h0_ref.face;
+    auto f1 = h1_ref.face;
 
     // add vertex
+    auto v = add_vertex();
 
     // add two new edges
+    auto e1 = alloc_edge();
+    auto e2 = alloc_edge();
+    auto e1h0 = halfedge_of(e1, 0);
+    auto e1h1 = halfedge_of(e1, 1);
+    auto e2h0 = halfedge_of(e2, 0);
+    auto e2h1 = halfedge_of(e2, 1);
 
-    assert(0 && "not implemented");
-    return {};
+    // rewire edges
+    auto &e1h0_ref = halfedge(e1h0);
+    auto &e1h1_ref = halfedge(e1h1);
+    auto &e2h0_ref = halfedge(e2h0);
+    auto &e2h1_ref = halfedge(e2h1);
+
+    auto h0_prev = h0_ref.prev_halfedge;
+    auto h0_next = h0_ref.next_halfedge;
+    auto h1_prev = h1_ref.prev_halfedge;
+    auto h1_next = h1_ref.next_halfedge;
+
+    e1h0_ref.face = f0;
+    e2h0_ref.face = f0;
+    e1h1_ref.face = f1;
+    e2h1_ref.face = f1;
+
+    e1h0_ref.to_vertex = v0;
+    e2h0_ref.to_vertex = v;
+    e1h1_ref.to_vertex = v;
+    e2h1_ref.to_vertex = v1;
+
+    connect_prev_next(h0_prev, e2h0);
+    connect_prev_next(e2h0, e1h0);
+    connect_prev_next(e1h0, h0_next);
+
+    connect_prev_next(h1_prev, e1h1);
+    connect_prev_next(e1h1, e2h1);
+    connect_prev_next(e2h1, h1_next);
+
+    // rewire vertices
+    auto &v0_ref = vertex(h0_ref.to_vertex);
+    auto &v1_ref = vertex(h1_ref.to_vertex);
+    if (v0_ref.outgoing_halfedge == h1)
+        v0_ref.outgoing_halfedge = e1h1;
+    if (v1_ref.outgoing_halfedge == h0)
+        v1_ref.outgoing_halfedge = e2h0;
+
+    // rewire faces
+    auto &f0_ref = face(f0);
+    auto &f1_ref = face(f1);
+    if (f0_ref.halfedge == h0)
+        f0_ref.halfedge = e1h0;
+    if (f1_ref.halfedge == h1)
+        f1_ref.halfedge = e2h1;
+
+    // remove edge
+    h0_ref.set_removed();
+    h1_ref.set_removed();
+    mRemovedHalfedges += 2;
+    mCompact = false;
+
+    return v;
 }
 
-inline vertex_index Mesh::halfedge_split(halfedge_index f)
+inline vertex_index Mesh::halfedge_split(halfedge_index h)
 {
     // add vertex
 
@@ -579,6 +653,12 @@ inline vertex_index Mesh::halfedge_split(halfedge_index f)
     assert(0 && "not implemented");
     return {};
 }
+
+inline void Mesh::vertex_collapse(vertex_handle v) const { assert(0 && "not implemented"); }
+
+inline void Mesh::edge_collapse(edge_handle e) const { assert(0 && "not implemented"); }
+
+inline void Mesh::halfedge_collapse(halfedge_handle h) const { assert(0 && "not implemented"); }
 
 inline void Mesh::edge_rotate_next(edge_index e)
 {
