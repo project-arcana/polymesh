@@ -675,15 +675,12 @@ inline void Mesh::edge_rotate_next(edge_index e)
     auto h0_prev = h0_ref.prev_halfedge;
     auto h1_next = h1_ref.next_halfedge;
     auto h1_prev = h1_ref.prev_halfedge;
+
     auto &h0_next_ref = halfedge(h0_next);
-    auto &h0_prev_ref = halfedge(h0_prev);
     auto &h1_next_ref = halfedge(h1_next);
-    auto &h1_prev_ref = halfedge(h1_prev);
 
     auto h0_next_next = h0_next_ref.next_halfedge;
-    auto &h0_next_next_ref = halfedge(h0_next_next);
     auto h1_next_next = h1_next_ref.next_halfedge;
-    auto &h1_next_next_ref = halfedge(h1_next_next);
 
     // fix vertices
     auto &v0 = vertex(h0_ref.to_vertex);
@@ -704,23 +701,14 @@ inline void Mesh::edge_rotate_next(edge_index e)
     h1_next_ref.face = h0_ref.face;
 
     // move to next
-    h1_prev_ref.next_halfedge = h0_next;
-    h0_next_ref.prev_halfedge = h1_prev;
+    connect_prev_next(h1_prev, h0_next);
+    connect_prev_next(h0_prev, h1_next);
 
-    h0_prev_ref.next_halfedge = h1_next;
-    h1_next_ref.prev_halfedge = h0_prev;
+    connect_prev_next(h0_next, h1);
+    connect_prev_next(h1_next, h0);
 
-    h0_next_ref.next_halfedge = h1;
-    h1_ref.prev_halfedge = h0_next;
-
-    h1_next_ref.next_halfedge = h0;
-    h0_ref.prev_halfedge = h1_next;
-
-    h0_ref.next_halfedge = h0_next_next;
-    h0_next_next_ref.prev_halfedge = h0;
-
-    h1_ref.next_halfedge = h1_next_next;
-    h1_next_next_ref.prev_halfedge = h1;
+    connect_prev_next(h0, h0_next_next);
+    connect_prev_next(h1, h1_next_next);
 
     // fix boundary state
     fix_boundary_state_of(h0_ref.face);
@@ -742,9 +730,8 @@ inline void Mesh::edge_rotate_prev(edge_index e)
     auto h0_prev = h0_ref.prev_halfedge;
     auto h1_next = h1_ref.next_halfedge;
     auto h1_prev = h1_ref.prev_halfedge;
-    auto &h0_next_ref = halfedge(h0_next);
+
     auto &h0_prev_ref = halfedge(h0_prev);
-    auto &h1_next_ref = halfedge(h1_next);
     auto &h1_prev_ref = halfedge(h1_prev);
 
     auto h0_prev_prev = h0_prev_ref.prev_halfedge;
@@ -771,23 +758,14 @@ inline void Mesh::edge_rotate_prev(edge_index e)
     h1_prev_ref.face = h0_ref.face;
 
     // move to next
-    h0_prev_ref.next_halfedge = h1_next;
-    h1_next_ref.prev_halfedge = h0_prev;
+    connect_prev_next(h0_prev, h1_next);
+    connect_prev_next(h1_prev, h0_next);
 
-    h1_prev_ref.next_halfedge = h0_next;
-    h0_next_ref.prev_halfedge = h1_prev;
+    connect_prev_next(h1, h0_prev);
+    connect_prev_next(h0, h1_prev);
 
-    h1_ref.next_halfedge = h0_prev;
-    h0_prev_ref.prev_halfedge = h1;
-
-    h0_ref.next_halfedge = h1_prev;
-    h1_prev_ref.prev_halfedge = h0;
-
-    h0_prev_prev_ref.next_halfedge = h0;
-    h0_ref.prev_halfedge = h0_prev_prev;
-
-    h1_prev_prev_ref.next_halfedge = h1;
-    h1_ref.prev_halfedge = h1_prev_prev;
+    connect_prev_next(h0_prev_prev, h0);
+    connect_prev_next(h1_prev_prev, h1);
 
     // fix boundary state
     fix_boundary_state_of(h0_ref.face);
@@ -808,10 +786,7 @@ inline void Mesh::halfedge_rotate_next(halfedge_index h)
     auto h0_next = h0_ref.next_halfedge;
     auto h1_prev = h1_ref.prev_halfedge;
     auto &h0_next_ref = halfedge(h0_next);
-    auto &h1_prev_ref = halfedge(h1_prev);
-
     auto h0_next_next = h0_next_ref.next_halfedge;
-    auto &h0_next_next_ref = halfedge(h0_next_next);
 
     // fix vertex
     auto &v = vertex(h0_ref.to_vertex);
@@ -827,14 +802,9 @@ inline void Mesh::halfedge_rotate_next(halfedge_index h)
     h0_next_ref.face = h1_ref.face;
 
     // move to next
-    h1_prev_ref.next_halfedge = h0_next;
-    h0_next_ref.prev_halfedge = h1_prev;
-
-    h0_next_ref.next_halfedge = h1;
-    h1_ref.prev_halfedge = h0_next;
-
-    h0_ref.next_halfedge = h0_next_next;
-    h0_next_next_ref.prev_halfedge = h0;
+    connect_prev_next(h1_prev, h0_next);
+    connect_prev_next(h0_next, h1);
+    connect_prev_next(h0, h0_next_next);
 
     // fix boundary state
     fix_boundary_state_of(h0_ref.face);
@@ -855,8 +825,6 @@ inline void Mesh::halfedge_rotate_prev(halfedge_index h)
     auto h0_prev = h0_ref.prev_halfedge;
     auto h1_next = h1_ref.next_halfedge;
     auto &h0_prev_ref = halfedge(h0_prev);
-    auto &h1_next_ref = halfedge(h1_next);
-
     auto h0_prev_prev = h0_prev_ref.prev_halfedge;
     auto &h0_prev_prev_ref = halfedge(h0_prev_prev);
 
@@ -874,14 +842,9 @@ inline void Mesh::halfedge_rotate_prev(halfedge_index h)
     h0_prev_ref.face = h1_ref.face;
 
     // move to next
-    h0_prev_ref.next_halfedge = h1_next;
-    h1_next_ref.prev_halfedge = h0_prev;
-
-    h1_ref.next_halfedge = h0_prev;
-    h0_prev_ref.prev_halfedge = h1;
-
-    h0_prev_prev_ref.next_halfedge = h0;
-    h0_ref.prev_halfedge = h0_prev_prev;
+    connect_prev_next(h0_prev, h1_next);
+    connect_prev_next(h1, h0_prev);
+    connect_prev_next(h0_prev_prev, h0);
 
     // fix boundary state
     fix_boundary_state_of(h0_ref.face);
