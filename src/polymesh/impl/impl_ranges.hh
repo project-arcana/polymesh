@@ -565,12 +565,6 @@ void vertex_collection<iterator>::collapse(vertex_handle v) const
 }
 
 template<class iterator>
-void edge_collection<iterator>::collapse(edge_handle e) const
-{
-    this->mesh->edge_collapse(e.idx);
-}
-
-template<class iterator>
 void halfedge_collection<iterator>::collapse(halfedge_handle h) const
 {
     this->mesh->halfedge_collapse(h.idx);

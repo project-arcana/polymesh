@@ -171,11 +171,9 @@ private:
     vertex_index halfedge_split(halfedge_index h);
 
     /// collapse a vertex
-    void vertex_collapse(vertex_handle v) const;
-    /// collapse an edge
-    void edge_collapse(edge_handle e) const;
+    void vertex_collapse(vertex_index v);
     /// collapse a half-edge
-    void halfedge_collapse(halfedge_handle h) const;
+    void halfedge_collapse(halfedge_index h);
 
     /// rotates an edge to next
     void edge_rotate_next(edge_index e);

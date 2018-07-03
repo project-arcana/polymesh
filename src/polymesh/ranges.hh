@@ -212,10 +212,6 @@ struct edge_collection : smart_collection<Mesh*, edge_tag, iterator>
     /// The edge itself is deleted and two new ones are created
     vertex_handle split(edge_handle e) const;
 
-    /// Collapsed the given edge by removing it, adding a new vertex, and triangles for each opposite edge
-    /// Preserves half-edge properties but not face or vertex ones
-    void collapse(edge_handle e) const;
-
     /// Moves both half-edges vertices to their next half-edge vertex
     /// Equivalent to an edge flip if both faces are triangular
     /// Preserves all attributes

@@ -703,11 +703,52 @@ inline vertex_index Mesh::halfedge_split(halfedge_index h)
     return v;
 }
 
-inline void Mesh::vertex_collapse(vertex_handle v) const { assert(0 && "not implemented"); }
+inline void Mesh::vertex_collapse(vertex_index v)
+{
+    auto &v_ref = vertex(v);
 
-inline void Mesh::edge_collapse(edge_handle e) const { assert(0 && "not implemented"); }
+    // isolated vertices are just removed
+    if (v_ref.is_isolated())
+    {
+        remove_vertex(v);
+    }
+    // boundary vertices are special
+    else if (is_boundary(v))
+    {
+        assert(0 && "not implemented");
+    }
+    else // interior vertex
+    {
+        auto h_begin = halfedge(vertex(v).outgoing_halfedge).next_halfedge;
 
-inline void Mesh::halfedge_collapse(halfedge_handle h) const { assert(0 && "not implemented"); }
+        remove_vertex(v);
+
+        assert(is_boundary(h_begin));
+
+        // TODO: optimize
+        std::vector<halfedge_index> hs;
+        auto h = h_begin;
+        do
+        {
+            // add half-edge ring
+            hs.push_back(h);
+
+            // advance
+            h = halfedge(h).next_halfedge;
+        } while (h != h_begin);
+
+        // add face
+        add_face(hs.data(), (int)hs.size());
+    }
+}
+
+inline void Mesh::halfedge_collapse(halfedge_index h)
+{
+    // TODO: collapse half-edge
+    // preserve adjacent non-triangles
+
+    assert(0 && "not implemented");
+}
 
 inline void Mesh::edge_rotate_next(edge_index e)
 {

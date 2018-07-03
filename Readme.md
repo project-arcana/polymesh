@@ -16,10 +16,11 @@ Best used with glm and glow.
 * Switch primitives and valid_primitives, check if compact flag is inlined
 * Test self-adjacent faces
 * smart ranges: filter, map
-* mid-level topo API: edge-rotate-next/prev, edge-split, edge-collapse, halfedge-split, halfedge-collapse, vertex-collapse
 * vector, set, map -> range
 * opposite edges (from vertex)
 * cotangens weights etc.
 * smoothing
 * make handle.<primitives>() contain only valid ones and provide an all_<primitives>() version
 * _copy versions of topological operations that copy attributes
+* vertex split?
+* half-edge collapse
