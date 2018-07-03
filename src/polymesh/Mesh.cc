@@ -8,6 +8,13 @@
 
 using namespace polymesh;
 
+#define polyassert(v) \
+    do                \
+    {                 \
+        assert(v);    \
+        (void)(v);    \
+    } while (0)
+
 void Mesh::assert_consistency() const
 {
     // check sizes
@@ -60,142 +67,142 @@ void Mesh::assert_consistency() const
 
         for (auto h : vertices())
         {
-            assert(h.is_valid());
-            assert(!h.is_removed());
+            polyassert(h.is_valid());
+            polyassert(!h.is_removed());
             ++valid_vertex_cnt;
         }
         for (auto h : faces())
         {
-            assert(h.is_valid());
-            assert(!h.is_removed());
+            polyassert(h.is_valid());
+            polyassert(!h.is_removed());
             ++valid_face_cnt;
         }
         for (auto h : edges())
         {
-            assert(h.is_valid());
-            assert(!h.is_removed());
+            polyassert(h.is_valid());
+            polyassert(!h.is_removed());
             ++valid_edge_cnt;
         }
         for (auto h : halfedges())
         {
-            assert(h.is_valid());
-            assert(!h.is_removed());
+            polyassert(h.is_valid());
+            polyassert(!h.is_removed());
             ++valid_halfedge_cnt;
         }
 
-        assert(vertex_cnt == all_vertices().size());
-        assert(face_cnt == all_faces().size());
-        assert(edge_cnt == all_edges().size());
-        assert(halfedge_cnt == all_halfedges().size());
+        polyassert(vertex_cnt == all_vertices().size());
+        polyassert(face_cnt == all_faces().size());
+        polyassert(edge_cnt == all_edges().size());
+        polyassert(halfedge_cnt == all_halfedges().size());
 
-        assert(valid_vertex_cnt == vertices().size());
-        assert(valid_face_cnt == faces().size());
-        assert(valid_edge_cnt == edges().size());
-        assert(valid_halfedge_cnt == halfedges().size());
+        polyassert(valid_vertex_cnt == vertices().size());
+        polyassert(valid_face_cnt == faces().size());
+        polyassert(valid_edge_cnt == edges().size());
+        polyassert(valid_halfedge_cnt == halfedges().size());
 
-        assert(vertex_cnt == valid_vertex_cnt + invalid_vertex_cnt);
-        assert(face_cnt == valid_face_cnt + invalid_face_cnt);
-        assert(edge_cnt == valid_edge_cnt + invalid_edge_cnt);
-        assert(halfedge_cnt == valid_halfedge_cnt + invalid_halfedge_cnt);
+        polyassert(vertex_cnt == valid_vertex_cnt + invalid_vertex_cnt);
+        polyassert(face_cnt == valid_face_cnt + invalid_face_cnt);
+        polyassert(edge_cnt == valid_edge_cnt + invalid_edge_cnt);
+        polyassert(halfedge_cnt == valid_halfedge_cnt + invalid_halfedge_cnt);
 
-        assert(mRemovedFaces == invalid_face_cnt);
-        assert(mRemovedVertices == invalid_vertex_cnt);
-        assert(mRemovedHalfedges == invalid_halfedge_cnt);
-        assert(invalid_edge_cnt * 2 == invalid_halfedge_cnt);
-        assert(valid_edge_cnt * 2 == valid_halfedge_cnt);
-        assert(edge_cnt * 2 == halfedge_cnt);
+        polyassert(mRemovedFaces == invalid_face_cnt);
+        polyassert(mRemovedVertices == invalid_vertex_cnt);
+        polyassert(mRemovedHalfedges == invalid_halfedge_cnt);
+        polyassert(invalid_edge_cnt * 2 == invalid_halfedge_cnt);
+        polyassert(valid_edge_cnt * 2 == valid_halfedge_cnt);
+        polyassert(edge_cnt * 2 == halfedge_cnt);
     }
 
     // check only non-removed can be accessed topologically
     for (auto f : faces())
     {
-        assert(!f.any_halfedge().is_removed());
-        assert(!f.any_vertex().is_removed());
+        polyassert(!f.any_halfedge().is_removed());
+        polyassert(!f.any_vertex().is_removed());
 
         for (auto v : f.vertices())
-            assert(!v.is_removed());
+            polyassert(!v.is_removed());
 
         for (auto h : f.halfedges())
-            assert(!h.is_removed());
+            polyassert(!h.is_removed());
 
         for (auto f : f.adjacent_faces())
-            assert(!f.is_removed());
+            polyassert(!f.is_removed());
 
         for (auto f : f.edges())
-            assert(!f.is_removed());
+            polyassert(!f.is_removed());
     }
     for (auto v : vertices())
     {
-        assert(!v.any_face().is_removed());
-        assert(!v.any_edge().is_removed());
-        assert(!v.any_incoming_halfedge().is_removed());
-        assert(!v.any_outgoing_halfedge().is_removed());
+        polyassert(!v.any_face().is_removed());
+        polyassert(!v.any_edge().is_removed());
+        polyassert(!v.any_incoming_halfedge().is_removed());
+        polyassert(!v.any_outgoing_halfedge().is_removed());
 
         for (auto v : v.adjacent_vertices())
-            assert(!v.is_removed());
+            polyassert(!v.is_removed());
 
         for (auto h : v.incoming_halfedges())
-            assert(!h.is_removed());
+            polyassert(!h.is_removed());
 
         for (auto h : v.outgoing_halfedges())
-            assert(!h.is_removed());
+            polyassert(!h.is_removed());
 
         for (auto f : v.faces())
-            assert(!f.is_removed());
+            polyassert(!f.is_removed());
 
         for (auto f : v.edges())
-            assert(!f.is_removed());
+            polyassert(!f.is_removed());
     }
     for (auto e : edges())
     {
-        assert(!e.faceA().is_removed());
-        assert(!e.faceB().is_removed());
+        polyassert(!e.faceA().is_removed());
+        polyassert(!e.faceB().is_removed());
 
-        assert(!e.vertexA().is_removed());
-        assert(!e.vertexB().is_removed());
+        polyassert(!e.vertexA().is_removed());
+        polyassert(!e.vertexB().is_removed());
 
-        assert(!e.halfedgeA().is_removed());
-        assert(!e.halfedgeB().is_removed());
+        polyassert(!e.halfedgeA().is_removed());
+        polyassert(!e.halfedgeB().is_removed());
     }
     for (auto h : halfedges())
     {
-        assert(!h.prev().is_removed());
-        assert(!h.next().is_removed());
-        assert(!h.edge().is_removed());
-        assert(!h.vertex_from().is_removed());
-        assert(!h.vertex_to().is_removed());
-        assert(!h.face().is_removed());
-        assert(!h.opposite().is_removed());
-        assert(!h.opposite_face().is_removed());
+        polyassert(!h.prev().is_removed());
+        polyassert(!h.next().is_removed());
+        polyassert(!h.edge().is_removed());
+        polyassert(!h.vertex_from().is_removed());
+        polyassert(!h.vertex_to().is_removed());
+        polyassert(!h.face().is_removed());
+        polyassert(!h.opposite().is_removed());
+        polyassert(!h.opposite_face().is_removed());
     }
 
     // check half-edge consistencies
     for (auto h : halfedges())
     {
-        assert(h.next().is_valid());
-        assert(h.prev().is_valid());
-        assert(h.opposite().is_valid());
-        assert(h.vertex_to().is_valid());
-        assert(h.vertex_from().is_valid());
+        polyassert(h.next().is_valid());
+        polyassert(h.prev().is_valid());
+        polyassert(h.opposite().is_valid());
+        polyassert(h.vertex_to().is_valid());
+        polyassert(h.vertex_from().is_valid());
         // face can be invalid
 
-        assert(h.next().prev() == h);
-        assert(h.prev().next() == h);
-        assert(h.opposite().opposite() == h);
+        polyassert(h.next().prev() == h);
+        polyassert(h.prev().next() == h);
+        polyassert(h.opposite().opposite() == h);
 
         if (!h.is_boundary())
-            assert(h.face().halfedges().contains(h));
-        assert(h.vertex_to().incoming_halfedges().contains(h));
-        assert(h.vertex_from().outgoing_halfedges().contains(h));
+            polyassert(h.face().halfedges().contains(h));
+        polyassert(h.vertex_to().incoming_halfedges().contains(h));
+        polyassert(h.vertex_from().outgoing_halfedges().contains(h));
 
-        assert(h.edge().halfedgeA() == h || h.edge().halfedgeB() == h);
+        polyassert(h.edge().halfedgeA() == h || h.edge().halfedgeB() == h);
 
-        assert(h.next().vertex_from() == h.vertex_to());
-        assert(h.prev().vertex_to() == h.vertex_from());
+        polyassert(h.next().vertex_from() == h.vertex_to());
+        polyassert(h.prev().vertex_to() == h.vertex_from());
 
         auto ref_face = h.face();
         for (auto h : h.ring())
-            assert(h.face() == ref_face);
+            polyassert(h.face() == ref_face);
     }
 
     // check vertex consistencies
@@ -203,107 +210,107 @@ void Mesh::assert_consistency() const
     {
         if (!v.is_isolated())
         {
-            assert(v.any_incoming_halfedge().is_valid());
-            assert(v.any_outgoing_halfedge().is_valid());
-            // assert(v.any_valid_face().is_valid()); -> wiremeshes are non-isolated but have no faces
-            assert(v.any_edge().is_valid());
+            polyassert(v.any_incoming_halfedge().is_valid());
+            polyassert(v.any_outgoing_halfedge().is_valid());
+            // polyassert(v.any_valid_face().is_valid()); -> wiremeshes are non-isolated but have no faces
+            polyassert(v.any_edge().is_valid());
 
-            assert(v.any_incoming_halfedge().vertex_to() == v);
-            assert(v.any_outgoing_halfedge().vertex_from() == v);
+            polyassert(v.any_incoming_halfedge().vertex_to() == v);
+            polyassert(v.any_outgoing_halfedge().vertex_from() == v);
 
             for (auto f : v.faces())
                 if (f.is_valid())
-                    assert(f.vertices().contains(v));
+                    polyassert(f.vertices().contains(v));
 
             for (auto h : v.outgoing_halfedges())
-                assert(h.vertex_from() == v);
+                polyassert(h.vertex_from() == v);
 
             for (auto h : v.incoming_halfedges())
-                assert(h.vertex_to() == v);
+                polyassert(h.vertex_to() == v);
 
             for (auto vv : v.adjacent_vertices())
-                assert(vv.adjacent_vertices().contains(v));
+                polyassert(vv.adjacent_vertices().contains(v));
 
             for (auto e : v.edges())
-                assert(e.vertexA() == v || e.vertexB() == v);
+                polyassert(e.vertexA() == v || e.vertexB() == v);
         }
         else
         {
-            assert(v.any_face().is_invalid());
-            assert(v.any_valid_face().is_invalid());
-            assert(v.any_incoming_halfedge().is_invalid());
-            assert(v.any_outgoing_halfedge().is_invalid());
-            assert(v.any_edge().is_invalid());
+            polyassert(v.any_face().is_invalid());
+            polyassert(v.any_valid_face().is_invalid());
+            polyassert(v.any_incoming_halfedge().is_invalid());
+            polyassert(v.any_outgoing_halfedge().is_invalid());
+            polyassert(v.any_edge().is_invalid());
 
-            assert(v.faces().size() == 0);
-            assert(v.edges().size() == 0);
-            assert(v.adjacent_vertices().size() == 0);
-            assert(v.outgoing_halfedges().size() == 0);
-            assert(v.incoming_halfedges().size() == 0);
+            polyassert(v.faces().size() == 0);
+            polyassert(v.edges().size() == 0);
+            polyassert(v.adjacent_vertices().size() == 0);
+            polyassert(v.outgoing_halfedges().size() == 0);
+            polyassert(v.incoming_halfedges().size() == 0);
         }
     }
 
     // check face consistencies
     for (auto f : faces())
     {
-        assert(f.any_halfedge().is_valid());
-        assert(f.any_vertex().is_valid());
+        polyassert(f.any_halfedge().is_valid());
+        polyassert(f.any_vertex().is_valid());
 
-        assert(f.any_halfedge().face() == f);
-        assert(f.any_vertex().faces().contains(f));
+        polyassert(f.any_halfedge().face() == f);
+        polyassert(f.any_vertex().faces().contains(f));
 
         for (auto h : f.halfedges())
-            assert(h.face() == f);
+            polyassert(h.face() == f);
 
         for (auto v : f.vertices())
-            assert(v.faces().contains(f));
+            polyassert(v.faces().contains(f));
 
         for (auto ff : f.adjacent_faces())
             if (ff.is_valid())
-                assert(ff.adjacent_faces().contains(f));
+                polyassert(ff.adjacent_faces().contains(f));
 
         for (auto e : f.edges())
-            assert(e.faceA() == f || e.faceB() == f);
+            polyassert(e.faceA() == f || e.faceB() == f);
     }
 
     // check edge consistencies
     for (auto e : edges())
     {
-        assert(e.vertexA().is_valid());
-        assert(e.vertexB().is_valid());
-        assert(e.halfedgeA().is_valid());
-        assert(e.halfedgeB().is_valid());
+        polyassert(e.vertexA().is_valid());
+        polyassert(e.vertexB().is_valid());
+        polyassert(e.halfedgeA().is_valid());
+        polyassert(e.halfedgeB().is_valid());
         // faces can be invalid
 
-        assert(e.faceA().is_invalid() || e.faceA().edges().contains(e));
-        assert(e.faceB().is_invalid() || e.faceB().edges().contains(e));
+        polyassert(e.faceA().is_invalid() || e.faceA().edges().contains(e));
+        polyassert(e.faceB().is_invalid() || e.faceB().edges().contains(e));
 
-        assert(e.vertexA().edges().contains(e));
-        assert(e.vertexB().edges().contains(e));
+        polyassert(e.vertexA().edges().contains(e));
+        polyassert(e.vertexB().edges().contains(e));
 
-        assert(e.halfedgeA().edge() == e);
-        assert(e.halfedgeB().edge() == e);
+        polyassert(e.halfedgeA().edge() == e);
+        polyassert(e.halfedgeB().edge() == e);
     }
 
     // check boundaries
     for (auto h : halfedges())
         if (h.is_boundary())
         {
-            assert(h.face().is_invalid());
-            assert(h.edge().is_boundary());
+            polyassert(h.face().is_invalid());
+            polyassert(h.edge().is_boundary());
 
             if (h.opposite().is_boundary())
             {
-                assert(h.edge().is_isolated());
-                assert(h.opposite_face().is_invalid());
+                polyassert(h.edge().is_isolated());
+                polyassert(h.opposite_face().is_invalid());
             }
             else
             {
-                assert(h.opposite_face().is_boundary());
+                polyassert(h.opposite_face().is_boundary());
             }
 
-            assert(h.vertex_to().is_boundary());
-            assert(h.vertex_from().is_boundary());
+            polyassert(h.vertex_to().is_boundary());
+            polyassert(h.vertex_from().is_boundary());
         }
 
     // check derived counts
@@ -320,8 +327,8 @@ void Mesh::assert_consistency() const
             f_h_sum += f.halfedges().size();
         }
 
-        assert(v_e_sum == 2 * size_valid_edges());
-        // WRONG: assert(f_h_sum == size_valid_halfedges());
+        polyassert(v_e_sum == 2 * size_valid_edges());
+        // WRONG: polyassert(f_h_sum == size_valid_halfedges());
 
         // TODO: more?
     }
@@ -331,26 +338,26 @@ void Mesh::assert_consistency() const
     {
         for (auto v : all_vertices())
         {
-            assert(v.is_valid());
-            assert(!v.is_removed());
+            polyassert(v.is_valid());
+            polyassert(!v.is_removed());
         }
 
         for (auto f : all_faces())
         {
-            assert(f.is_valid());
-            assert(!f.is_removed());
+            polyassert(f.is_valid());
+            polyassert(!f.is_removed());
         }
 
         for (auto e : all_edges())
         {
-            assert(e.is_valid());
-            assert(!e.is_removed());
+            polyassert(e.is_valid());
+            polyassert(!e.is_removed());
         }
 
         for (auto h : all_halfedges())
         {
-            assert(h.is_valid());
-            assert(!h.is_removed());
+            polyassert(h.is_valid());
+            polyassert(!h.is_removed());
         }
     }
 
@@ -362,6 +369,6 @@ void Mesh::assert_consistency() const
         auto v1 = h.vertex_to().idx.value;
 
         if (!hes[v0].insert(v1).second)
-            assert(false && "duplicated half-edge");
+            polyassert(false && "duplicated half-edge");
     }
 }
