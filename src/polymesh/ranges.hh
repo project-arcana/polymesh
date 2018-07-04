@@ -34,6 +34,8 @@ struct smart_range
     /// TODO: how to make this O(1)
     ElementT last() const;
 
+    /// returns true if the range is empty
+    bool empty() const;
     /// returns true if the range is non-empty
     bool any() const;
     /// returns true if any value fulfils p(v)

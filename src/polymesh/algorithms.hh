@@ -19,8 +19,13 @@
 // - intersections
 #include "algorithms/operations.hh"
 
+// Mesh statistics
+#include "algorithms/components.hh"
+// WIP: #include "algorithms/stats.hh"
+
 // Geodesics
-#include "algorithms/geodesic_nnf.hh"
+// WIP: #include "algorithms/geodesic_fast_marching.hh"
+// WIP: #include "algorithms/geodesic_nnf.hh"
 
 // TODO:
 // - decimation

@@ -2,6 +2,8 @@
 
 #include <cmath>
 #include <cstddef>
+#include <sstream>
+#include <string>
 #include <utility>
 
 namespace polymesh
@@ -36,6 +38,13 @@ struct field_3d
     constexpr static Scalar scalar(T const& t)
     {
         return static_cast<Scalar>(t);
+    }
+
+    static std::string to_string(Vec3 const& v)
+    {
+        std::stringstream ss;
+        ss << "(" << v[0] << ", " << v[1] << ", " << v[2] << ")";
+        return ss.str();
     }
 };
 }

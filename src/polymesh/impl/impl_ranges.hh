@@ -39,12 +39,13 @@ ElementT smart_range<this_t, ElementT>::last() const
 template <class this_t, class ElementT>
 bool smart_range<this_t, ElementT>::any() const
 {
-    for (auto h : *static_cast<this_t const *>(this))
-    {
-        (void)h; // unused
-        return true;
-    }
-    return false;
+    return static_cast<this_t const *>(this)->begin() != static_cast<this_t const *>(this)->end();
+}
+
+template <class this_t, class ElementT>
+bool smart_range<this_t, ElementT>::empty() const
+{
+    return static_cast<this_t const *>(this)->begin() == static_cast<this_t const *>(this)->end();
 }
 
 template <class this_t, class ElementT>
