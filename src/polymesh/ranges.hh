@@ -57,11 +57,21 @@ struct smart_range
     /// works for std::min and everything reachable by ADL (calls min(_, _))
     template <class FuncT>
     auto min(FuncT&& f) const -> tmp::decayed_result_type_of<FuncT, ElementT>;
+    /// returns e that minimizes f(e)
+    /// undefined behavior if range is empty
+    /// requires working comparison operators for the result
+    template <class FuncT>
+    ElementT min_by(FuncT&& f) const;
     /// calculates max(f(e)) over all elements
     /// undefined behavior if range is empty
     /// works for std::max and everything reachable by ADL (calls max(_, _))
     template <class FuncT>
     auto max(FuncT&& f) const -> tmp::decayed_result_type_of<FuncT, ElementT>;
+    /// returns e that maximizes f(e)
+    /// undefined behavior if range is empty
+    /// requires working comparison operators for the result
+    template <class FuncT>
+    ElementT max_by(FuncT&& f) const;
     /// calculates the sum of f(e) over all elements
     /// undefined behavior if range is empty
     /// requires operator+ for the elements
@@ -87,6 +97,11 @@ struct smart_range
     /// same as aabb(...)
     template <class FuncT>
     auto minmax(FuncT&& f) const -> polymesh::aabb<tmp::decayed_result_type_of<FuncT, ElementT>>;
+    /// returns {e_min, e_max} that minimizes/maximizes f(e)
+    /// undefined behavior if range is empty
+    /// requires working comparison operators for the result
+    template <class FuncT>
+    polymesh::aabb<ElementT> minmax_by(FuncT&& f) const;
 
     /// converts this range to a vector
     std::vector<ElementT> to_vector() const;

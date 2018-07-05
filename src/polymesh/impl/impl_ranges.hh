@@ -133,6 +133,85 @@ auto smart_range<this_t, ElementT>::sum(FuncT &&f) const -> tmp::decayed_result_
 
 template <class this_t, class ElementT>
 template <class FuncT>
+ElementT smart_range<this_t, ElementT>::min_by(FuncT &&f) const
+{
+    auto it_begin = static_cast<this_t const *>(this)->begin();
+    auto it_end = static_cast<this_t const *>(this)->end();
+    assert(it_begin != it_end && "requires non-empty range");
+    auto e_min = *it_begin;
+    auto v_min = f(e_min);
+    ++it_begin;
+    while (it_begin != it_end)
+    {
+        auto e = *it_begin;
+        auto v = f(*it_begin);
+        if (v < v_min)
+        {
+            v_min = v;
+            e_min = e;
+        }
+        ++it_begin;
+    }
+    return e_min;
+}
+
+template <class this_t, class ElementT>
+template <class FuncT>
+ElementT smart_range<this_t, ElementT>::max_by(FuncT &&f) const
+{
+    auto it_begin = static_cast<this_t const *>(this)->begin();
+    auto it_end = static_cast<this_t const *>(this)->end();
+    assert(it_begin != it_end && "requires non-empty range");
+    auto e_max = *it_begin;
+    auto v_max = f(e_max);
+    ++it_begin;
+    while (it_begin != it_end)
+    {
+        auto e = *it_begin;
+        auto v = f(*it_begin);
+        if (v > v_max)
+        {
+            v_max = v;
+            e_max = e;
+        }
+        ++it_begin;
+    }
+    return e_max;
+}
+
+template <class this_t, class ElementT>
+template <class FuncT>
+polymesh::aabb<ElementT> smart_range<this_t, ElementT>::minmax_by(FuncT &&f) const
+{
+    auto it_begin = static_cast<this_t const *>(this)->begin();
+    auto it_end = static_cast<this_t const *>(this)->end();
+    assert(it_begin != it_end && "requires non-empty range");
+    auto e_min = *it_begin;
+    auto e_max = e_min;
+    auto v_min = f(e_min);
+    auto v_max = v_min;
+    ++it_begin;
+    while (it_begin != it_end)
+    {
+        auto e = *it_begin;
+        auto v = f(*it_begin);
+        if (v < v_min)
+        {
+            v_min = v;
+            e_min = e;
+        }
+        if (v > v_max)
+        {
+            v_max = v;
+            e_max = e;
+        }
+        ++it_begin;
+    }
+    return {e_min, e_max};
+}
+
+template <class this_t, class ElementT>
+template <class FuncT>
 auto smart_range<this_t, ElementT>::avg(FuncT &&f) const -> tmp::decayed_result_type_of<FuncT, ElementT>
 {
     auto it_begin = static_cast<this_t const *>(this)->begin();
