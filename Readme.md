@@ -25,3 +25,4 @@ Best used with glm and glow.
 * vertex split?
 * half-edge collapse
 * normal, tangent, bitangent computation
+* attribute iterator
