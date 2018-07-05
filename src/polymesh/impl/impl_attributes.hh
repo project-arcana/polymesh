@@ -253,6 +253,6 @@ void primitive_attribute<tag, AttrT>::apply(FuncT &&f)
     auto s = size();
     auto d = data();
     for (auto i = 0; i < s; ++i)
-        d[i] = f(d[i]);
+        f(d[i]);
 }
 }

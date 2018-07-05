@@ -55,7 +55,7 @@ public:
     /// returns a new attribute where the given function was applied to each entry
     template <class FuncT>
     auto map(FuncT&& f) const -> attribute<tmp::decayed_result_type_of<FuncT, AttrT>>;
-    /// applies to given function to each attribute entry
+    /// applies to given function to each attribute entry (calls f(e))
     template <class FuncT>
     void apply(FuncT&& f);
 
