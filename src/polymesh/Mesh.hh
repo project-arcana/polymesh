@@ -260,7 +260,7 @@ private:
         // is_boundary: check if outgoing_halfedge is boundary
     };
 
-    // 32 byte per edge
+    // 16 byte per edge
     struct halfedge_info
     {
         vertex_index to_vertex;       ///< half-edge points towards this vertex
