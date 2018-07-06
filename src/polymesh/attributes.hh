@@ -19,6 +19,11 @@
  *   vertex_handle v; // or _index
  *   v[myAttr] = 7;
  *   myAttr[v] = 7;
+ *
+ * TODO:
+ *   for (auto& a : myAttr) // NOTE: does not include deleted primitives (and is thus a bit slower)
+ *     a += 1;
+ *   // auto and auto const& also work of course
  */
 
 namespace polymesh
@@ -116,5 +121,4 @@ struct halfedge_attribute : primitive_attribute<halfedge_tag, AttrT>
     template <class mesh_ptr, class tag, class iterator>
     friend struct smart_collection;
 };
-
 }
