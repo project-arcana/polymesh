@@ -301,3 +301,9 @@ void obj_reader::parse(std::istream &in, Mesh &mesh)
         }
     }
 }
+
+void polymesh::read_obj(const std::string &filename, Mesh &mesh, vertex_attribute<glm::vec3> &position)
+{
+    obj_reader reader(filename, mesh);
+    position = reader.positions_vec3();
+}

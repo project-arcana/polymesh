@@ -14,6 +14,7 @@ void write_obj(std::string const& filename,
                vertex_attribute<glm::vec3> const& position,
                vertex_attribute<glm::vec2> const* tex_coord = nullptr,
                vertex_attribute<glm::vec3> const* normal = nullptr);
+void read_obj(std::string const& filename, Mesh& mesh, vertex_attribute<glm::vec3>& position);
 
 struct obj_writer
 {
