@@ -72,11 +72,12 @@ inline face_attribute<int> face_components(Mesh const& m, int* comps)
                 q.pop();
 
                 for (auto ff : f.adjacent_faces())
-                    if (ff[comp] != c_cnt)
-                    {
-                        ff[comp] = c_cnt;
-                        q.push(ff);
-                    }
+                    if (ff.is_valid())
+                        if (ff[comp] != c_cnt)
+                        {
+                            ff[comp] = c_cnt;
+                            q.push(ff);
+                        }
             }
 
             ++c_cnt;
