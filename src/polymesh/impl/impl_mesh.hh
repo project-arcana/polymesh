@@ -775,7 +775,7 @@ inline void Mesh::halfedge_attach(halfedge_index h, vertex_index v)
     h1_ref.face = f;
     h1_ref.to_vertex = v_to;
 
-    vertex(v).outgoing_halfedge = h_next;
+    vertex(v).outgoing_halfedge = h1;
 
     connect_prev_next(h, h0);
     connect_prev_next(h0, h1);
