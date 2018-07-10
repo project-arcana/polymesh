@@ -170,6 +170,12 @@ private:
     /// splits a half-edge
     vertex_index halfedge_split(halfedge_index h);
 
+    /// fills a face
+    face_index face_fill(halfedge_index h);
+
+    /// attaches a given vertex to the to-vertex of a given half-edge
+    void halfedge_attach(halfedge_index h, vertex_index v);
+
     /// collapse a vertex
     void vertex_collapse(vertex_index v);
     /// collapse a half-edge
@@ -197,6 +203,8 @@ private:
     void fix_boundary_state_of(vertex_index v_idx);
     /// choses a new half-edge for a given face, prefers boundary ones
     void fix_boundary_state_of(face_index f_idx);
+    /// choses a new half-edge for all vertices of a face, prefers boundary ones
+    void fix_boundary_state_of_vertices(face_index f_idx);
 
     // attributes
     bool is_boundary(vertex_index idx) const;
@@ -409,5 +417,5 @@ private:
 #include "impl/impl_cursors.hh"
 #include "impl/impl_iterators.hh"
 #include "impl/impl_mesh.hh"
-#include "impl/impl_ranges.hh"
 #include "impl/impl_primitive.hh"
+#include "impl/impl_ranges.hh"

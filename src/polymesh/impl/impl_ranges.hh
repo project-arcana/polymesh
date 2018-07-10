@@ -651,6 +651,12 @@ vertex_handle face_collection<iterator>::split(face_handle f) const
 }
 
 template <class iterator>
+face_handle face_collection<iterator>::fill(halfedge_handle h) const
+{
+    return this->mesh->handle_of(this->mesh->face_fill(h.idx));
+}
+
+template <class iterator>
 vertex_handle edge_collection<iterator>::split(edge_handle e) const
 {
     return this->mesh->handle_of(this->mesh->edge_split(e.idx));
@@ -684,6 +690,12 @@ template <class iterator>
 vertex_handle halfedge_collection<iterator>::split(halfedge_handle h) const
 {
     return this->mesh->handle_of(this->mesh->halfedge_split(h.idx));
+}
+
+template <class iterator>
+void halfedge_collection<iterator>::attach(halfedge_handle h, vertex_handle v) const
+{
+    this->mesh->halfedge_attach(h.idx, v.idx);
 }
 
 template <class iterator>

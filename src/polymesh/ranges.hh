@@ -212,6 +212,10 @@ struct face_collection : smart_collection<Mesh*, face_tag, iterator>
     /// The face itself is deleted and multiple new ones are created
     vertex_handle split(face_handle f) const;
 
+    /// Fills the half-edge ring of a given boundary half-edge
+    /// Returns the new face
+    face_handle fill(halfedge_handle h) const;
+
     /// Removes a face (adjacent edges and vertices are NOT removed)
     /// (marks it as removed, compactify mesh to actually remove it)
     void remove(face_handle f) const;
@@ -273,6 +277,9 @@ struct halfedge_collection : smart_collection<Mesh*, halfedge_tag, iterator>
     /// Contrary to edges().split, the edge is preserved and a single new one is inserted AFTER h
     /// (thus h->next() is the newly inserted edge and h->vertex_to() is the returned vertex)
     vertex_handle split(halfedge_handle h) const;
+
+    /// Given an isolated vertex v, inserts a self-adjacent edge at the to-vertex to v
+    void attach(halfedge_handle h, vertex_handle v) const;
 
     /// Moves the to-vertex of this half-edge to the same as the next half-edge
     /// Preserves all attributes

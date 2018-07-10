@@ -406,6 +406,24 @@ inline void Mesh::fix_boundary_state_of(face_index f_idx)
     } while (he != he_begin);
 }
 
+inline void Mesh::fix_boundary_state_of_vertices(face_index f_idx)
+{
+    auto &f = face(f_idx);
+
+    auto he_begin = f.halfedge;
+    auto he = he_begin;
+    do
+    {
+        auto &h_ref = halfedge(he);
+
+        // fix vertex
+        fix_boundary_state_of(h_ref.to_vertex);
+
+        // advance
+        he = h_ref.next_halfedge;
+    } while (he != he_begin);
+}
+
 inline halfedge_index Mesh::find_free_incident(halfedge_index in_begin, halfedge_index in_end) const
 {
     assert(halfedge(in_begin).to_vertex == halfedge(in_end).to_vertex);
@@ -701,6 +719,65 @@ inline vertex_index Mesh::halfedge_split(halfedge_index h)
     // -> already ok
 
     return v;
+}
+
+inline face_index Mesh::face_fill(halfedge_index h)
+{
+    assert(is_boundary(h));
+
+    auto f = alloc_face();
+    auto &f_ref = face(f);
+
+    f_ref.halfedge = h;
+
+    auto h_begin = h;
+    do
+    {
+        auto &h_ref = halfedge(h);
+
+        // set face
+        h_ref.face = f;
+
+        // set boundary
+        if (is_boundary(opposite(h)))
+            f_ref.halfedge = h;
+
+        // advance
+        h = h_ref.next_halfedge;
+    } while (h != h_begin);
+
+    // fix vertex boundaries
+    fix_boundary_state_of_vertices(f);
+
+    return f;
+}
+
+inline void Mesh::halfedge_attach(halfedge_index h, vertex_index v)
+{
+    assert(vertex(v).is_isolated());
+
+    auto &h_ref = halfedge(h);
+    auto h_next = h_ref.next_halfedge;
+    auto v_to = h_ref.to_vertex;
+
+    auto f = h_ref.face;
+
+    auto e = alloc_edge();
+    auto h0 = halfedge_of(e, 0);
+    auto h1 = halfedge_of(e, 1);
+
+    auto &h0_ref = halfedge(h0);
+    auto &h1_ref = halfedge(h1);
+
+    h0_ref.face = f;
+    h0_ref.to_vertex = v;
+
+    h1_ref.face = f;
+    h1_ref.to_vertex = v_to;
+
+    connect_prev_next(h, h0);
+    connect_prev_next(h0, h1);
+    connect_prev_next(h1, h_next);
 }
 
 inline void Mesh::vertex_collapse(vertex_index v)
