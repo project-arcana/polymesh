@@ -101,16 +101,22 @@ Scalar angle_defect(vertex_handle v, vertex_attribute<Vec3> const& position);
 /// ======== IMPLEMENTATION ========
 
 inline bool is_boundary(vertex_handle v) { return v.is_boundary(); }
+inline bool is_vertex_boundary(vertex_handle v) { return v.is_boundary(); }
 
-inline bool is_boundary(face_handle v) { return v.is_boundary(); }
+inline bool is_boundary(face_handle f) { return f.is_boundary(); }
+inline bool is_face_boundary(face_handle f) { return f.is_boundary(); }
 
-inline bool is_boundary(edge_handle v) { return v.is_boundary(); }
+inline bool is_boundary(edge_handle e) { return e.is_boundary(); }
+inline bool is_edge_boundary(edge_handle e) { return e.is_boundary(); }
 
-inline bool is_boundary(halfedge_handle v) { return v.is_boundary(); }
+inline bool is_boundary(halfedge_handle h) { return h.is_boundary(); }
+inline bool is_halfedge_boundary(halfedge_handle h) { return h.is_boundary(); }
 
 inline bool is_isolated(vertex_handle v) { return v.is_isolated(); }
+inline bool is_vertex_isolated(vertex_handle v) { return v.is_isolated(); }
 
-inline bool is_isolated(edge_handle v) { return v.is_isolated(); }
+inline bool is_isolated(edge_handle e) { return e.is_isolated(); }
+inline bool is_edge_isolated(edge_handle e) { return e.is_isolated(); }
 
 inline int valence(vertex_handle v) { return v.adjacent_vertices().size(); }
 

@@ -51,6 +51,9 @@ struct smart_range
     /// NOTE: this is an O(n) operation, prefer size() if available
     /// TODO: maybe SFINAE to implement this via size() if available?
     int count() const;
+    /// returns the number of elements fulfilling p(v) in this range
+    template <class PredT>
+    int count(PredT&& p) const;
 
     /// calculates min(f(e)) over all elements
     /// undefined behavior if range is empty
@@ -184,6 +187,11 @@ struct vertex_collection : smart_collection<Mesh*, vertex_tag, iterator>
     /// Removes a vertex (and all adjacent faces and edges)
     /// (marks them as removed, compactify mesh to actually remove them)
     void remove(vertex_handle v) const;
+
+    /// applies an index remapping to all vertex indices
+    /// p[curr_idx] = new_idx
+    /// NOTE: invalidates all affected handles/iterators
+    void permute(std::vector<int> const& p) const;
 };
 
 /// Collection of all faces of a mesh
@@ -219,6 +227,11 @@ struct face_collection : smart_collection<Mesh*, face_tag, iterator>
     /// Removes a face (adjacent edges and vertices are NOT removed)
     /// (marks it as removed, compactify mesh to actually remove it)
     void remove(face_handle f) const;
+
+    /// applies an index remapping to all face indices
+    /// p[curr_idx] = new_idx
+    /// NOTE: invalidates all affected handles/iterators
+    void permute(std::vector<int> const& p) const;
 };
 
 /// Collection of all edges of a mesh
@@ -251,6 +264,11 @@ struct edge_collection : smart_collection<Mesh*, edge_tag, iterator>
     /// Removes an edge (and both adjacent faces, vertices are NOT removed)
     /// (marks them as removed, compactify mesh to actually remove them)
     void remove(edge_handle e) const;
+
+    /// applies an index remapping to all edge indices
+    /// p[curr_idx] = new_idx
+    /// NOTE: invalidates all affected handles/iterators
+    void permute(std::vector<int> const& p) const;
 };
 
 /// Collection of all half-edges of a mesh

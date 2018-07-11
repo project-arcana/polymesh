@@ -69,6 +69,17 @@ bool smart_range<this_t, ElementT>::all(PredT &&p) const
 }
 
 template <class this_t, class ElementT>
+template <class PredT>
+int smart_range<this_t, ElementT>::count(PredT &&p) const
+{
+    auto cnt = 0;
+    for (auto h : *static_cast<this_t const *>(this))
+        if (p(h))
+            ++cnt;
+    return cnt;
+}
+
+template <class this_t, class ElementT>
 int smart_range<this_t, ElementT>::count() const
 {
     auto cnt = 0;
@@ -433,6 +444,24 @@ template <class iterator>
 void halfedge_collection<iterator>::remove_edge(halfedge_handle h) const
 {
     this->mesh->remove_edge(this->mesh->edge_of(h.idx));
+}
+
+template <class iterator>
+void face_collection<iterator>::permute(std::vector<int> const &p) const
+{
+    this->mesh->permute_faces(p);
+}
+
+template <class iterator>
+void edge_collection<iterator>::permute(std::vector<int> const &p) const
+{
+    this->mesh->permute_edges(p);
+}
+
+template <class iterator>
+void vertex_collection<iterator>::permute(std::vector<int> const &p) const
+{
+    this->mesh->permute_vertices(p);
 }
 
 

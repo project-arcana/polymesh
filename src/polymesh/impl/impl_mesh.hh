@@ -2,6 +2,8 @@
 
 #include "../Mesh.hh"
 
+#include "../detail/permutation.hh"
+
 namespace polymesh
 {
 inline vertex_index Mesh::add_vertex()
@@ -1018,6 +1020,99 @@ inline void Mesh::halfedge_rotate_prev(halfedge_index h)
     // fix boundary state
     fix_boundary_state_of(h0_ref.face);
     fix_boundary_state_of(h1_ref.face);
+}
+
+inline void Mesh::permute_vertices(std::vector<int> const &p)
+{
+    assert(detail::is_valid_permutation(p));
+
+    // calculate transpositions
+    auto ts = detail::transpositions_of(p);
+
+    // apply them
+    for (auto t : ts)
+        std::swap(mVertices[t.first], mVertices[t.second]);
+
+    // fix half-edges
+    for (auto &h : mHalfedges)
+        if (h.to_vertex.is_valid())
+            h.to_vertex.value = p[h.to_vertex.value];
+
+    // update attributes
+    for (auto a = mVertexAttrs; a; a = a->mNextAttribute)
+        a->apply_transpositions(ts);
+}
+
+inline void Mesh::permute_faces(std::vector<int> const &p)
+{
+    assert(detail::is_valid_permutation(p));
+
+    // calculate transpositions
+    auto ts = detail::transpositions_of(p);
+
+    // apply them
+    for (auto t : ts)
+        std::swap(mFaces[t.first], mFaces[t.second]);
+
+    // fix half-edges
+    for (auto &h : mHalfedges)
+        if (h.face.is_valid())
+            h.face.value = p[h.face.value];
+
+    // update attributes
+    for (auto a = mFaceAttrs; a; a = a->mNextAttribute)
+        a->apply_transpositions(ts);
+}
+
+inline void Mesh::permute_edges(std::vector<int> const &p)
+{
+    assert(detail::is_valid_permutation(p));
+
+    std::vector<int> hp(p.size() * 2);
+    for (auto i = 0u; i < p.size(); ++i)
+    {
+        hp[i * 2 + 0] = p[i] * 2 + 0;
+        hp[i * 2 + 1] = p[i] * 2 + 1;
+    }
+    assert(detail::is_valid_permutation(hp));
+
+    // calculate transpositions
+    std::vector<std::pair<int, int>> edge_ts;
+    std::vector<std::pair<int, int>> halfedge_ts;
+
+    detail::apply_permutation(p, [&](int i, int j) {
+        edge_ts.emplace_back(i, j);
+        halfedge_ts.emplace_back((i << 1) + 0, (j << 1) + 0);
+        halfedge_ts.emplace_back((i << 1) + 1, (j << 1) + 1);
+    });
+
+    // apply them
+    for (auto t : halfedge_ts)
+        std::swap(mHalfedges[t.first], mHalfedges[t.second]);
+
+    // fix half-edges
+    for (auto &v : mVertices)
+        if (v.outgoing_halfedge.value >= 0)
+            v.outgoing_halfedge.value = hp[v.outgoing_halfedge.value];
+
+    for (auto &f : mFaces)
+        if (f.halfedge.value >= 0)
+            f.halfedge.value = hp[f.halfedge.value];
+
+    for (auto &h : mHalfedges)
+    {
+        if (h.next_halfedge.value >= 0)
+            h.next_halfedge.value = hp[h.next_halfedge.value];
+
+        if (h.prev_halfedge.value >= 0)
+            h.prev_halfedge.value = hp[h.prev_halfedge.value];
+    }
+
+    // update attributes
+    for (auto a = mEdgeAttrs; a; a = a->mNextAttribute)
+        a->apply_transpositions(edge_ts);
+    for (auto a = mHalfedgeAttrs; a; a = a->mNextAttribute)
+        a->apply_transpositions(halfedge_ts);
 }
 
 inline void Mesh::compactify()

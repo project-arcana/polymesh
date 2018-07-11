@@ -6,6 +6,7 @@
 #include "../fields.hh"
 
 #include "components.hh"
+#include "properties.hh"
 
 namespace polymesh
 {
@@ -56,6 +57,8 @@ void print_stats(std::ostream& out, Mesh const& m, vertex_attribute<Vec3> const*
     // TODO: genus
     // TODO: boundaries
     // TODO: isolated verts, edges
+    out << "  Isolated Vertices: " << m.vertices().count(is_vertex_isolated);
+    out << "  Isolated Edges: " << m.edges().count(is_edge_isolated);
 
     if (position)
     {
@@ -72,6 +75,10 @@ void print_stats(std::ostream& out, Mesh const& m, vertex_attribute<Vec3> const*
 
         auto avg = m.vertices().avg(pos);
         out << "  Vertex Centroid: " << field_3d<Vec3>::to_string(avg) << ln;
+
+        auto el_minmax = m.edges().minmax([&](edge_handle e) { return edge_length(e, pos); });
+        auto el_avg = m.edges().avg([&](edge_handle e) { return edge_length(e, pos); });
+        out << "  Edge Lengths: " << el_minmax.min << " .. " << el_minmax.max << " (avg " << el_avg << ")" << ln;
     }
 }
 }

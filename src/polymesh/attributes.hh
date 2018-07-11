@@ -76,6 +76,7 @@ protected:
 
     void on_resize(int newSize) override { mData.resize(newSize, mDefaultValue); }
     void apply_remapping(std::vector<int> const& map) override;
+    void apply_transpositions(std::vector<std::pair<int, int>> const& ts) override;
 
     // ctor
 protected:

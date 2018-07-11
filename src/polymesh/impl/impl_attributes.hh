@@ -28,6 +28,14 @@ void primitive_attribute<tag, AttrT>::apply_remapping(const std::vector<int> &ma
 }
 
 template <class tag, class AttrT>
+void primitive_attribute<tag, AttrT>::apply_transpositions(std::vector<std::pair<int, int>> const &ts)
+{
+    using std::swap;
+    for (auto t : ts)
+        swap(this->mData[t.first], this->mData[t.second]);
+}
+
+template <class tag, class AttrT>
 primitive_attribute<tag, AttrT>::primitive_attribute(primitive_attribute const &rhs) noexcept : primitive_attribute_base<tag>(rhs.mMesh) // copy
 {
     this->mDefaultValue = rhs.mDefaultValue;

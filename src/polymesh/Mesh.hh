@@ -244,6 +244,13 @@ private:
     /// returns the vertex that this half-edge is leaving from
     vertex_index from_vertex_of(halfedge_index idx) const { return halfedge(opposite(idx)).to_vertex; }
 
+    /// applies an index remapping to all face indices (p[curr_idx] = new_idx)
+    void permute_faces(std::vector<int> const& p);
+    /// applies an index remapping to all edge (and half-edge) indices (p[curr_idx] = new_idx)
+    void permute_edges(std::vector<int> const& p);
+    /// applies an index remapping to all vertices indices (p[curr_idx] = new_idx)
+    void permute_vertices(std::vector<int> const& p);
+
     // internal datastructures
 private:
     // 4 byte per face

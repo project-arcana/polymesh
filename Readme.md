@@ -26,3 +26,5 @@ Best used with glm and glow.
 * half-edge collapse
 * normal, tangent, bitangent computation
 * attribute iterator
+* primitive sort functions, better remap function, cache optimization
+* structure of arrays instead of AOS
