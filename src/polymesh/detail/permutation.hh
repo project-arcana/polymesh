@@ -45,7 +45,6 @@ template <class Swap>
 void apply_permutation(std::vector<int> const& p, Swap&& s)
 {
     auto size = p.size();
-    std::vector<int> cycle;
     std::valarray<bool> visited(false, size);
     for (auto pi = 0u; pi < size; ++pi)
     {
@@ -54,7 +53,6 @@ void apply_permutation(std::vector<int> const& p, Swap&& s)
         if (visited[i])
             continue;
 
-        cycle.clear();
         visited[i] = true;
         i = p[i];
         while (!visited[i])
@@ -62,15 +60,12 @@ void apply_permutation(std::vector<int> const& p, Swap&& s)
             // mark
             visited[i] = true;
 
-            // add to cycle
-            cycle.push_back(i);
+            // swap
+            s(pi, i);
 
             // advance
             i = p[i];
         }
-
-        for (auto j = (int)cycle.size() - 1; j >= 0; --j)
-            s(pi, cycle[j]);
     }
 }
 
