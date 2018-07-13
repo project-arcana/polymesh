@@ -28,6 +28,8 @@ struct primitive_index
 
     bool operator==(index_t const& rhs) const { return value == rhs.value; }
     bool operator!=(index_t const& rhs) const { return value != rhs.value; }
+    bool operator==(handle_t const& rhs) const { return value == rhs.idx.value; }
+    bool operator!=(handle_t const& rhs) const { return value != rhs.idx.value; }
 
     /// indexes this primitive by a functor
     /// also works for attributes
