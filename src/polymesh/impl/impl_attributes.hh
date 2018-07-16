@@ -97,7 +97,7 @@ inline void Mesh::register_attr(primitive_attribute_base<vertex_tag> *attr) cons
         nextAttrs->mPrevAttribute = attr;
 
     // resize attr
-    attr->resize(vertices().size(), false);
+    attr->resize(all_vertices().size(), false);
 }
 
 inline void Mesh::deregister_attr(primitive_attribute_base<vertex_tag> *attr) const
@@ -125,7 +125,7 @@ inline void Mesh::register_attr(primitive_attribute_base<face_tag> *attr) const
         nextAttrs->mPrevAttribute = attr;
 
     // resize attr
-    attr->resize(faces().size(), false);
+    attr->resize(all_faces().size(), false);
 }
 
 inline void Mesh::deregister_attr(primitive_attribute_base<face_tag> *attr) const
@@ -153,7 +153,7 @@ inline void Mesh::register_attr(primitive_attribute_base<edge_tag> *attr) const
         nextAttrs->mPrevAttribute = attr;
 
     // resize attr
-    attr->resize(edges().size(), false);
+    attr->resize(all_edges().size(), false);
 }
 
 inline void Mesh::deregister_attr(primitive_attribute_base<edge_tag> *attr) const
@@ -181,7 +181,7 @@ inline void Mesh::register_attr(primitive_attribute_base<halfedge_tag> *attr) co
         nextAttrs->mPrevAttribute = attr;
 
     // resize attr
-    attr->resize(halfedges().size(), false);
+    attr->resize(all_halfedges().size(), false);
 }
 
 inline void Mesh::deregister_attr(primitive_attribute_base<halfedge_tag> *attr) const

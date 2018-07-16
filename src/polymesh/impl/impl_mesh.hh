@@ -491,7 +491,7 @@ inline vertex_index Mesh::next_valid_idx_from(vertex_index idx) const
     for (auto i = idx.value; i < (int)mVertices.size(); ++i)
         if (mVertices[i].is_valid())
             return vertex_index(i);
-    return vertex_index(size_vertices()); // end index
+    return vertex_index(size_all_vertices()); // end index
 }
 
 inline vertex_index Mesh::prev_valid_idx_from(vertex_index idx) const
@@ -507,7 +507,7 @@ inline edge_index Mesh::next_valid_idx_from(edge_index idx) const
     for (auto i = idx.value << 1; i < (int)mHalfedges.size(); i += 2)
         if (mHalfedges[i].is_valid())
             return edge_index(i >> 1);
-    return edge_index(size_edges()); // end index
+    return edge_index(size_all_edges()); // end index
 }
 
 inline edge_index Mesh::prev_valid_idx_from(edge_index idx) const
@@ -523,7 +523,7 @@ inline face_index Mesh::next_valid_idx_from(face_index idx) const
     for (auto i = idx.value; i < (int)mFaces.size(); ++i)
         if (mFaces[i].is_valid())
             return face_index(i);
-    return face_index(size_faces()); // end index
+    return face_index(size_all_faces()); // end index
 }
 
 inline face_index Mesh::prev_valid_idx_from(face_index idx) const
@@ -539,7 +539,7 @@ inline halfedge_index Mesh::next_valid_idx_from(halfedge_index idx) const
     for (auto i = idx.value; i < (int)mHalfedges.size(); ++i)
         if (mHalfedges[i].is_valid())
             return halfedge_index(i);
-    return halfedge_index(size_halfedges()); // end index
+    return halfedge_index(size_all_halfedges()); // end index
 }
 
 inline halfedge_index Mesh::prev_valid_idx_from(halfedge_index idx) const
@@ -581,7 +581,8 @@ inline vertex_index Mesh::face_split(face_index f)
 
         add_face(vs, 3);
 
-        h = halfedge(h).next_halfedge;
+        // NOTE: add_face inserted a new halfedge
+        h = halfedge(opposite(halfedge(h).next_halfedge)).next_halfedge;
     } while (h != h_begin);
 
     return vs[0];
@@ -1121,10 +1122,10 @@ inline void Mesh::compactify()
         return;
 
     // calculate remappings
-    int v_cnt = size_vertices();
-    int f_cnt = size_faces();
-    int e_cnt = size_edges();
-    int h_cnt = size_halfedges();
+    int v_cnt = size_all_vertices();
+    int f_cnt = size_all_faces();
+    int e_cnt = size_all_edges();
+    int h_cnt = size_all_halfedges();
     std::vector<int> v_new_to_old;
     std::vector<int> f_new_to_old;
     std::vector<int> e_new_to_old;
@@ -1214,13 +1215,13 @@ inline void Mesh::compactify()
     mHalfedges.shrink_to_fit();
 
     for (auto a = mVertexAttrs; a; a = a->mNextAttribute)
-        a->resize(size_vertices(), true);
+        a->resize(size_all_vertices(), true);
     for (auto a = mFaceAttrs; a; a = a->mNextAttribute)
-        a->resize(size_faces(), true);
+        a->resize(size_all_faces(), true);
     for (auto a = mEdgeAttrs; a; a = a->mNextAttribute)
-        a->resize(size_edges(), true);
+        a->resize(size_all_edges(), true);
     for (auto a = mHalfedgeAttrs; a; a = a->mNextAttribute)
-        a->resize(size_halfedges(), true);
+        a->resize(size_all_halfedges(), true);
 
     mRemovedFaces = 0;
     mRemovedHalfedges = 0;

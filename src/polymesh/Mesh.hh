@@ -114,10 +114,10 @@ private:
     void reserve_edges(int capacity);
     void reserve_halfedges(int capacity);
 
-    int size_faces() const { return (int)mFaces.size(); }
-    int size_vertices() const { return (int)mVertices.size(); }
-    int size_edges() const { return (int)mHalfedges.size() >> 1; }
-    int size_halfedges() const { return (int)mHalfedges.size(); }
+    int size_all_faces() const { return (int)mFaces.size(); }
+    int size_all_vertices() const { return (int)mVertices.size(); }
+    int size_all_edges() const { return (int)mHalfedges.size() >> 1; }
+    int size_all_halfedges() const { return (int)mHalfedges.size(); }
 
     int size_valid_faces() const { return (int)mFaces.size() - mRemovedFaces; }
     int size_valid_vertices() const { return (int)mVertices.size() - mRemovedVertices; }
@@ -302,42 +302,42 @@ private:
 
     struct face_info &face(face_index i)
     {
-        assert(i.is_valid() && i.value < size_faces());
+        assert(i.is_valid() && i.value < size_all_faces());
         return mFaces[i.value];
     }
     struct face_info const &face(face_index i) const
     {
-        assert(i.is_valid() && i.value < size_faces());
+        assert(i.is_valid() && i.value < size_all_faces());
         return mFaces[i.value];
     }
     struct vertex_info &vertex(vertex_index i)
     {
-        assert(i.is_valid() && i.value < size_vertices());
+        assert(i.is_valid() && i.value < size_all_vertices());
         return mVertices[i.value];
     }
     struct vertex_info const &vertex(vertex_index i) const
     {
-        assert(i.is_valid() && i.value < size_vertices());
+        assert(i.is_valid() && i.value < size_all_vertices());
         return mVertices[i.value];
     }
     struct halfedge_info &halfedge(halfedge_index i)
     {
-        assert(i.is_valid() && i.value < size_halfedges());
+        assert(i.is_valid() && i.value < size_all_halfedges());
         return mHalfedges[i.value];
     }
     struct halfedge_info const &halfedge(halfedge_index i) const
     {
-        assert(i.is_valid() && i.value < size_halfedges());
+        assert(i.is_valid() && i.value < size_all_halfedges());
         return mHalfedges[i.value];
     }
     struct halfedge_info &halfedge(edge_index i, int h)
     {
-        assert(i.is_valid() && i.value < size_edges());
+        assert(i.is_valid() && i.value < size_all_edges());
         return mHalfedges[(i.value << 1) + h];
     }
     struct halfedge_info const &halfedge(edge_index i, int h) const
     {
-        assert(i.is_valid() && i.value < size_edges());
+        assert(i.is_valid() && i.value < size_all_edges());
         return mHalfedges[(i.value << 1) + h];
     }
 

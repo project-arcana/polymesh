@@ -1,6 +1,6 @@
 #pragma once
 
-#include "geodesic_nnf.hh"
+#include "gsf.hh"
 
 namespace polymesh
 {

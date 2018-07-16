@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../Mesh.hh"
-#include "../fields.hh"
+#include <polymesh/Mesh.hh>
+#include <polymesh/fields.hh>
 
 namespace polymesh
 {
@@ -28,4 +28,4 @@ GeodesicNNF<Vec3, Scalar> make_geodesic_nnf(Mesh const& m, vertex_attribute<Vec3
 }
 
 // Implementation
-#include "geodesic_nnf.impl.hh"
+#include "gsf.impl.hh"

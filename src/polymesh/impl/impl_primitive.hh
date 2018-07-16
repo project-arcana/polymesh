@@ -5,10 +5,10 @@
 namespace polymesh
 {
 // primitive::all_size
-inline int primitive<vertex_tag>::all_size(Mesh const &m) { return m.size_vertices(); }
-inline int primitive<face_tag>::all_size(Mesh const &m) { return m.size_faces(); }
-inline int primitive<edge_tag>::all_size(Mesh const &m) { return m.size_edges(); }
-inline int primitive<halfedge_tag>::all_size(Mesh const &m) { return m.size_halfedges(); }
+inline int primitive<vertex_tag>::all_size(Mesh const &m) { return m.size_all_vertices(); }
+inline int primitive<face_tag>::all_size(Mesh const &m) { return m.size_all_faces(); }
+inline int primitive<edge_tag>::all_size(Mesh const &m) { return m.size_all_edges(); }
+inline int primitive<halfedge_tag>::all_size(Mesh const &m) { return m.size_all_halfedges(); }
 
 // primitive::valid_size
 inline int primitive<vertex_tag>::valid_size(Mesh const &m) { return m.size_valid_vertices(); }
