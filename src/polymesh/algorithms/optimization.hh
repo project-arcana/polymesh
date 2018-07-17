@@ -4,6 +4,7 @@
 
 #include "../detail/permutation.hh"
 #include "../detail/random.hh"
+#include "../detail/union_find.hh"
 
 namespace polymesh
 {
@@ -62,6 +63,17 @@ inline void optimize_for_rendering(Mesh& m)
 
 inline std::vector<int> cache_coherent_face_layout(Mesh const& m)
 {
+    // build binary tree
+    // - approx min cut
+    // - refine approx
+    // - split
+
+    std::vector<std::pair<int, int>> edges;
+    for (auto e : m.edges())
+        edges.emplace_back((int)e.faceA(), (int)e.faceB());
+
+    // TODO
+
     std::vector<int> id;
     for (auto i = 0u; i < m.faces().size(); ++i)
         id.push_back(i);

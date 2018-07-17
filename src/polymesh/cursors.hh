@@ -31,6 +31,8 @@ struct primitive_index
     bool operator==(handle_t const& rhs) const { return value == rhs.idx.value; }
     bool operator!=(handle_t const& rhs) const { return value != rhs.idx.value; }
 
+    explicit operator int() const { return value; }
+
     /// indexes this primitive by a functor
     /// also works for attributes
     /// - e.g. v[position] or f[area]
@@ -56,6 +58,8 @@ struct primitive_handle
     bool operator!=(index_t const& rhs) const { return idx != rhs; }
     bool operator==(handle_t const& rhs) const { return mesh == rhs.mesh && idx == rhs.idx; }
     bool operator!=(handle_t const& rhs) const { return mesh != rhs.mesh || idx != rhs.idx; }
+
+    explicit operator int() const { return (int)idx; }
 
     /// indexes this primitive by a functor
     /// also works for attributes
