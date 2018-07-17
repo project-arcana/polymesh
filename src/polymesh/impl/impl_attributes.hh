@@ -5,6 +5,56 @@
 namespace polymesh
 {
 template <class tag, class AttrT>
+AttrT &primitive_attribute<tag, AttrT>::operator[](handle_t h)
+{
+    assert(this->mMesh == h.mesh && "Handle belongs to a different mesh");
+    return mData[h.idx.value];
+}
+template <class tag, class AttrT>
+AttrT const &primitive_attribute<tag, AttrT>::operator[](handle_t h) const
+{
+    assert(this->mMesh == h.mesh && "Handle belongs to a different mesh");
+    return mData[h.idx.value];
+}
+template <class tag, class AttrT>
+AttrT &primitive_attribute<tag, AttrT>::operator()(handle_t h)
+{
+    assert(this->mMesh == h.mesh && "Handle belongs to a different mesh");
+    return mData[h.idx.value];
+}
+template <class tag, class AttrT>
+AttrT const &primitive_attribute<tag, AttrT>::operator()(handle_t h) const
+{
+    assert(this->mMesh == h.mesh && "Handle belongs to a different mesh");
+    return mData[h.idx.value];
+}
+
+template <class AttrT>
+AttrT &edge_attribute<AttrT>::operator[](halfedge_handle h)
+{
+    assert(this->mMesh == h.mesh && "Handle belongs to a different mesh");
+    return this->mData[h.idx.value >> 1];
+}
+template <class AttrT>
+AttrT const &edge_attribute<AttrT>::operator[](halfedge_handle h) const
+{
+    assert(this->mMesh == h.mesh && "Handle belongs to a different mesh");
+    return this->mData[h.idx.value >> 1];
+}
+template <class AttrT>
+AttrT &edge_attribute<AttrT>::operator()(halfedge_handle h)
+{
+    assert(this->mMesh == h.mesh && "Handle belongs to a different mesh");
+    return this->mData[h.idx.value >> 1];
+}
+template <class AttrT>
+AttrT const &edge_attribute<AttrT>::operator()(halfedge_handle h) const
+{
+    assert(this->mMesh == h.mesh && "Handle belongs to a different mesh");
+    return this->mData[h.idx.value >> 1];
+}
+
+template <class tag, class AttrT>
 void primitive_attribute<tag, AttrT>::copy_from(const std::vector<AttrT> &data)
 {
     auto s = std::min((int)data.size(), this->mDataSize);
@@ -18,6 +68,14 @@ void primitive_attribute<tag, AttrT>::copy_from(const AttrT *data, int cnt)
     auto s = std::min(cnt, this->mDataSize);
     for (auto i = 0; i < s; ++i)
         this->mData[i] = data[i];
+}
+
+template <class tag, class AttrT>
+void primitive_attribute<tag, AttrT>::copy_from(attribute<AttrT> const &data)
+{
+    auto s = std::min(data.mDataSize, this->mDataSize);
+    for (auto i = 0; i < s; ++i)
+        this->mData[i] = data.mData[i];
 }
 
 template <class tag, class AttrT>
@@ -231,8 +289,7 @@ int primitive_attribute<tag, AttrT>::size() const
 template <class tag, class AttrT>
 void primitive_attribute<tag, AttrT>::clear(AttrT const &value)
 {
-    this->mData.clear();
-    this->mData.resize(size(), value);
+    this->mData.clear(value);
 }
 
 template <class tag, class AttrT>

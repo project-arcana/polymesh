@@ -38,15 +38,15 @@ struct primitive_attribute : primitive_attribute_base<tag>
 
     // data access
 public:
-    AttrT& operator[](handle_t v) { return mData[v.idx.value]; }
-    AttrT const& operator[](handle_t v) const { return mData[v.idx.value]; }
-    AttrT& operator[](index_t v) { return mData[v.value]; }
-    AttrT const& operator[](index_t v) const { return mData[v.value]; }
+    AttrT& operator[](handle_t h);
+    AttrT const& operator[](handle_t h) const;
+    AttrT& operator[](index_t h) { return mData[h.value]; }
+    AttrT const& operator[](index_t h) const { return mData[h.value]; }
 
-    AttrT& operator()(handle_t v) { return mData[v.idx.value]; }
-    AttrT const& operator()(handle_t v) const { return mData[v.idx.value]; }
-    AttrT& operator()(index_t v) { return mData[v.value]; }
-    AttrT const& operator()(index_t v) const { return mData[v.value]; }
+    AttrT& operator()(handle_t h);
+    AttrT const& operator()(handle_t h) const;
+    AttrT& operator()(index_t h) { return mData[h.value]; }
+    AttrT const& operator()(index_t h) const { return mData[h.value]; }
 
     AttrT* data() { return mData.data; }
     AttrT const* data() const { return mData.data; }
@@ -68,6 +68,8 @@ public:
     void copy_from(std::vector<AttrT> const& data);
     /// copies as much data as possible from the given array
     void copy_from(AttrT const* data, int cnt);
+    /// copies as much data as possible from the given attribute
+    void copy_from(attribute<AttrT> const& data);
 
     // data
 protected:
@@ -110,6 +112,21 @@ template <class AttrT>
 struct edge_attribute : primitive_attribute<edge_tag, AttrT>
 {
     using primitive_attribute<edge_tag, AttrT>::primitive_attribute;
+
+    // shortcuts for half-edge handles
+
+    AttrT& operator[](halfedge_handle h);
+    AttrT const& operator[](halfedge_handle h) const;
+    AttrT& operator[](halfedge_index h) { return this->mData[h.value >> 1]; }
+    AttrT const& operator[](halfedge_index h) const { return this->mData[h.value >> 1]; }
+
+    AttrT& operator()(halfedge_handle h);
+    AttrT const& operator()(halfedge_handle h) const;
+    AttrT& operator()(halfedge_index h) { return this->mData[h.value >> 1]; }
+    AttrT const& operator()(halfedge_index h) const { return this->mData[h.value >> 1]; }
+
+    using primitive_attribute<edge_tag, AttrT>::operator[];
+    using primitive_attribute<edge_tag, AttrT>::operator();
 
     template <class mesh_ptr, class tag, class iterator>
     friend struct smart_collection;

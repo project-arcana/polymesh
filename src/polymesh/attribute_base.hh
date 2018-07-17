@@ -62,6 +62,12 @@ struct attribute_data
     }
     ~attribute_data() { delete[] data; }
 
+    void clear(DataT const& value)
+    {
+        for (auto i = 0; i < size; ++i)
+            data[i] = value;
+    }
+
     void resize(int new_size, DataT const& default_value)
     {
         auto new_data = new DataT[new_size];

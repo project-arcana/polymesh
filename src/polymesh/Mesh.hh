@@ -106,6 +106,11 @@ public:
     /// Creates a new mesh and returns a shared_ptr to it
     static SharedMesh create() { return std::make_shared<Mesh>(); }
 
+    /// Clears this mesh and copies mesh topology, NOT attributes!
+    void copy_from(Mesh const &m);
+    /// Creates a new mesh and calls copy_from(*this);
+    SharedMesh copy() const;
+
     // internal helper
 private:
     // reserves a certain number of primitives
@@ -245,11 +250,11 @@ private:
     vertex_index from_vertex_of(halfedge_index idx) const { return halfedge(opposite(idx)).to_vertex; }
 
     /// applies an index remapping to all face indices (p[curr_idx] = new_idx)
-    void permute_faces(std::vector<int> const& p);
+    void permute_faces(std::vector<int> const &p);
     /// applies an index remapping to all edge (and half-edge) indices (p[curr_idx] = new_idx)
-    void permute_edges(std::vector<int> const& p);
+    void permute_edges(std::vector<int> const &p);
     /// applies an index remapping to all vertices indices (p[curr_idx] = new_idx)
-    void permute_vertices(std::vector<int> const& p);
+    void permute_vertices(std::vector<int> const &p);
 
     // internal datastructures
 private:

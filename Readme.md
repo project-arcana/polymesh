@@ -28,3 +28,4 @@ Best used with glm and glow.
 * attribute iterator
 * primitive sort functions, better remap function, cache optimization
 * structure of arrays instead of AOS
+* lowlevel API that allows direct half-edge manipulation and does not fix boundaries (but also mirrors high level one)

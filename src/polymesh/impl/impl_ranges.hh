@@ -262,6 +262,32 @@ auto smart_range<this_t, ElementT>::weighted_avg(FuncT &&f, WeightT &&w) const -
 }
 
 template <class this_t, class ElementT>
+template <class FuncT, class FuncInvT>
+auto smart_range<this_t, ElementT>::f_mean(FuncT &&f, FuncInvT &&f_inv) const
+    -> tmp::decayed_result_type_of<FuncInvT, tmp::decayed_result_type_of<FuncT, ElementT>>
+{
+    return f_inv(this->avg(f));
+}
+
+template <class this_t, class ElementT>
+template <class FuncT>
+auto smart_range<this_t, ElementT>::arithmetic_mean(FuncT &&f) const -> tmp::decayed_result_type_of<FuncT, ElementT>
+{
+    return this->avg(f);
+}
+
+template <class this_t, class ElementT>
+template <class FuncT>
+auto smart_range<this_t, ElementT>::geometric_mean(FuncT &&f) const -> tmp::decayed_result_type_of<FuncT, ElementT>
+{
+    using std::exp;
+    using std::log;
+    auto ff = [&f](ElementT const &e) { return log(f(e)); };
+    auto ff_inv = [](decltype(ff(std::declval<ElementT>())) const &d) { return exp(d); };
+    return this->f_mean(ff, ff_inv);
+}
+
+template <class this_t, class ElementT>
 template <class FuncT>
 auto smart_range<this_t, ElementT>::aabb(FuncT &&f) const -> polymesh::aabb<typename tmp::decayed_result_of<FuncT, ElementT>::type>
 {

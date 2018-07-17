@@ -92,6 +92,17 @@ struct smart_range
     template <class FuncT, class WeightT>
     auto weighted_avg(FuncT&& f, WeightT&& w) const -> tmp::decayed_result_type_of<FuncT, ElementT>;
 
+    /// calculates the f-mean of this range
+    /// the f-mean is f_inv(avg(f))
+    template <class FuncT, class FuncInvT>
+    auto f_mean(FuncT&& f, FuncInvT&& f_inv) const -> tmp::decayed_result_type_of<FuncInvT, tmp::decayed_result_type_of<FuncT, ElementT>>;
+    /// calculates the arithmetic mean of f(e) for this range (same as avg)
+    template <class FuncT>
+    auto arithmetic_mean(FuncT&& f) const -> tmp::decayed_result_type_of<FuncT, ElementT>;
+    /// calculates the geometric mean of f(e) for this range (also known as log-average)
+    template <class FuncT>
+    auto geometric_mean(FuncT&& f) const -> tmp::decayed_result_type_of<FuncT, ElementT>;
+
     /// calculates the aabb (min and max) of f(e) over all elements
     /// undefined behavior if range is empty
     /// works for std::min/max and everything reachable by ADL (calls min/max(_, _))

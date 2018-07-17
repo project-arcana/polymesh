@@ -1242,6 +1242,37 @@ inline void Mesh::clear()
     compactify();
 }
 
+inline void Mesh::copy_from(const Mesh &m)
+{
+    // copy topo
+    mVertices = m.mVertices;
+    mFaces = m.mFaces;
+    mHalfedges = m.mHalfedges;
+
+    // copy helper data
+    mRemovedFaces = m.mRemovedFaces;
+    mRemovedHalfedges = m.mRemovedHalfedges;
+    mRemovedVertices = m.mRemovedVertices;
+    mCompact = m.mCompact;
+
+    // resize attributes
+    for (auto a = mVertexAttrs; a; a = a->mNextAttribute)
+        a->resize(size_all_vertices(), true);
+    for (auto a = mFaceAttrs; a; a = a->mNextAttribute)
+        a->resize(size_all_faces(), true);
+    for (auto a = mEdgeAttrs; a; a = a->mNextAttribute)
+        a->resize(size_all_edges(), true);
+    for (auto a = mHalfedgeAttrs; a; a = a->mNextAttribute)
+        a->resize(size_all_halfedges(), true);
+}
+
+inline SharedMesh Mesh::copy() const
+{
+    auto m = create();
+    m->copy_from(*this);
+    return m;
+}
+
 inline void Mesh::reserve_faces(int capacity)
 {
     for (auto a = mFaceAttrs; a; a = a->mNextAttribute)

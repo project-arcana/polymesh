@@ -15,7 +15,7 @@ void triangulate_naive(Mesh& m);
 
 /// ======== IMPLEMENTATION ========
 
-void triangulate_naive(Mesh& m)
+inline void triangulate_naive(Mesh& m)
 {
     std::vector<vertex_handle> vs;
     for (auto f : m.faces())
