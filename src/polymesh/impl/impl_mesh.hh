@@ -741,9 +741,14 @@ inline face_index Mesh::face_fill(halfedge_index h)
         // set face
         h_ref.face = f;
 
-        // set boundary
+        // fix face boundary
         if (is_boundary(opposite(h)))
             f_ref.halfedge = h;
+
+        // fix adj face boundary
+        auto adj_face = halfedge(opposite(h)).face;
+        if (adj_face.is_valid())
+            fix_boundary_state_of(adj_face);
 
         // advance
         h = h_ref.next_halfedge;
