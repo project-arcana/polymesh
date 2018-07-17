@@ -79,6 +79,16 @@ void primitive_attribute<tag, AttrT>::copy_from(attribute<AttrT> const &data)
 }
 
 template <class tag, class AttrT>
+std::vector<AttrT> primitive_attribute<tag, AttrT>::to_vector() const
+{
+    auto s = this->size();
+    std::vector<AttrT> r(s);
+    for (auto i = 0; i < s; ++i)
+        r[i] = this->mData[i];
+    return r;
+}
+
+template <class tag, class AttrT>
 void primitive_attribute<tag, AttrT>::apply_remapping(const std::vector<int> &map)
 {
     for (auto i = 0u; i < map.size(); ++i)

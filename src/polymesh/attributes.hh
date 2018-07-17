@@ -71,6 +71,9 @@ public:
     /// copies as much data as possible from the given attribute
     void copy_from(attribute<AttrT> const& data);
 
+    /// Saves ALL data into a vector (includes possibly removed ones)
+    std::vector<AttrT> to_vector() const;
+
     // data
 protected:
     attribute_data<AttrT> mData;
