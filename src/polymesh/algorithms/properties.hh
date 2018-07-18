@@ -23,20 +23,36 @@ namespace polymesh
 {
 /// returns true if the vertex lies at a boundary
 bool is_boundary(vertex_handle v);
+bool is_vertex_boundary(vertex_handle v);
 /// returns true if the face lies at a boundary
-bool is_boundary(face_handle v);
+bool is_boundary(face_handle f);
+bool is_face_boundary(face_handle f);
 /// returns true if the edge lies at a boundary
-bool is_boundary(edge_handle v);
+bool is_boundary(edge_handle e);
+bool is_edge_boundary(edge_handle e);
 /// returns true if the half-edge lies at a boundary (NOTE: a half-edge is boundary if it has no face)
-bool is_boundary(halfedge_handle v);
+bool is_boundary(halfedge_handle h);
+bool is_halfedge_boundary(halfedge_handle h);
 
 /// returns true if the vertex has no neighbors
 bool is_isolated(vertex_handle v);
+bool is_vertex_isolated(vertex_handle v);
 /// returns true if the edge has no neighboring faces
-bool is_isolated(edge_handle v);
+bool is_isolated(edge_handle e);
+bool is_edge_isolated(edge_handle e);
 
 /// returns the vertex valence (number of adjacent vertices)
 int valence(vertex_handle v);
+
+/// returns true iff face is a triangle
+bool is_triangle(face_handle f);
+/// returns true iff face is a quad
+bool is_quad(face_handle f);
+
+/// returns true iff all faces are triangles
+bool is_triangle_mesh(Mesh const& m);
+/// returns true iff all faces are quads
+bool is_quad_mesh(Mesh const& m);
 
 /// returns the area of the (flat) polygonal face
 template <class Vec3, class Scalar = typename field_3d<Vec3>::Scalar>
@@ -119,6 +135,12 @@ inline bool is_isolated(edge_handle e) { return e.is_isolated(); }
 inline bool is_edge_isolated(edge_handle e) { return e.is_isolated(); }
 
 inline int valence(vertex_handle v) { return v.adjacent_vertices().size(); }
+
+inline bool is_triangle(face_handle f) { return f.halfedges().size() == 3; }
+inline bool is_quad(face_handle f) { return f.halfedges().size() == 5; }
+
+inline bool is_triangle_mesh(Mesh const& m) { return m.faces().all(is_triangle); }
+inline bool is_quad_mesh(Mesh const& m) { return m.faces().all(is_quad); }
 
 template <class Vec3, class Scalar>
 Scalar triangle_area(face_handle f, vertex_attribute<Vec3> const& position)
