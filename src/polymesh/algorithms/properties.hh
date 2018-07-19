@@ -114,6 +114,11 @@ Scalar angle_sum(vertex_handle v, vertex_attribute<Vec3> const& position);
 template <class Vec3, class Scalar = typename field_3d<Vec3>::Scalar>
 Scalar angle_defect(vertex_handle v, vertex_attribute<Vec3> const& position);
 
+/// efficiently computes the voronoi areas of all vertices
+/// assumes triangle meshes for now
+template <class Vec3, class Scalar = typename field_3d<Vec3>::Scalar>
+vertex_attribute<Scalar> vertex_voronoi_areas(Mesh const& m, vertex_attribute<Vec3> const& position);
+
 /// ======== IMPLEMENTATION ========
 
 inline bool is_boundary(vertex_handle v) { return v.is_boundary(); }
@@ -339,5 +344,21 @@ Vec3 bary_interpolate(face_handle f, Vec3 bary, vertex_attribute<Vec3> const& po
     auto v1 = h.next().vertex_to()[position];
     auto v2 = h.next().next().vertex_to()[position];
     return v0 * bary[0] + v1 * bary[1] + v2 * bary[2];
+}
+
+template <class Vec3, class Scalar>
+vertex_attribute<Scalar> vertex_voronoi_areas(Mesh const& m, vertex_attribute<Vec3> const& position)
+{
+    vertex_attribute<Scalar> areas = m.vertices().make_attribute_with_default(Scalar(0));
+
+    for (auto f : m.faces())
+    {
+        Scalar a = face_area(f, position);
+        int v_cnt = f.vertices().size();
+        for (auto v : f.vertices())
+            areas[v] += a / v_cnt;
+    }
+
+    return areas;
 }
 }

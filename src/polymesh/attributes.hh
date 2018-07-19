@@ -63,6 +63,9 @@ public:
     /// applies to given function to each attribute entry (calls f(e))
     template <class FuncT>
     void apply(FuncT&& f);
+    /// sets each attribute to f(primitive)
+    template <class FuncT>
+    void compute(FuncT&& f);
 
     /// copies as much data as possible from the given vector
     void copy_from(std::vector<AttrT> const& data);
@@ -73,6 +76,10 @@ public:
 
     /// Saves ALL data into a vector (includes possibly removed ones)
     std::vector<AttrT> to_vector() const;
+
+    // public ctor
+public:
+    primitive_attribute(Mesh const& mesh, AttrT const& def_value = AttrT());
 
     // data
 protected:

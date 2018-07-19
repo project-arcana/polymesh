@@ -284,6 +284,11 @@ void primitive_attribute_base<tag>::deregister_attr()
 }
 
 template <class tag, class AttrT>
+primitive_attribute<tag, AttrT>::primitive_attribute(Mesh const &mesh, const AttrT &def_value) : primitive_attribute(&mesh, def_value)
+{
+}
+
+template <class tag, class AttrT>
 primitive_attribute<tag, AttrT>::primitive_attribute(const Mesh *mesh, const AttrT &def_value)
   : primitive_attribute_base<tag>(mesh), mDefaultValue(def_value)
 {
@@ -329,5 +334,15 @@ void primitive_attribute<tag, AttrT>::apply(FuncT &&f)
     auto d = data();
     for (auto i = 0; i < s; ++i)
         f(d[i]);
+}
+
+template <class tag, class AttrT>
+template <class FuncT>
+void primitive_attribute<tag, AttrT>::compute(FuncT &&f)
+{
+    auto s = size();
+    auto d = data();
+    for (auto h : primitive<tag>::valid_collection_of(*this->mMesh))
+        d[(int)h] = f(h);
 }
 }
