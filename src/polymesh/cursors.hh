@@ -60,6 +60,7 @@ struct primitive_handle
     bool operator!=(handle_t const& rhs) const { return mesh != rhs.mesh || idx != rhs.idx; }
 
     explicit operator int() const { return (int)idx; }
+    operator index_t() const { return idx; }
 
     /// indexes this primitive by a functor
     /// also works for attributes
