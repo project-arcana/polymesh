@@ -28,7 +28,7 @@ inline vertex_attribute<int> vertex_components(Mesh const& m, int* comps)
     for (auto seed : m.vertices())
         if (comp[seed] == -1)
         {
-            std::queue<vertex_handle> q;
+            std::queue<vertex_index> q;
             q.push(seed);
             seed[comp] = c_cnt;
 
@@ -37,7 +37,7 @@ inline vertex_attribute<int> vertex_components(Mesh const& m, int* comps)
                 auto v = q.front();
                 q.pop();
 
-                for (auto vv : v.adjacent_vertices())
+                for (auto vv : m[v].adjacent_vertices())
                     if (vv[comp] != c_cnt)
                     {
                         vv[comp] = c_cnt;
@@ -62,7 +62,7 @@ inline face_attribute<int> face_components(Mesh const& m, int* comps)
     for (auto seed : m.faces())
         if (comp[seed] == -1)
         {
-            std::queue<face_handle> q;
+            std::queue<face_index> q;
             q.push(seed);
             seed[comp] = c_cnt;
 
@@ -71,7 +71,7 @@ inline face_attribute<int> face_components(Mesh const& m, int* comps)
                 auto f = q.front();
                 q.pop();
 
-                for (auto ff : f.adjacent_faces())
+                for (auto ff : m[f].adjacent_faces())
                     if (ff.is_valid())
                         if (ff[comp] != c_cnt)
                         {
