@@ -32,6 +32,13 @@ struct attribute_collection
     accessor operator[](std::string const& name) { return {name, *this}; }
     const_accessor operator[](std::string const& name) const { return {name, *this}; }
 
+    /// access to all attributes
+    /// (should usually not be used)
+    std::map<std::string, std::unique_ptr<primitive_attribute_base<vertex_tag>>> const& vertex_attributes() const { return mVertexAttrs; }
+    std::map<std::string, std::unique_ptr<primitive_attribute_base<face_tag>>> const& face_attributes() const { return mFaceAttrs; }
+    std::map<std::string, std::unique_ptr<primitive_attribute_base<edge_tag>>> const& edge_attributes() const { return mEdgeAttrs; }
+    std::map<std::string, std::unique_ptr<primitive_attribute_base<halfedge_tag>>> const& halfedge_attributes() const { return mHalfedgeAttrs; }
+
 public:
     struct accessor
     {
