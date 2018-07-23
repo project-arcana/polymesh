@@ -121,15 +121,15 @@ private:
     void reserve_edges(int capacity);
     void reserve_halfedges(int capacity);
 
-    int size_all_faces() const { return (int)mFaces.size(); }
-    int size_all_vertices() const { return (int)mVertices.size(); }
-    int size_all_edges() const { return (int)mHalfedges.size() >> 1; }
-    int size_all_halfedges() const { return (int)mHalfedges.size(); }
+    int size_all_faces() const { return (int)mFaceToHalfedge.size(); }
+    int size_all_vertices() const { return (int)mVertexToOutgoingHalfedge.size(); }
+    int size_all_edges() const { return (int)mHalfedgeToNextHalfedge.size() >> 1; }
+    int size_all_halfedges() const { return (int)mHalfedgeToNextHalfedge.size(); }
 
-    int size_valid_faces() const { return (int)mFaces.size() - mRemovedFaces; }
-    int size_valid_vertices() const { return (int)mVertices.size() - mRemovedVertices; }
-    int size_valid_edges() const { return ((int)mHalfedges.size() - mRemovedHalfedges) >> 1; }
-    int size_valid_halfedges() const { return (int)mHalfedges.size() - mRemovedHalfedges; }
+    int size_valid_faces() const { return (int)mFaceToHalfedge.size() - mRemovedFaces; }
+    int size_valid_vertices() const { return (int)mVertexToOutgoingHalfedge.size() - mRemovedVertices; }
+    int size_valid_edges() const { return ((int)mHalfedgeToNextHalfedge.size() - mRemovedHalfedges) >> 1; }
+    int size_valid_halfedges() const { return (int)mHalfedgeToNextHalfedge.size() - mRemovedHalfedges; }
 
     // returns the next valid idx (returns the given one if valid)
     // NOTE: the result can be invalid if no valid one was found
@@ -235,6 +235,8 @@ private:
 
     bool is_boundary(vertex_index idx) const;
     bool is_boundary(halfedge_index idx) const;
+    bool is_boundary(edge_index idx) const;
+    bool is_boundary(face_index idx) const;
 
     bool is_removed(vertex_index idx) const;
     bool is_removed(face_index idx) const;
@@ -242,6 +244,7 @@ private:
     bool is_removed(halfedge_index idx) const;
 
     bool is_isolated(vertex_index idx) const;
+    bool is_isolated(edge_index idx) const;
 
     vertex_index &to_vertex_of(halfedge_index idx);
     face_index &face_of(halfedge_index idx);
@@ -263,6 +266,7 @@ private:
 
     /// Returns the opposite of a given valid half-edge
     halfedge_index opposite(halfedge_index he) const;
+    face_index opposite_face_of(halfedge_index he) const;
 
     /// Makes two half-edges adjacent
     /// Ensures:
@@ -289,6 +293,8 @@ private:
     edge_index edge_of(halfedge_index idx) const { return edge_index(idx.value >> 1); }
     /// returns a half-edge belonging to an edge
     halfedge_index halfedge_of(edge_index idx, int i) const { return halfedge_index((idx.value << 1) + i); }
+    vertex_index to_vertex_of(edge_index idx, int i) const { return to_vertex_of(halfedge_of(idx, i)); }
+    face_index face_of(edge_index idx, int i) const { return face_of(halfedge_of(idx, i)); }
 
     vertex_index &from_vertex_of(halfedge_index idx);
     vertex_index from_vertex_of(halfedge_index idx) const;

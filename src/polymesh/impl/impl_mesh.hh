@@ -137,7 +137,7 @@ inline face_index Mesh::add_face(const halfedge_index *half_loop, int vcnt)
     {
         auto h = half_loop[i];
         auto v = to_vertex_of(h);
-        auto f = face_of(opposite(h));
+        auto f = opposite_face_of(h);
 
         // fix vertex
         fix_boundary_state_of(v);
@@ -501,15 +501,18 @@ inline halfedge_index Mesh::find_halfedge(vertex_index from, vertex_index to) co
 inline bool Mesh::is_boundary(vertex_index idx) const
 {
     auto oh = outgoing_halfedge_of(idx);
-    return oh.is_valid() && is_boundary(oh);
+    return !oh.is_valid() || is_boundary(oh);
 }
 
 inline bool Mesh::is_free(halfedge_index idx) const { return face_of(idx).is_invalid(); }
 inline bool Mesh::is_boundary(halfedge_index idx) const { return is_free(idx); }
+inline bool Mesh::is_boundary(face_index idx) const { return is_free(opposite(halfedge_of(idx))); }
+inline bool Mesh::is_boundary(edge_index idx) const { return is_free(halfedge_of(idx, 0)) || is_free(halfedge_of(idx, 1)); }
 
 inline bool Mesh::is_isolated(vertex_index idx) const { return outgoing_halfedge_of(idx).is_invalid(); }
+inline bool Mesh::is_isolated(edge_index idx) const { return is_free(halfedge_of(idx, 0)) && is_free(halfedge_of(idx, 1)); }
 
-inline bool Mesh::is_removed(vertex_index idx) const { return outgoing_halfedge_of(idx).value >= -1; }
+inline bool Mesh::is_removed(vertex_index idx) const { return outgoing_halfedge_of(idx).value == -2; }
 inline bool Mesh::is_removed(face_index idx) const { return halfedge_of(idx).is_invalid(); }
 inline bool Mesh::is_removed(edge_index idx) const { return to_vertex_of(halfedge_of(idx, 0)).is_invalid(); }
 inline bool Mesh::is_removed(halfedge_index idx) const { return to_vertex_of(idx).is_invalid(); }
@@ -537,6 +540,7 @@ inline halfedge_index Mesh::halfedge_of(face_index idx) const { return mFaceToHa
 inline halfedge_index Mesh::outgoing_halfedge_of(vertex_index idx) const { return mVertexToOutgoingHalfedge[(int)idx]; }
 
 inline halfedge_index Mesh::opposite(halfedge_index he) const { return halfedge_index(he.value ^ 1); }
+inline face_index Mesh::opposite_face_of(halfedge_index he) const { return face_of(opposite(he)); }
 
 inline vertex_index &Mesh::from_vertex_of(halfedge_index idx) { return to_vertex_of(opposite(idx)); }
 inline vertex_index Mesh::from_vertex_of(halfedge_index idx) const { return to_vertex_of(opposite(idx)); }
@@ -786,7 +790,7 @@ inline face_index Mesh::face_fill(halfedge_index h)
             halfedge_of(f) = h;
 
         // fix adj face boundary
-        auto adj_face = face_of(opposite(h));
+        auto adj_face = opposite_face_of(h);
         if (adj_face.is_valid())
             fix_boundary_state_of(adj_face);
 
