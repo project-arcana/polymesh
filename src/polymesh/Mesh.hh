@@ -30,6 +30,8 @@ using SharedMesh = std::shared_ptr<Mesh>;
  *  * `for (auto h : <primitive>())` iterates over _all_ primitives, including invalid ones
  *    (`for (auto h : valid_<primitive>())` skips over invalid ones)
  *
+ *  * low-level operations can be performed by accessing low_level_api(mesh)
+ *
  * For more concept documents see:
  *  * http://kaba.hilvi.org/homepage/blog/halfedge/halfedge.htm
  *  * https://www.openmesh.org/media/Documentations/OpenMesh-Doc-Latest/a03930.html
@@ -145,6 +147,8 @@ private:
     /// Does NOT invalidate iterators!
     vertex_index add_vertex();
 
+    /// Allocates a new vertex
+    vertex_index alloc_vertex();
     /// Allocates a new face
     face_index alloc_face();
     /// Allocates a new edge
@@ -223,8 +227,35 @@ private:
     void fix_boundary_state_of_vertices(face_index f_idx);
 
     // attributes
+    bool is_free(halfedge_index idx) const;
+
     bool is_boundary(vertex_index idx) const;
     bool is_boundary(halfedge_index idx) const;
+
+    bool is_removed(vertex_index idx) const;
+    bool is_removed(face_index idx) const;
+    bool is_removed(edge_index idx) const;
+    bool is_removed(halfedge_index idx) const;
+
+    bool is_isolated(vertex_index idx) const;
+
+    vertex_index &to_vertex_of(halfedge_index idx);
+    face_index &face_of(halfedge_index idx);
+    halfedge_index &next_halfedge_of(halfedge_index idx);
+    halfedge_index &prev_halfedge_of(halfedge_index idx);
+    halfedge_index &halfedge_of(face_index idx);
+    halfedge_index &outgoing_halfedge_of(vertex_index idx);
+
+    vertex_index to_vertex_of(halfedge_index idx) const;
+    face_index face_of(halfedge_index idx) const;
+    halfedge_index next_halfedge_of(halfedge_index idx) const;
+    halfedge_index prev_halfedge_of(halfedge_index idx) const;
+    halfedge_index halfedge_of(face_index idx) const;
+    halfedge_index outgoing_halfedge_of(vertex_index idx) const;
+
+    void set_removed(vertex_index idx);
+    void set_removed(face_index idx);
+    void set_removed(edge_index idx);
 
     /// Returns the opposite of a given valid half-edge
     halfedge_index opposite(halfedge_index he) const;
@@ -255,10 +286,8 @@ private:
     /// returns a half-edge belonging to an edge
     halfedge_index halfedge_of(edge_index idx, int i) const { return halfedge_index((idx.value << 1) + i); }
 
-    /// returns the vertex that this half-edge is pointing to
-    vertex_index to_vertex_of(halfedge_index idx) const { return halfedge(idx).to_vertex; }
-    /// returns the vertex that this half-edge is leaving from
-    vertex_index from_vertex_of(halfedge_index idx) const { return halfedge(opposite(idx)).to_vertex; }
+    vertex_index &from_vertex_of(halfedge_index idx);
+    vertex_index from_vertex_of(halfedge_index idx) const;
 
     /// applies an index remapping to all face indices (p[curr_idx] = new_idx)
     void permute_faces(std::vector<int> const &p);
@@ -312,10 +341,19 @@ private:
 
     // internal primitives
 private:
-    std::vector<face_info> mFaces;
-    std::vector<vertex_info> mVertices;
-    std::vector<halfedge_info> mHalfedges;
+    // std::vector<face_info> mFaces;
+    // std::vector<vertex_info> mVertices;
+    // std::vector<halfedge_info> mHalfedges;
 
+    std::vector<halfedge_index> mFaceToHalfedge;
+    std::vector<halfedge_index> mVertexToOutgoingHalfedge;
+
+    std::vector<vertex_index> mHalfedgeToVertex;
+    std::vector<face_index> mHalfedgeToFace;
+    std::vector<halfedge_index> mHalfedgeToNextHalfedge;
+    std::vector<halfedge_index> mHalfedgeToPrevHalfedge;
+
+    /*
     struct face_info &face(face_index i)
     {
         assert(i.is_valid() && i.value < size_all_faces());
@@ -356,6 +394,7 @@ private:
         assert(i.is_valid() && i.value < size_all_edges());
         return mHalfedges[(i.value << 1) + h];
     }
+    */
 
     // internal state
 private:
@@ -431,6 +470,8 @@ private:
     friend struct edge_collection;
     template <class iterator>
     friend struct halfedge_collection;
+
+    friend struct low_level_api;
 };
 }
 

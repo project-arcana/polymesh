@@ -6,13 +6,15 @@
 
 namespace polymesh
 {
-inline vertex_index Mesh::add_vertex()
+inline vertex_index Mesh::add_vertex() { return alloc_vertex(); }
+
+inline vertex_index Mesh::alloc_vertex()
 {
-    auto idx = vertex_index((int)mVertices.size());
-    mVertices.push_back(vertex_info());
+    auto idx = vertex_index(size_all_vertices());
+    mVertexToOutgoingHalfedge.push_back(halfedge_index::invalid());
 
     // notify attributes
-    auto vCnt = (int)mVertices.size();
+    auto vCnt = size_all_vertices();
     for (auto p = mVertexAttrs; p; p = p->mNextAttribute)
         p->resize(vCnt, false);
 
@@ -21,11 +23,11 @@ inline vertex_index Mesh::add_vertex()
 
 inline face_index Mesh::alloc_face()
 {
-    auto idx = face_index((int)mFaces.size());
-    mFaces.push_back(face_info());
+    auto idx = face_index(size_all_faces());
+    mFaceToHalfedge.push_back(halfedge_index::invalid());
 
     // notify attributes
-    auto fCnt = (int)mFaces.size();
+    auto fCnt = size_all_faces();
     for (auto p = mFaceAttrs; p; p = p->mNextAttribute)
         p->resize(fCnt, false);
 
@@ -34,13 +36,20 @@ inline face_index Mesh::alloc_face()
 
 inline edge_index Mesh::alloc_edge()
 {
-    auto idx = edge_index((int)mHalfedges.size() >> 1);
-    mHalfedges.push_back(halfedge_info());
-    mHalfedges.push_back(halfedge_info());
+    auto idx = edge_index(size_all_edges());
+
+    mHalfedgeToFace.push_back(face_index::invalid());
+    mHalfedgeToFace.push_back(face_index::invalid());
+    mHalfedgeToVertex.push_back(vertex_index::invalid());
+    mHalfedgeToVertex.push_back(vertex_index::invalid());
+    mHalfedgeToNextHalfedge.push_back(halfedge_index::invalid());
+    mHalfedgeToNextHalfedge.push_back(halfedge_index::invalid());
+    mHalfedgeToPrevHalfedge.push_back(halfedge_index::invalid());
+    mHalfedgeToPrevHalfedge.push_back(halfedge_index::invalid());
 
     // notify attributes
-    auto hCnt = (int)mHalfedges.size();
-    auto eCnt = (int)mHalfedges.size() >> 1;
+    auto hCnt = size_all_halfedges();
+    auto eCnt = size_all_edges();
     for (auto p = mEdgeAttrs; p; p = p->mNextAttribute)
         p->resize(eCnt, false);
     for (auto p = mHalfedgeAttrs; p; p = p->mNextAttribute)
@@ -77,7 +86,7 @@ inline face_index Mesh::add_face(const halfedge_index *half_loop, int vcnt)
 {
     assert(vcnt >= 3 && "no support for less-than-triangular faces");
 
-    auto fidx = face_index((int)mFaces.size());
+    auto fidx = alloc_face();
 
     // ensure that half-edges are adjacent at each vertex
     for (auto i = 0; i < vcnt; ++i)
@@ -88,21 +97,21 @@ inline face_index Mesh::add_face(const halfedge_index *half_loop, int vcnt)
         // half-edge must form a chain
         assert(to_vertex_of(h0) == from_vertex_of(h1) && "half-edges do not form a chain");
         // half-edge must be free, i.e. allow a new polygon
-        assert(halfedge(h0).is_free() && "half-edge already contains a face");
+        assert(is_free(h0) && "half-edge already contains a face");
 
         // make them adjacent
         make_adjacent(h0, h1);
 
         // link face
-        halfedge(h0).face = fidx;
+        face_of(h0) = fidx;
     }
 
     // fix boundary states
     for (auto i = 0; i < vcnt; ++i)
     {
         auto h = half_loop[i];
-        auto v = halfedge(h).to_vertex;
-        auto f = halfedge(opposite(h)).face;
+        auto v = to_vertex_of(h);
+        auto f = face_of(opposite(h));
 
         // fix vertex
         fix_boundary_state_of(v);
@@ -113,17 +122,10 @@ inline face_index Mesh::add_face(const halfedge_index *half_loop, int vcnt)
     }
 
     // set up face data
-    face_info f;
-    f.halfedge = half_loop[0];
-    mFaces.push_back(f);
+    halfedge_of(fidx) = half_loop[0];
 
     // fix new face
     fix_boundary_state_of(fidx);
-
-    // notify attributes
-    auto fCnt = (int)mFaces.size();
-    for (auto p = mFaceAttrs; p; p = p->mNextAttribute)
-        p->resize(fCnt, false);
 
     return fidx;
 }
@@ -288,17 +290,15 @@ inline halfedge_index Mesh::add_or_get_halfedge(halfedge_index h_from, halfedge_
     auto e = add_or_get_edge(h_from, h_to);
     auto h0 = halfedge_of(e, 0);
     auto h1 = halfedge_of(e, 1);
-    return halfedge(h_from).next_halfedge == h0 ? h0 : h1;
+    return next_halfedge_of(h_from) == h0 ? h0 : h1;
 }
 
 inline void Mesh::make_adjacent(halfedge_index he_in, halfedge_index he_out)
 {
     // see http://kaba.hilvi.org/homepage/blog/halfedge/halfedge.htm ::makeAdjacent
-    auto &in = halfedge(he_in);
-    auto &out = halfedge(he_out);
 
-    auto he_b = in.next_halfedge;
-    auto he_d = out.prev_halfedge;
+    auto he_b = next_halfedge_of(he_in);
+    auto he_d = prev_halfedge_of(he_out);
 
     // already correct
     if (he_b == he_out)
@@ -308,56 +308,44 @@ inline void Mesh::make_adjacent(halfedge_index he_in, halfedge_index he_out)
     auto he_g = find_free_incident(opposite(he_out), he_in);
     assert(he_g.is_valid()); // unable to make adjacent
 
-    auto &b = halfedge(he_b);
-    auto &d = halfedge(he_d);
-    auto &g = halfedge(he_g);
-
-    auto he_h = g.next_halfedge;
-    auto &h = halfedge(he_h);
+    auto he_h = next_halfedge_of(he_g);
 
     // properly rewire
-    in.next_halfedge = he_out;
-    out.prev_halfedge = he_in;
-
-    g.next_halfedge = he_b;
-    b.prev_halfedge = he_g;
-
-    d.next_halfedge = he_h;
-    h.prev_halfedge = he_d;
+    connect_prev_next(he_in, he_out);
+    connect_prev_next(he_g, he_b);
+    connect_prev_next(he_d, he_h);
 }
 
 inline void Mesh::remove_face(face_index f_idx)
 {
-    auto &f = face(f_idx);
-    assert(f.halfedge.is_valid());
+    assert(!is_removed(f_idx));
 
-    auto he_begin = f.halfedge;
+    auto he_begin = halfedge_of(f_idx);
     auto he = he_begin;
     do
     {
-        auto &h = halfedge(he);
-        assert(h.face == f_idx);
+        assert(face_of(h) == f_idx);
 
         // set half-edge face to invalid
-        h.face = face_index::invalid();
+        face_of(he) = face_index::invalid();
 
         // fix outgoing vertex half-edge
         // (vertex correctly reports is_boundary)
-        vertex(from_vertex_of(he)).outgoing_halfedge = he;
+        outgoing_halfedge_of(from_vertex_of(he)) = he;
 
         // fix opposite face half-edge
         auto ohe = opposite(he);
-        auto of = halfedge(ohe).face;
+        auto of = face_of(ohe);
         if (of.is_valid())
-            face(of).halfedge = ohe;
+            halfedge_of(of) = ohe;
 
         // advance
-        he = h.next_halfedge;
+        he = next_halfedge_of(he);
     } while (he != he_begin);
 
     // mark removed
     // (at the end!)
-    f.set_removed();
+    set_removed(f_idx);
 
     // bookkeeping
     mRemovedFaces++;
@@ -430,15 +418,14 @@ inline void Mesh::remove_edge(edge_index e_idx)
 
 inline void Mesh::remove_vertex(vertex_index v_idx)
 {
-    auto &v = vertex(v_idx);
-    assert(v.is_valid());
+    assert(!is_removed(v_idx));
 
     // remove all outgoing edges
-    while (!v.is_isolated())
-        remove_edge(edge_of(v.outgoing_halfedge));
+    while (!is_isolated(v_idx))
+        remove_edge(edge_of(outgoing_halfedge_of(v_idx)));
 
     // mark removed
-    v.set_removed();
+    set_removed(v_idx);
 
     // bookkeeping
     mRemovedVertices++;
@@ -447,60 +434,53 @@ inline void Mesh::remove_vertex(vertex_index v_idx)
 
 inline void Mesh::fix_boundary_state_of(vertex_index v_idx)
 {
-    auto &v = vertex(v_idx);
-    assert(!v.is_isolated());
+    assert(!is_isolated(v_idx));
 
-    auto he_begin = v.outgoing_halfedge;
+    auto he_begin = outgoing_halfedge_of(v_idx);
     auto he = he_begin;
     do
     {
         // if half-edge is boundary, set it
-        if (halfedge(he).is_free())
+        if (is_free(he))
         {
-            v.outgoing_halfedge = he;
+            outgoing_halfedge_of(v_idx) = he;
             return;
         }
 
         // advance
-        he = halfedge(opposite(he)).next_halfedge;
+        he = next_halfedge_of(opposite(he));
     } while (he != he_begin);
 }
 
 inline void Mesh::fix_boundary_state_of(face_index f_idx)
 {
-    auto &f = face(f_idx);
-
-    auto he_begin = f.halfedge;
+    auto he_begin = halfedge_of(f_idx);
     auto he = he_begin;
     do
     {
         // if half-edge is boundary, set it
-        if (halfedge(opposite(he)).is_free())
+        if (is_free(opposite(he)))
         {
-            f.halfedge = he;
+            halfedge_of(f_idx) = he;
             return;
         }
 
         // advance
-        he = halfedge(he).next_halfedge;
+        he = next_halfedge_of(he);
     } while (he != he_begin);
 }
 
 inline void Mesh::fix_boundary_state_of_vertices(face_index f_idx)
 {
-    auto &f = face(f_idx);
-
-    auto he_begin = f.halfedge;
+    auto he_begin = halfedge_of(f_idx);
     auto he = he_begin;
     do
     {
-        auto &h_ref = halfedge(he);
-
         // fix vertex
-        fix_boundary_state_of(h_ref.to_vertex);
+        fix_boundary_state_of(to_vertex_of(he));
 
         // advance
-        he = h_ref.next_halfedge;
+        he = next_halfedge_of(he);
     } while (he != he_begin);
 }
 
@@ -511,15 +491,14 @@ inline halfedge_index Mesh::find_free_incident(halfedge_index in_begin, halfedge
     auto he = in_begin;
     do
     {
-        auto const &h = halfedge(he);
-        assert(h.to_vertex == halfedge(in_end).to_vertex);
+        assert(to_vertex_of(he) == to_vertex(in_end));
 
         // free? found one!
-        if (h.is_free())
+        if (is_free(he))
             return he;
 
         // next half-edge of vertex
-        he = opposite(h.next_halfedge);
+        he = opposite(next_halfedge_of(he));
     } while (he != in_end);
 
     return halfedge_index::invalid();
@@ -527,27 +506,25 @@ inline halfedge_index Mesh::find_free_incident(halfedge_index in_begin, halfedge
 
 inline halfedge_index Mesh::find_free_incident(vertex_index v) const
 {
-    auto in_begin = opposite(vertex(v).outgoing_halfedge);
+    auto in_begin = opposite(outgoing_halfedge_of(v));
     return find_free_incident(in_begin, in_begin);
 }
 
 inline halfedge_index Mesh::find_halfedge(vertex_index from, vertex_index to) const
 {
-    auto he_begin = vertex(from).outgoing_halfedge;
+    auto he_begin = outgoing_halfedge_of(from);
     if (!he_begin.is_valid())
         return halfedge_index::invalid(); // isolated vertex
 
     auto he = he_begin;
     do
     {
-        auto const &h = halfedge(he);
-
         // found?
-        if (h.to_vertex == to)
+        if (to_vertex_of(he) == to)
             return he;
 
         // advance
-        he = halfedge(opposite(he)).next_halfedge;
+        he = next_halfedge_of(opposite(he));
 
     } while (he != he_begin);
 
@@ -556,92 +533,126 @@ inline halfedge_index Mesh::find_halfedge(vertex_index from, vertex_index to) co
 
 inline bool Mesh::is_boundary(vertex_index idx) const
 {
-    auto const &v = vertex(idx);
-    return v.outgoing_halfedge.is_valid() && is_boundary(v.outgoing_halfedge);
+    auto oh = outgoing_halfedge_of(idx);
+    return oh.is_valid() && is_boundary(oh);
 }
 
-inline bool Mesh::is_boundary(halfedge_index idx) const { return halfedge(idx).is_free(); }
+inline bool Mesh::is_free(halfedge_index idx) const { return face_of(idx).is_invalid(); }
+inline bool Mesh::is_boundary(halfedge_index idx) const { return is_free(idx); }
+
+inline bool Mesh::is_isolated(vertex_index idx) const { return outgoing_halfedge_of(idx).is_invalid(); }
+
+inline bool Mesh::is_removed(vertex_index idx) const { return outgoing_halfedge_of(idx).value >= -1; }
+inline bool Mesh::is_removed(face_index idx) const { return halfedge_of(idx).is_invalid(); }
+inline bool Mesh::is_removed(edge_index idx) const { return to_vertex_of(halfedge_of(idx, 0)).is_invalid(); }
+inline bool Mesh::is_removed(halfedge_index idx) const { return to_vertex_of(idx).is_invalid(); }
+
+inline void Mesh::set_removed(vertex_index idx) { outgoing_halfedge_of(idx) = halfedge_index::invalid(); }
+inline void Mesh::set_removed(face_index idx) { halfedge_of(idx) = halfedge_index::invalid(); }
+inline void Mesh::set_removed(edge_index idx)
+{
+    to_vertex_of(halfedge_of(idx, 0)) = vertex_index::invalid();
+    to_vertex_of(halfedge_of(idx, 1)) = vertex_index::invalid();
+}
+
+inline face_index &Mesh::face_of(halfedge_index idx) { return mHalfedgeToFace[(int)idx]; }
+inline vertex_index &Mesh::to_vertex_of(halfedge_index idx) { return mHalfedgeToVertex[(int)idx]; }
+inline halfedge_index &Mesh::next_halfedge_of(halfedge_index idx) { return mHalfedgeToNextHalfedge[(int)idx]; }
+inline halfedge_index &Mesh::prev_halfedge_of(halfedge_index idx) { return mHalfedgeToPrevHalfedge[(int)idx]; }
+inline halfedge_index &Mesh::halfedge_of(face_index idx) { return mFaceToHalfedge[(int)idx]; }
+inline halfedge_index &Mesh::outgoing_halfedge_of(vertex_index idx) { return mVertexToOutgoingHalfedge[(int)idx]; }
+
+inline face_index Mesh::face_of(halfedge_index idx) const { return mHalfedgeToFace[(int)idx]; }
+inline vertex_index Mesh::to_vertex_of(halfedge_index idx) const { return mHalfedgeToVertex[(int)idx]; }
+inline halfedge_index Mesh::next_halfedge_of(halfedge_index idx) const { return mHalfedgeToNextHalfedge[(int)idx]; }
+inline halfedge_index Mesh::prev_halfedge_of(halfedge_index idx) const { return mHalfedgeToPrevHalfedge[(int)idx]; }
+inline halfedge_index Mesh::halfedge_of(face_index idx) const { return mFaceToHalfedge[(int)idx]; }
+inline halfedge_index Mesh::outgoing_halfedge_of(vertex_index idx) const { return mVertexToOutgoingHalfedge[(int)idx]; }
 
 inline halfedge_index Mesh::opposite(halfedge_index he) const { return halfedge_index(he.value ^ 1); }
 
+inline vertex_index &Mesh::from_vertex_of(halfedge_index idx) { return to_vertex_of(opposite(idx)); }
+inline vertex_index Mesh::from_vertex_of(halfedge_index idx) const { return to_vertex_of(opposite(idx)); }
+
 inline vertex_index Mesh::next_valid_idx_from(vertex_index idx) const
 {
-    for (auto i = idx.value; i < (int)mVertices.size(); ++i)
-        if (mVertices[i].is_valid())
-            return vertex_index(i);
-    return vertex_index(size_all_vertices()); // end index
+    auto s = size_all_vertices();
+    auto i = idx;
+    while (i.value < s && is_removed(i))
+        i.value++;
+    return i;
 }
 
 inline vertex_index Mesh::prev_valid_idx_from(vertex_index idx) const
 {
-    for (auto i = idx.value; i >= 0; --i)
-        if (mVertices[i].is_valid())
-            return vertex_index(i);
-    return {}; // invalid
+    auto i = idx;
+    while (i.value >= 0 && is_removed(i))
+        i.value--;
+    return i;
 }
 
 inline edge_index Mesh::next_valid_idx_from(edge_index idx) const
 {
-    for (auto i = idx.value << 1; i < (int)mHalfedges.size(); i += 2)
-        if (mHalfedges[i].is_valid())
-            return edge_index(i >> 1);
-    return edge_index(size_all_edges()); // end index
+    auto s = size_all_edges();
+    auto i = idx;
+    while (i.value < s && is_removed(i))
+        i.value++;
+    return i;
 }
 
 inline edge_index Mesh::prev_valid_idx_from(edge_index idx) const
 {
-    for (auto i = idx.value << 1; i >= 0; i -= 2)
-        if (mHalfedges[i].is_valid())
-            return edge_index(i >> 1);
-    return {}; // invalid
+    auto i = idx;
+    while (i.value >= 0 && is_removed(i))
+        i.value--;
+    return i;
 }
 
 inline face_index Mesh::next_valid_idx_from(face_index idx) const
 {
-    for (auto i = idx.value; i < (int)mFaces.size(); ++i)
-        if (mFaces[i].is_valid())
-            return face_index(i);
-    return face_index(size_all_faces()); // end index
+    auto s = size_all_faces();
+    auto i = idx;
+    while (i.value < s && is_removed(i))
+        i.value++;
+    return i;
 }
 
 inline face_index Mesh::prev_valid_idx_from(face_index idx) const
 {
-    for (auto i = idx.value; i >= 0; --i)
-        if (mFaces[i].is_valid())
-            return face_index(i);
-    return {}; // invalid
+    auto i = idx;
+    while (i.value >= 0 && is_removed(i))
+        i.value--;
+    return i;
 }
 
 inline halfedge_index Mesh::next_valid_idx_from(halfedge_index idx) const
 {
-    for (auto i = idx.value; i < (int)mHalfedges.size(); ++i)
-        if (mHalfedges[i].is_valid())
-            return halfedge_index(i);
-    return halfedge_index(size_all_halfedges()); // end index
+    auto s = size_all_halfedges();
+    auto i = idx;
+    while (i.value < s && is_removed(i))
+        i.value++;
+    return i;
 }
 
 inline halfedge_index Mesh::prev_valid_idx_from(halfedge_index idx) const
 {
-    for (auto i = idx.value; i >= 0; --i)
-        if (mHalfedges[i].is_valid())
-            return halfedge_index(i);
-    return {}; // invalid
+    auto i = idx;
+    while (i.value >= 0 && is_removed(i))
+        i.value--;
+    return i;
 }
 
 inline void Mesh::connect_prev_next(halfedge_index prev, halfedge_index next)
 {
-    auto &prev_ref = halfedge(prev);
-    auto &next_ref = halfedge(next);
-
-    prev_ref.next_halfedge = next;
-    next_ref.prev_halfedge = prev;
+    next_halfedge_of(prev) = next;
+    prev_halfedge_of(next) = prev;
 }
 
 inline vertex_index Mesh::face_split(face_index f)
 {
     // TODO: can be made more performant
 
-    auto h_begin = face(f).halfedge;
+    auto h_begin = halfedge_of(f);
 
     // remove face
     remove_face(f);
@@ -660,7 +671,7 @@ inline vertex_index Mesh::face_split(face_index f)
         add_face(vs, 3);
 
         // NOTE: add_face inserted a new halfedge
-        h = halfedge(opposite(halfedge(h).next_halfedge)).next_halfedge;
+        h = next_halfedge_of(opposite(next_halfedge_of(h)));
     } while (h != h_begin);
 
     return vs[0];
@@ -1115,12 +1126,12 @@ inline void Mesh::permute_vertices(std::vector<int> const &p)
 
     // apply them
     for (auto t : ts)
-        std::swap(mVertices[t.first], mVertices[t.second]);
+        std::swap(mVertexToOutgoingHalfedge[t.first], mVertexToOutgoingHalfedge[t.second]);
 
     // fix half-edges
-    for (auto &h : mHalfedges)
-        if (h.to_vertex.is_valid())
-            h.to_vertex.value = p[h.to_vertex.value];
+    for (auto &h_to : mHalfedgeToVertex)
+        if (h_to.is_valid())
+            h_to.value = p[h_to.value];
 
     // update attributes
     for (auto a = mVertexAttrs; a; a = a->mNextAttribute)
@@ -1136,12 +1147,12 @@ inline void Mesh::permute_faces(std::vector<int> const &p)
 
     // apply them
     for (auto t : ts)
-        std::swap(mFaces[t.first], mFaces[t.second]);
+        std::swap(mFaceToHalfedge[t.first], mFaceToHalfedge[t.second]);
 
     // fix half-edges
-    for (auto &h : mHalfedges)
-        if (h.face.is_valid())
-            h.face.value = p[h.face.value];
+    for (auto &h_f : mHalfedgeToFace)
+        if (h_f.is_valid())
+            h_f.value = p[h_f.value];
 
     // update attributes
     for (auto a = mFaceAttrs; a; a = a->mNextAttribute)
@@ -1172,25 +1183,29 @@ inline void Mesh::permute_edges(std::vector<int> const &p)
 
     // apply them
     for (auto t : halfedge_ts)
-        std::swap(mHalfedges[t.first], mHalfedges[t.second]);
+    {
+        std::swap(mHalfedgeToFace[t.first], mHalfedgeToFace[t.second]);
+        std::swap(mHalfedgeToVertex[t.first], mHalfedgeToVertex[t.second]);
+        std::swap(mHalfedgeToNextHalfedge[t.first], mHalfedgeToNextHalfedge[t.second]);
+        std::swap(mHalfedgeToPrevHalfedge[t.first], mHalfedgeToPrevHalfedge[t.second]);
+    }
 
     // fix half-edges
-    for (auto &v : mVertices)
-        if (v.outgoing_halfedge.value >= 0)
-            v.outgoing_halfedge.value = hp[v.outgoing_halfedge.value];
+    for (auto &v_out : mVertexToOutgoingHalfedge)
+        if (v_out.value >= 0)
+            v_out.value = hp[v_out.value];
 
-    for (auto &f : mFaces)
-        if (f.halfedge.value >= 0)
-            f.halfedge.value = hp[f.halfedge.value];
+    for (auto &f_h : mFaceToHalfedge)
+        if (f_h.value >= 0)
+            f_h.value = hp[f_h.value];
 
-    for (auto &h : mHalfedges)
-    {
-        if (h.next_halfedge.value >= 0)
-            h.next_halfedge.value = hp[h.next_halfedge.value];
+    for (auto &h_next : mHalfedgeToNextHalfedge)
+        if (h_next.value >= 0)
+            h_next.value = hp[h_next.value];
 
-        if (h.prev_halfedge.value >= 0)
-            h.prev_halfedge.value = hp[h.prev_halfedge.value];
-    }
+    for (auto &h_prev : mHalfedgeToPrevHalfedge)
+        if (h_prev.value >= 0)
+            h_prev.value = hp[h_prev.value];
 
     // update attributes
     for (auto a = mEdgeAttrs; a; a = a->mNextAttribute)
@@ -1222,25 +1237,25 @@ inline void Mesh::compactify()
     std::vector<int> f_old_to_new(f_cnt, -1);
 
     for (auto i = 0; i < v_cnt; ++i)
-        if (mVertices[i].is_valid())
+        if (!is_removed(vertex_index(i)))
         {
             v_old_to_new[i] = (int)v_new_to_old.size();
             v_new_to_old.push_back(i);
         }
 
     for (auto i = 0; i < f_cnt; ++i)
-        if (mFaces[i].is_valid())
+        if (!is_removed(face_index(i)))
         {
             f_old_to_new[i] = (int)f_new_to_old.size();
             f_new_to_old.push_back(i);
         }
 
     for (auto i = 0; i < e_cnt; ++i)
-        if (mHalfedges[i << 1].is_valid())
+        if (!is_removed(edge_index(i)))
             e_new_to_old.push_back(i);
 
     for (auto i = 0; i < h_cnt; ++i)
-        if (mHalfedges[i].is_valid())
+        if (!is_removed(halfedge_index(i)))
         {
             h_old_to_new[i] = (int)h_new_to_old.size();
             h_new_to_old.push_back(i);
@@ -1249,39 +1264,44 @@ inline void Mesh::compactify()
     // apply remappings (map[new_prim_id] = old_prim_id)
 
     for (auto i = 0u; i < v_new_to_old.size(); ++i)
-        mVertices[i] = mVertices[v_new_to_old[i]];
+        mVertexToOutgoingHalfedge[i] = mVertexToOutgoingHalfedge[v_new_to_old[i]];
     for (auto i = 0u; i < f_new_to_old.size(); ++i)
-        mFaces[i] = mFaces[f_new_to_old[i]];
+        mFaceToHalfedge[i] = mFaceToHalfedge[f_new_to_old[i]];
     for (auto i = 0u; i < h_new_to_old.size(); ++i)
-        mHalfedges[i] = mHalfedges[h_new_to_old[i]];
-
-    mVertices.resize(v_new_to_old.size());
-    mFaces.resize(f_new_to_old.size());
-    mHalfedges.resize(h_new_to_old.size());
-
-    for (auto &v : mVertices)
     {
-        if (v.outgoing_halfedge.value >= 0)
-            v.outgoing_halfedge.value = h_old_to_new[v.outgoing_halfedge.value];
+        mHalfedgeToFace[i] = mHalfedgeToFace[h_new_to_old[i]];
+        mHalfedgeToVertex[i] = mHalfedgeToVertex[h_new_to_old[i]];
+        mHalfedgeToNextHalfedge[i] = mHalfedgeToNextHalfedge[h_new_to_old[i]];
+        mHalfedgeToPrevHalfedge[i] = mHalfedgeToPrevHalfedge[h_new_to_old[i]];
     }
 
-    for (auto &f : mFaces)
-    {
-        if (f.halfedge.value >= 0)
-            f.halfedge.value = h_old_to_new[f.halfedge.value];
-    }
+    mVertexToOutgoingHalfedge.resize(v_new_to_old.size());
+    mFaceToHalfedge.resize(f_new_to_old.size());
+    mHalfedgeToFace.resize(h_new_to_old.size());
+    mHalfedgeToVertex.resize(h_new_to_old.size());
+    mHalfedgeToNextHalfedge.resize(h_new_to_old.size());
+    mHalfedgeToPrevHalfedge.resize(h_new_to_old.size());
 
-    for (auto &h : mHalfedges)
-    {
-        if (h.next_halfedge.value >= 0)
-            h.next_halfedge.value = h_old_to_new[h.next_halfedge.value];
-        if (h.prev_halfedge.value >= 0)
-            h.prev_halfedge.value = h_old_to_new[h.prev_halfedge.value];
-        if (h.face.value >= 0)
-            h.face.value = f_old_to_new[h.face.value];
-        if (h.to_vertex.value >= 0)
-            h.to_vertex.value = v_old_to_new[h.to_vertex.value];
-    }
+    for (auto &v_out : mVertexToOutgoingHalfedge)
+        if (v_out.value >= 0)
+            v_out.value = h_old_to_new[v_out.value];
+
+    for (auto &f_h : mFaceToHalfedge)
+        if (f_h.value >= 0)
+            f_h.value = h_old_to_new[f_h.value];
+
+    for (auto &h_next : mHalfedgeToNextHalfedge)
+        if (h_next.value >= 0)
+            h_next.value = h_old_to_new[h_next.value];
+    for (auto &h_prev : mHalfedgeToPrevHalfedge)
+        if (h_prev.value >= 0)
+            h_prev.value = h_old_to_new[h_prev.value];
+    for (auto &h_f : mHalfedgeToFace)
+        if (h_f.value >= 0)
+            h_f.value = f_old_to_new[h_f.value];
+    for (auto &h_v : mHalfedgeToVertex)
+        if (h_v.value >= 0)
+            h_v.value = v_old_to_new[h_v.value];
 
     for (auto a = mVertexAttrs; a; a = a->mNextAttribute)
         a->apply_remapping(v_new_to_old);
@@ -1293,9 +1313,12 @@ inline void Mesh::compactify()
         a->apply_remapping(h_new_to_old);
 
     // shrink to fit
-    mVertices.shrink_to_fit();
-    mFaces.shrink_to_fit();
-    mHalfedges.shrink_to_fit();
+    mVertexToOutgoingHalfedge.shrink_to_fit();
+    mFaceToHalfedge.shrink_to_fit();
+    mHalfedgeToFace.shrink_to_fit();
+    mHalfedgeToVertex.shrink_to_fit();
+    mHalfedgeToNextHalfedge.shrink_to_fit();
+    mHalfedgeToPrevHalfedge.shrink_to_fit();
 
     for (auto a = mVertexAttrs; a; a = a->mNextAttribute)
         a->resize(size_all_vertices(), true);
@@ -1314,12 +1337,12 @@ inline void Mesh::compactify()
 
 inline void Mesh::clear()
 {
-    for (auto &v : mVertices)
-        v.set_removed();
-    for (auto &h : mHalfedges)
-        h.set_removed();
-    for (auto &f : mFaces)
-        f.set_removed();
+    for (auto &v_h : mVertexToOutgoingHalfedge)
+        v_h = halfedge_index::invalid();
+    for (auto &f_h : mFaceToHalfedge)
+        f_h = halfedge_index::invalid();
+    for (auto &h_v : mHalfedgeToVertex)
+        h_v = vertex_index::invalid();
 
     mCompact = false;
     compactify();
@@ -1328,9 +1351,12 @@ inline void Mesh::clear()
 inline void Mesh::copy_from(const Mesh &m)
 {
     // copy topo
-    mVertices = m.mVertices;
-    mFaces = m.mFaces;
-    mHalfedges = m.mHalfedges;
+    mVertexToOutgoingHalfedge = m.mVertexToOutgoingHalfedge;
+    mFaceToHalfedge = m.mFaceToHalfedge;
+    mHalfedgeToFace = m.mHalfedgeToFace;
+    mHalfedgeToVertex = m.mHalfedgeToVertex;
+    mHalfedgeToNextHalfedge = m.mHalfedgeToNextHalfedge;
+    mHalfedgeToPrevHalfedge = m.mHalfedgeToPrevHalfedge;
 
     // copy helper data
     mRemovedFaces = m.mRemovedFaces;
@@ -1361,7 +1387,7 @@ inline void Mesh::reserve_faces(int capacity)
     for (auto a = mFaceAttrs; a; a = a->mNextAttribute)
         a->resize(capacity, false);
 
-    mFaces.reserve(capacity);
+    mFaceToHalfedge.reserve(capacity);
 }
 
 inline void Mesh::reserve_vertices(int capacity)
@@ -1369,7 +1395,7 @@ inline void Mesh::reserve_vertices(int capacity)
     for (auto a = mVertexAttrs; a; a = a->mNextAttribute)
         a->resize(capacity, false);
 
-    mVertices.reserve(capacity);
+    mVertexToOutgoingHalfedge.reserve(capacity);
 }
 
 inline void Mesh::reserve_edges(int capacity)
@@ -1379,7 +1405,10 @@ inline void Mesh::reserve_edges(int capacity)
     for (auto a = mHalfedgeAttrs; a; a = a->mNextAttribute)
         a->resize(capacity << 1, false);
 
-    mHalfedges.reserve(capacity * 2);
+    mHalfedgeToFace.reserve(capacity * 2);
+    mHalfedgeToVertex.reserve(capacity * 2);
+    mHalfedgeToNextHalfedge.reserve(capacity * 2);
+    mHalfedgeToPrevHalfedge.reserve(capacity * 2);
 }
 
 inline void Mesh::reserve_halfedges(int capacity)
@@ -1389,6 +1418,9 @@ inline void Mesh::reserve_halfedges(int capacity)
     for (auto a = mEdgeAttrs; a; a = a->mNextAttribute)
         a->resize(capacity >> 1, false);
 
-    mHalfedges.reserve(capacity);
+    mHalfedgeToFace.reserve(capacity);
+    mHalfedgeToVertex.reserve(capacity);
+    mHalfedgeToNextHalfedge.reserve(capacity);
+    mHalfedgeToPrevHalfedge.reserve(capacity);
 }
 }

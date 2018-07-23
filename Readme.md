@@ -30,3 +30,7 @@ Best used with glm and glow.
 * structure of arrays instead of AOS
 * lowlevel API that allows direct half-edge manipulation and does not fix boundaries (but also mirrors high level one)
 * primitive collection sort and sort_by functions
+
+Low-level TODO:
+
+* face_of(opposite(h)) -> opposite_face_of
