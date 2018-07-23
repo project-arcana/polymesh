@@ -688,6 +688,18 @@ halfedge_handle halfedge_collection<iterator>::add_or_get(vertex_handle v_from, 
 }
 
 template <class iterator>
+edge_handle edge_collection<iterator>::add_or_get(halfedge_handle h_from, halfedge_handle h_to) const
+{
+    return this->mesh->handle_of(this->mesh->add_or_get_edge(h_from.idx, h_to.idx));
+}
+
+template <class iterator>
+halfedge_handle halfedge_collection<iterator>::add_or_get(halfedge_handle h_from, halfedge_handle h_to) const
+{
+    return this->mesh->handle_of(this->mesh->add_or_get_halfedge(h_from.idx, h_to.idx));
+}
+
+template <class iterator>
 edge_handle edge_collection<iterator>::find(vertex_handle v_from, vertex_handle v_to) const
 {
     return this->mesh->handle_of(this->mesh->edge_of(this->mesh->find_halfedge(v_from.idx, v_to.idx)));

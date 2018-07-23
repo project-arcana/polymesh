@@ -161,9 +161,20 @@ private:
     /// Adds an edge between two existing, distinct vertices
     /// if edge already exists, returns it
     edge_index add_or_get_edge(vertex_index v_from, vertex_index v_to);
+    /// Adds an edge between to existing, distinct vertices that are pointed to by two given halfedges
+    /// if edge already exists, returns it
+    edge_index add_or_get_edge(halfedge_index h_from, halfedge_index h_to);
 
     /// same as add_or_get_edge but returns the apattrriate half-edge
+    /// Assures:
+    ///     return_value.from_vertex == v_from
+    ///     return_value.to_vertex == v_to
     halfedge_index add_or_get_halfedge(vertex_index v_from, vertex_index v_to);
+    /// same as add_or_get_edge but returns the apattrriate half-edge
+    /// Assures:
+    ///     return_value.from_vertex == h_from.to_vertex
+    ///     return_value.to_vertex == h_to.to_vertex
+    halfedge_index add_or_get_halfedge(halfedge_index h_from, halfedge_index h_to);
 
     /// connect two half-edges in a prev-next relation
     void connect_prev_next(halfedge_index prev, halfedge_index next);

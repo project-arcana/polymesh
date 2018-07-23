@@ -253,6 +253,9 @@ struct edge_collection : smart_collection<Mesh*, edge_tag, iterator>
     /// Adds an edge between two existing, distinct vertices
     /// if edge already exists, returns it
     edge_handle add_or_get(vertex_handle v_from, vertex_handle v_to) const;
+    /// Adds an edge between two existing, distict halfedges
+    /// if edge already exists, returns it
+    edge_handle add_or_get(halfedge_handle h_from, halfedge_handle h_to) const;
 
     /// Returns the edge handle between two vertices (invalid if not found)
     /// O(valence) computation
@@ -291,6 +294,10 @@ struct halfedge_collection : smart_collection<Mesh*, halfedge_tag, iterator>
     /// if half-edge already exists, returns it
     /// (always adds opposite half-edge as well)
     halfedge_handle add_or_get(vertex_handle v_from, vertex_handle v_to) const;
+    /// Adds an half-edge between two existing, distinct hafledges
+    /// if half-edge already exists, returns it
+    /// (always adds opposite half-edge as well)
+    halfedge_handle add_or_get(halfedge_handle h_from, halfedge_handle h_to) const;
 
     /// Returns the half-edge handle between two vertices (invalid if not found)
     /// O(valence) computation

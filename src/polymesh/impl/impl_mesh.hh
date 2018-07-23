@@ -213,6 +213,84 @@ inline halfedge_index Mesh::add_or_get_halfedge(vertex_index v_from, vertex_inde
     return halfedge(h0).to_vertex == v_to ? h0 : h1;
 }
 
+inline edge_index Mesh::add_or_get_edge(halfedge_index h_from, halfedge_index h_to)
+{
+    assert(h_from != h_to);
+    auto &hd_from = halfedge(h_from);
+    auto &hd_to = halfedge(h_to);
+
+    auto v_from = hd_from.to_vertex;
+    auto v_to = hd_to.to_vertex;
+
+    auto ex_he = find_halfedge(v_from, v_to);
+    if (ex_he.is_valid())
+    {
+        auto &existing_hed = halfedge(ex_he);
+        auto &ex_opp_hed = halfedge(opposite(ex_he));
+        assert(existing_hed.prev_halfedge == h_from && ex_opp_hed.prev_halfedge == h_to);
+        (void)existing_hed;
+        (void)ex_opp_hed;
+        // TODO: Maybe try rewriting an existing halfedge that does NOT yet have the right connection.
+        return edge_of(ex_he);
+    }
+
+    assert(hd_from.face.is_invalid() && hd_to.face.is_invalid() && "Cannot insert into a face");
+
+    // allocate new
+    auto he_size = (int)mHalfedges.size();
+    auto h_from_to_idx = halfedge_index(he_size + 0);
+    auto h_to_from_idx = halfedge_index(he_size + 1);
+    auto eidx = edge_index(he_size >> 1);
+    halfedge_info h_from_to;
+    halfedge_info h_to_from;
+
+    // setup data (self-connected edge)
+    h_from_to.to_vertex = v_to;
+    h_to_from.to_vertex = v_from;
+
+    // Link from side
+    auto h_from_next_idx = hd_from.next_halfedge;
+    auto &h_from_next = halfedge(h_from_next_idx);
+
+    hd_from.next_halfedge = h_from_to_idx;
+    h_from_to.prev_halfedge = h_from;
+
+    h_from_next.prev_halfedge = h_to_from_idx;
+    h_to_from.next_halfedge = h_from_next_idx;
+
+    // Link to side
+    auto h_to_next_idx = hd_to.next_halfedge;
+    auto &h_to_next = halfedge(h_to_next_idx);
+
+    hd_to.next_halfedge = h_to_from_idx;
+    h_to_from.prev_halfedge = h_to;
+
+    h_to_next.prev_halfedge = h_from_to_idx;
+    h_from_to.next_halfedge = h_to_next_idx;
+
+    // finalize
+    mHalfedges.push_back(h_from_to);
+    mHalfedges.push_back(h_to_from);
+
+    // notify attributes
+    auto hCnt = (int)mHalfedges.size();
+    auto eCnt = hCnt >> 1;
+    for (auto p = mHalfedgeAttrs; p; p = p->mNextAttribute)
+        p->resize(hCnt, false);
+    for (auto p = mEdgeAttrs; p; p = p->mNextAttribute)
+        p->resize(eCnt, false);
+
+    return eidx;
+}
+
+inline halfedge_index Mesh::add_or_get_halfedge(halfedge_index h_from, halfedge_index h_to)
+{
+    auto e = add_or_get_edge(h_from, h_to);
+    auto h0 = halfedge_of(e, 0);
+    auto h1 = halfedge_of(e, 1);
+    return halfedge(h_from).next_halfedge == h0 ? h0 : h1;
+}
+
 inline void Mesh::make_adjacent(halfedge_index he_in, halfedge_index he_out)
 {
     // see http://kaba.hilvi.org/homepage/blog/halfedge/halfedge.htm ::makeAdjacent

@@ -18,7 +18,7 @@ Best used with glm and glow.
 * smart ranges: filter, map
 * vector, set, map -> range
 * opposite edges (from vertex)
-* cotangens weights etc.
+* cotangents weights etc.
 * smoothing
 * make handle.<primitives>() contain only valid ones and provide an all_<primitives>() version
 * _copy versions of topological operations that copy attributes
@@ -29,3 +29,4 @@ Best used with glm and glow.
 * primitive sort functions, better remap function, cache optimization
 * structure of arrays instead of AOS
 * lowlevel API that allows direct half-edge manipulation and does not fix boundaries (but also mirrors high level one)
+* primitive collection sort and sort_by functions
