@@ -154,6 +154,10 @@ private:
     /// Allocates a new edge
     edge_index alloc_edge();
 
+    /// Allocates a given amount of vertices, faces, and halfedges
+    /// NOTE: leaves ALL of them in an unspecified state
+    void alloc_primitives(int vertices, int faces, int halfedges);
+
     /// Adds a face consisting of N vertices
     /// The vertices must already be sorted in CCW order
     /// (note: trying to add already existing halfedges triggers assertions)

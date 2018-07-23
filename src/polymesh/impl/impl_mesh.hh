@@ -58,6 +58,32 @@ inline edge_index Mesh::alloc_edge()
     return idx;
 }
 
+inline void Mesh::alloc_primitives(int vertices, int faces, int halfedges)
+{
+    auto vCnt = size_all_vertices() + vertices;
+    auto fCnt = size_all_faces() + faces;
+    auto eCnt = size_all_edges() + (halfedges << 1);
+    auto hCnt = size_all_halfedges() + halfedges;
+
+    // alloc space
+    mVertexToOutgoingHalfedge.resize(vCnt);
+    mFaceToHalfedge.resize(fCnt);
+    mHalfedgeToFace.resize(hCnt);
+    mHalfedgeToVertex.resize(hCnt);
+    mHalfedgeToNextHalfedge.resize(hCnt);
+    mHalfedgeToPrevHalfedge.resize(hCnt);
+
+    // notify attributes
+    for (auto p = mVertexAttrs; p; p = p->mNextAttribute)
+        p->resize(vCnt, false);
+    for (auto p = mFaceAttrs; p; p = p->mNextAttribute)
+        p->resize(fCnt, false);
+    for (auto p = mEdgeAttrs; p; p = p->mNextAttribute)
+        p->resize(eCnt, false);
+    for (auto p = mHalfedgeAttrs; p; p = p->mNextAttribute)
+        p->resize(hCnt, false);
+}
+
 inline face_index Mesh::add_face(const vertex_handle *v_handles, int vcnt)
 {
     mFaceInsertCache.resize(vcnt);
@@ -139,72 +165,46 @@ inline edge_index Mesh::add_or_get_edge(vertex_index v_from, vertex_index v_to)
     if (he.is_valid())
         return edge_of(he);
 
-    auto &vd_from = vertex(v_from);
-    auto &vd_to = vertex(v_to);
-
     // allocate new
-    auto he_size = (int)mHalfedges.size();
-    auto h_from_to_idx = halfedge_index(he_size + 0);
-    auto h_to_from_idx = halfedge_index(he_size + 1);
-    auto eidx = edge_index(he_size >> 1);
-    halfedge_info h_from_to;
-    halfedge_info h_to_from;
+    auto e = alloc_edge();
+    auto h_from_to = halfedge_of(e, 0);
+    auto h_to_from = halfedge_of(e, 1);
 
     // setup data (self-connected edge)
-    h_from_to.to_vertex = v_to;
-    h_to_from.to_vertex = v_from;
-    h_from_to.next_halfedge = h_to_from_idx;
-    h_to_from.next_halfedge = h_from_to_idx;
+    to_vertex_of(h_from_to) = v_to;
+    to_vertex_of(h_to_from) = v_from;
+    next_halfedge_of(h_from_to) = h_to_from;
+    next_halfedge_of(h_to_from) = h_from_to;
 
     // link from vertex
-    if (vd_from.is_isolated())
-        vd_from.outgoing_halfedge = h_from_to_idx;
+    if (is_isolated(v_from))
+        outgoing_halfedge_of(v_from) = h_from_to;
     else
     {
-        auto from_in_idx = find_free_incident(v_from);
-        assert(from_in_idx.is_valid() && "vertex is already fully connected");
-        auto &from_in = halfedge(from_in_idx);
-        auto from_out_idx = from_in.next_halfedge;
-        auto &from_out = halfedge(from_out_idx);
+        auto from_in = find_free_incident(v_from);
+        assert(from_in.is_valid() && "vertex is already fully connected");
 
-        from_in.next_halfedge = h_from_to_idx;
-        h_from_to.prev_halfedge = from_in_idx;
+        auto from_out = next_halfedge_of(from_in);
 
-        h_to_from.next_halfedge = from_out_idx;
-        from_out.prev_halfedge = h_to_from_idx;
+        connect_prev_next(from_in, h_from_to);
+        connect_prev_next(h_to_from, from_out);
     }
 
     // link to vertex
-    if (vd_to.is_isolated())
-        vd_to.outgoing_halfedge = h_to_from_idx;
+    if (is_isolated(v_to))
+        outgoing_halfedge_of(v_to) = h_to_from;
     else
     {
-        auto to_in_idx = find_free_incident(v_to);
-        assert(to_in_idx.is_valid() && "vertex is already fully connected");
-        auto &to_in = halfedge(to_in_idx);
-        auto to_out_idx = to_in.next_halfedge;
-        auto &to_out = halfedge(to_out_idx);
+        auto to_in = find_free_incident(v_to);
+        assert(to_in.is_valid() && "vertex is already fully connected");
 
-        to_in.next_halfedge = h_to_from_idx;
-        h_to_from.prev_halfedge = to_in_idx;
+        auto to_out = next_halfedge_of(to_in);
 
-        h_from_to.next_halfedge = to_out_idx;
-        to_out.prev_halfedge = h_from_to_idx;
+        connect_prev_next(to_in, h_to_from);
+        connect_prev_next(h_from_to, to_out);
     }
 
-    // finalize
-    mHalfedges.push_back(h_from_to);
-    mHalfedges.push_back(h_to_from);
-
-    // notify attributes
-    auto hCnt = (int)mHalfedges.size();
-    auto eCnt = hCnt >> 1;
-    for (auto p = mHalfedgeAttrs; p; p = p->mNextAttribute)
-        p->resize(hCnt, false);
-    for (auto p = mEdgeAttrs; p; p = p->mNextAttribute)
-        p->resize(eCnt, false);
-
-    return eidx;
+    return e;
 }
 
 inline halfedge_index Mesh::add_or_get_halfedge(vertex_index v_from, vertex_index v_to)
@@ -212,77 +212,49 @@ inline halfedge_index Mesh::add_or_get_halfedge(vertex_index v_from, vertex_inde
     auto e = add_or_get_edge(v_from, v_to);
     auto h0 = halfedge_of(e, 0);
     auto h1 = halfedge_of(e, 1);
-    return halfedge(h0).to_vertex == v_to ? h0 : h1;
+    return to_vertex_of(h0) == v_to ? h0 : h1;
 }
 
 inline edge_index Mesh::add_or_get_edge(halfedge_index h_from, halfedge_index h_to)
 {
     assert(h_from != h_to);
-    auto &hd_from = halfedge(h_from);
-    auto &hd_to = halfedge(h_to);
 
-    auto v_from = hd_from.to_vertex;
-    auto v_to = hd_to.to_vertex;
+    auto v_from = to_vertex_of(h_from);
+    auto v_to = to_vertex_of(h_to);
 
     auto ex_he = find_halfedge(v_from, v_to);
     if (ex_he.is_valid())
     {
-        auto &existing_hed = halfedge(ex_he);
-        auto &ex_opp_hed = halfedge(opposite(ex_he));
-        assert(existing_hed.prev_halfedge == h_from && ex_opp_hed.prev_halfedge == h_to);
-        (void)existing_hed;
-        (void)ex_opp_hed;
+        assert(prev_halfedge_of(ex_he) == h_from && prev_halfedge_of(opposite(ex_he)) == h_to);
+
         // TODO: Maybe try rewriting an existing halfedge that does NOT yet have the right connection.
         return edge_of(ex_he);
     }
 
-    assert(hd_from.face.is_invalid() && hd_to.face.is_invalid() && "Cannot insert into a face");
+    assert(is_free(h_from) && is_free(h_to) && "Cannot insert into a face");
 
     // allocate new
-    auto he_size = (int)mHalfedges.size();
-    auto h_from_to_idx = halfedge_index(he_size + 0);
-    auto h_to_from_idx = halfedge_index(he_size + 1);
-    auto eidx = edge_index(he_size >> 1);
-    halfedge_info h_from_to;
-    halfedge_info h_to_from;
+    auto e = alloc_edge();
+    auto h_from_to = halfedge_of(e, 0);
+    auto h_to_from = halfedge_of(e, 1);
 
     // setup data (self-connected edge)
-    h_from_to.to_vertex = v_to;
-    h_to_from.to_vertex = v_from;
+    to_vertex_of(h_from_to) = v_to;
+    to_vertex_of(h_to_from) = v_from;
 
     // Link from side
-    auto h_from_next_idx = hd_from.next_halfedge;
-    auto &h_from_next = halfedge(h_from_next_idx);
+    auto h_from_next = next_halfedge_of(h_from);
 
-    hd_from.next_halfedge = h_from_to_idx;
-    h_from_to.prev_halfedge = h_from;
-
-    h_from_next.prev_halfedge = h_to_from_idx;
-    h_to_from.next_halfedge = h_from_next_idx;
+    connect_prev_next(h_from, h_from_to);
+    connect_prev_next(h_from_next, h_to_from);
 
     // Link to side
-    auto h_to_next_idx = hd_to.next_halfedge;
-    auto &h_to_next = halfedge(h_to_next_idx);
+    auto h_to_next = next_halfedge_of(h_to);
 
-    hd_to.next_halfedge = h_to_from_idx;
-    h_to_from.prev_halfedge = h_to;
+    connect_prev_next(h_to, h_to_from);
+    connect_prev_next(h_to_next, h_from_to);
 
-    h_to_next.prev_halfedge = h_from_to_idx;
-    h_from_to.next_halfedge = h_to_next_idx;
-
-    // finalize
-    mHalfedges.push_back(h_from_to);
-    mHalfedges.push_back(h_to_from);
-
-    // notify attributes
-    auto hCnt = (int)mHalfedges.size();
-    auto eCnt = hCnt >> 1;
-    for (auto p = mHalfedgeAttrs; p; p = p->mNextAttribute)
-        p->resize(hCnt, false);
-    for (auto p = mEdgeAttrs; p; p = p->mNextAttribute)
-        p->resize(eCnt, false);
-
-    return eidx;
+    return e;
 }
 
 inline halfedge_index Mesh::add_or_get_halfedge(halfedge_index h_from, halfedge_index h_to)
@@ -324,7 +296,7 @@ inline void Mesh::remove_face(face_index f_idx)
     auto he = he_begin;
     do
     {
-        assert(face_of(h) == f_idx);
+        assert(face_of(he) == f_idx);
 
         // set half-edge face to invalid
         face_of(he) = face_index::invalid();
@@ -354,17 +326,14 @@ inline void Mesh::remove_face(face_index f_idx)
 
 inline void Mesh::remove_edge(edge_index e_idx)
 {
-    auto hi_in = halfedge_of(e_idx, 0);
-    auto hi_out = halfedge_of(e_idx, 1);
+    auto h_in = halfedge_of(e_idx, 0);
+    auto h_out = halfedge_of(e_idx, 1);
 
-    auto &h_in = halfedge(hi_in);
-    auto &h_out = halfedge(hi_out);
+    assert(!is_removed(h_in));
+    assert(!is_removed(h_out));
 
-    assert(h_in.is_valid());
-    assert(h_out.is_valid());
-
-    auto f0 = h_in.face;
-    auto f1 = h_out.face;
+    auto f0 = face_of(h_in);
+    auto f1 = face_of(h_out);
 
     // remove adjacent faces
     if (f0.is_valid())
@@ -373,42 +342,40 @@ inline void Mesh::remove_edge(edge_index e_idx)
         remove_face(f1);
 
     // rewire vertices
-    auto &v_in_to = vertex(h_in.to_vertex);
-    auto &v_out_to = vertex(h_out.to_vertex);
+    auto v_in_to = to_vertex_of(h_in);
+    auto v_out_to = to_vertex_of(h_out);
 
-    auto hi_out_prev = h_out.prev_halfedge;
-    auto hi_out_next = h_out.next_halfedge;
+    auto hi_out_prev = prev_halfedge_of(h_out);
+    auto hi_out_next = next_halfedge_of(h_out);
 
-    auto hi_in_prev = h_in.prev_halfedge;
-    auto hi_in_next = h_in.next_halfedge;
+    auto hi_in_prev = prev_halfedge_of(h_in);
+    auto hi_in_next = next_halfedge_of(h_in);
 
     // modify vertex if outgoing half-edge is going to be removed
-    if (v_in_to.outgoing_halfedge == hi_out)
+    auto &v_in_to_out = outgoing_halfedge_of(v_in_to);
+    if (v_in_to_out == h_out)
     {
-        if (hi_in_next == hi_out) // v_in_to becomes isolated
-            v_in_to.outgoing_halfedge = halfedge_index::invalid();
+        if (hi_in_next == h_out) // v_in_to becomes isolated
+            v_in_to_out = halfedge_index::invalid();
         else
-            v_in_to.outgoing_halfedge = hi_in_next;
+            v_in_to_out = hi_in_next;
     }
 
-    if (v_out_to.outgoing_halfedge == hi_in)
+    auto &v_out_to_out = outgoing_halfedge_of(v_out_to);
+    if (v_out_to_out == h_in)
     {
-        if (hi_out_next == hi_in) // v_out_to becomes isolated
-            v_out_to.outgoing_halfedge = halfedge_index::invalid();
+        if (hi_out_next == h_in) // v_out_to becomes isolated
+            v_out_to_out = halfedge_index::invalid();
         else
-            v_out_to.outgoing_halfedge = hi_out_next;
+            v_out_to_out = hi_out_next;
     }
 
     // reqire half-edges
-    halfedge(hi_out_prev).next_halfedge = hi_in_next;
-    halfedge(hi_in_next).prev_halfedge = hi_out_prev;
-
-    halfedge(hi_in_prev).next_halfedge = hi_out_next;
-    halfedge(hi_out_next).prev_halfedge = hi_in_prev;
+    connect_prev_next(hi_out_prev, hi_in_next);
+    connect_prev_next(hi_in_prev, hi_out_next);
 
     // remove half-edges
-    h_in.set_removed();
-    h_out.set_removed();
+    set_removed(e_idx);
 
     // bookkeeping
     mRemovedHalfedges++;
@@ -486,12 +453,12 @@ inline void Mesh::fix_boundary_state_of_vertices(face_index f_idx)
 
 inline halfedge_index Mesh::find_free_incident(halfedge_index in_begin, halfedge_index in_end) const
 {
-    assert(halfedge(in_begin).to_vertex == halfedge(in_end).to_vertex);
+    assert(to_vertex_of(in_begin) == to_vertex_of(in_end));
 
     auto he = in_begin;
     do
     {
-        assert(to_vertex_of(he) == to_vertex(in_end));
+        assert(to_vertex_of(he) == to_vertex_of(in_end));
 
         // free? found one!
         if (is_free(he))
@@ -681,13 +648,11 @@ inline vertex_index Mesh::edge_split(edge_index e)
 {
     auto h0 = halfedge_of(e, 0);
     auto h1 = halfedge_of(e, 1);
-    auto &h0_ref = halfedge(h0);
-    auto &h1_ref = halfedge(h1);
 
-    auto v0 = h0_ref.to_vertex;
-    auto v1 = h1_ref.to_vertex;
-    auto f0 = h0_ref.face;
-    auto f1 = h1_ref.face;
+    auto v0 = to_vertex_of(h0);
+    auto v1 = to_vertex_of(h1);
+    auto f0 = face_of(h0);
+    auto f1 = face_of(h1);
 
     // add vertex
     auto v = add_vertex();
@@ -701,25 +666,20 @@ inline vertex_index Mesh::edge_split(edge_index e)
     auto e2h1 = halfedge_of(e2, 1);
 
     // rewire edges
-    auto &e1h0_ref = halfedge(e1h0);
-    auto &e1h1_ref = halfedge(e1h1);
-    auto &e2h0_ref = halfedge(e2h0);
-    auto &e2h1_ref = halfedge(e2h1);
+    auto h0_prev = prev_halfedge_of(h0);
+    auto h0_next = next_halfedge_of(h0);
+    auto h1_prev = prev_halfedge_of(h1);
+    auto h1_next = next_halfedge_of(h1);
 
-    auto h0_prev = h0_ref.prev_halfedge;
-    auto h0_next = h0_ref.next_halfedge;
-    auto h1_prev = h1_ref.prev_halfedge;
-    auto h1_next = h1_ref.next_halfedge;
+    face_of(e1h0) = f0;
+    face_of(e2h0) = f0;
+    face_of(e1h1) = f1;
+    face_of(e2h1) = f1;
 
-    e1h0_ref.face = f0;
-    e2h0_ref.face = f0;
-    e1h1_ref.face = f1;
-    e2h1_ref.face = f1;
-
-    e1h0_ref.to_vertex = v0;
-    e2h0_ref.to_vertex = v;
-    e1h1_ref.to_vertex = v;
-    e2h1_ref.to_vertex = v1;
+    to_vertex_of(e1h0) = v0;
+    to_vertex_of(e2h0) = v;
+    to_vertex_of(e1h1) = v;
+    to_vertex_of(e2h1) = v1;
 
     connect_prev_next(h0_prev, e2h0);
     connect_prev_next(e2h0, e1h0);
@@ -730,30 +690,29 @@ inline vertex_index Mesh::edge_split(edge_index e)
     connect_prev_next(e2h1, h1_next);
 
     // rewire vertices
-    auto &v0_ref = vertex(h0_ref.to_vertex);
-    auto &v1_ref = vertex(h1_ref.to_vertex);
-    if (v0_ref.outgoing_halfedge == h1)
-        v0_ref.outgoing_halfedge = e1h1;
-    if (v1_ref.outgoing_halfedge == h0)
-        v1_ref.outgoing_halfedge = e2h0;
+    auto &v0_out = outgoing_halfedge_of(v0);
+    auto &v1_out = outgoing_halfedge_of(v1);
+    if (v0_out == h1)
+        v0_out = e1h1;
+    if (v1_out == h0)
+        v1_out = e2h0;
 
     // rewire faces
     if (f0.is_valid())
     {
-        auto &f0_ref = face(f0);
-        if (f0_ref.halfedge == h0)
-            f0_ref.halfedge = e1h0;
+        auto &f0_h = halfedge_of(f0);
+        if (f0_h == h0)
+            f0_h = e1h0;
     }
     if (f1.is_valid())
     {
-        auto &f1_ref = face(f1);
-        if (f1_ref.halfedge == h1)
-            f1_ref.halfedge = e2h1;
+        auto &f1_h = halfedge_of(f1);
+        if (f1_h == h1)
+            f1_h = e2h1;
     }
 
     // remove edge
-    h0_ref.set_removed();
-    h1_ref.set_removed();
+    set_removed(e);
     mRemovedHalfedges += 2;
     mCompact = false;
 
@@ -771,28 +730,23 @@ inline vertex_index Mesh::halfedge_split(halfedge_index h)
     auto h2 = halfedge_of(e, 0);
     auto h3 = halfedge_of(e, 1);
 
-    auto v0 = halfedge(h0).to_vertex;
-    auto v1 = halfedge(h1).to_vertex;
+    auto v0 = to_vertex_of(h0);
+    auto v1 = to_vertex_of(h1);
 
     // rewire edges
-    auto &h0_ref = halfedge(h0);
-    auto &h1_ref = halfedge(h1);
-    auto &h2_ref = halfedge(h2);
-    auto &h3_ref = halfedge(h3);
+    auto h0_next = next_halfedge_of(h0);
+    auto h1_prev = prev_halfedge_of(h1);
 
-    auto h0_next = h0_ref.next_halfedge;
-    auto h1_prev = h1_ref.prev_halfedge;
+    auto f0 = face_of(h0);
+    auto f1 = face_of(h1);
 
-    auto f0 = h0_ref.face;
-    auto f1 = h1_ref.face;
+    face_of(h2) = f0;
+    face_of(h3) = f1;
 
-    h2_ref.face = f0;
-    h3_ref.face = f1;
-
-    h0_ref.to_vertex = v;
-    h1_ref.to_vertex = v1; //< already there
-    h2_ref.to_vertex = v0;
-    h3_ref.to_vertex = v;
+    to_vertex_of(h0) = v;
+    to_vertex_of(h1) = v1; //< already there
+    to_vertex_of(h2) = v0;
+    to_vertex_of(h3) = v;
 
     connect_prev_next(h0, h2);
     connect_prev_next(h2, h0_next);
@@ -801,11 +755,11 @@ inline vertex_index Mesh::halfedge_split(halfedge_index h)
     connect_prev_next(h3, h1);
 
     // rewire vertices
-    auto &v0_ref = vertex(v0);
-    if (v0_ref.outgoing_halfedge == h1)
-        v0_ref.outgoing_halfedge = h3;
+    auto &v0_out = outgoing_halfedge_of(v0);
+    if (v0_out == h1)
+        v0_out = h3;
 
-    vertex(v).outgoing_halfedge = h1_ref.is_free() ? h1 : h2; // boundary
+    outgoing_halfedge_of(v) = is_free(h1) ? h1 : h2; // boundary
 
     // rewire faces
     // -> already ok
@@ -818,29 +772,26 @@ inline face_index Mesh::face_fill(halfedge_index h)
     assert(is_boundary(h));
 
     auto f = alloc_face();
-    auto &f_ref = face(f);
 
-    f_ref.halfedge = h;
+    halfedge_of(f) = h;
 
     auto h_begin = h;
     do
     {
-        auto &h_ref = halfedge(h);
-
         // set face
-        h_ref.face = f;
+        face_of(h) = f;
 
         // fix face boundary
         if (is_boundary(opposite(h)))
-            f_ref.halfedge = h;
+            halfedge_of(f) = h;
 
         // fix adj face boundary
-        auto adj_face = halfedge(opposite(h)).face;
+        auto adj_face = face_of(opposite(h));
         if (adj_face.is_valid())
             fix_boundary_state_of(adj_face);
 
         // advance
-        h = h_ref.next_halfedge;
+        h = next_halfedge_of(h);
     } while (h != h_begin);
 
     // fix vertex boundaries
@@ -851,28 +802,24 @@ inline face_index Mesh::face_fill(halfedge_index h)
 
 inline void Mesh::halfedge_attach(halfedge_index h, vertex_index v)
 {
-    assert(vertex(v).is_isolated());
+    assert(is_isolated(v));
 
-    auto &h_ref = halfedge(h);
-    auto h_next = h_ref.next_halfedge;
-    auto v_to = h_ref.to_vertex;
+    auto h_next = next_halfedge_of(h);
+    auto v_to = to_vertex_of(h);
 
-    auto f = h_ref.face;
+    auto f = face_of(h);
 
     auto e = alloc_edge();
     auto h0 = halfedge_of(e, 0);
     auto h1 = halfedge_of(e, 1);
 
-    auto &h0_ref = halfedge(h0);
-    auto &h1_ref = halfedge(h1);
+    face_of(h0) = f;
+    to_vertex_of(h0) = v;
 
-    h0_ref.face = f;
-    h0_ref.to_vertex = v;
+    face_of(h1) = f;
+    to_vertex_of(h1) = v_to;
 
-    h1_ref.face = f;
-    h1_ref.to_vertex = v_to;
-
-    vertex(v).outgoing_halfedge = h1;
+    outgoing_halfedge_of(v) = h1;
 
     connect_prev_next(h, h0);
     connect_prev_next(h0, h1);
@@ -881,10 +828,8 @@ inline void Mesh::halfedge_attach(halfedge_index h, vertex_index v)
 
 inline void Mesh::vertex_collapse(vertex_index v)
 {
-    auto &v_ref = vertex(v);
-
     // isolated vertices are just removed
-    if (v_ref.is_isolated())
+    if (is_isolated(v))
     {
         remove_vertex(v);
     }
@@ -895,7 +840,7 @@ inline void Mesh::vertex_collapse(vertex_index v)
     }
     else // interior vertex
     {
-        auto h_begin = halfedge(vertex(v).outgoing_halfedge).next_halfedge;
+        auto h_begin = next_halfedge_of(outgoing_halfedge_of(v));
 
         remove_vertex(v);
 
@@ -910,7 +855,7 @@ inline void Mesh::vertex_collapse(vertex_index v)
             hs.push_back(h);
 
             // advance
-            h = halfedge(h).next_halfedge;
+            h = next_halfedge_of(h);
         } while (h != h_begin);
 
         // add face
@@ -934,37 +879,32 @@ inline void Mesh::edge_rotate_next(edge_index e)
 
     auto h0 = halfedge_of(e, 0);
     auto h1 = halfedge_of(e, 1);
-    auto &h0_ref = halfedge(h0);
-    auto &h1_ref = halfedge(h1);
 
-    auto h0_next = h0_ref.next_halfedge;
-    auto h0_prev = h0_ref.prev_halfedge;
-    auto h1_next = h1_ref.next_halfedge;
-    auto h1_prev = h1_ref.prev_halfedge;
+    auto h0_next = next_halfedge_of(h0);
+    auto h0_prev = prev_halfedge_of(h0);
+    auto h1_next = next_halfedge_of(h1);
+    auto h1_prev = prev_halfedge_of(h1);
 
-    auto &h0_next_ref = halfedge(h0_next);
-    auto &h1_next_ref = halfedge(h1_next);
-
-    auto h0_next_next = h0_next_ref.next_halfedge;
-    auto h1_next_next = h1_next_ref.next_halfedge;
+    auto h0_next_next = next_halfedge_of(h0_next);
+    auto h1_next_next = next_halfedge_of(h1_next);
 
     // fix vertices
-    auto &v0 = vertex(h0_ref.to_vertex);
-    if (v0.outgoing_halfedge == h1)
-        v0.outgoing_halfedge = h0_next;
-    auto &v1 = vertex(h1_ref.to_vertex);
-    if (v1.outgoing_halfedge == h0)
-        v1.outgoing_halfedge = h1_next;
+    auto &v0_out = outgoing_halfedge_of(to_vertex_of(h0));
+    if (v0_out == h1)
+        v0_out = h0_next;
+    auto &v1_out = outgoing_halfedge_of(to_vertex_of(h1));
+    if (v1_out == h0)
+        v1_out = h1_next;
 
     // fix faces
-    face(h0_ref.face).halfedge = h0;
-    face(h1_ref.face).halfedge = h1;
+    halfedge_of(face_of(h0)) = h0;
+    halfedge_of(face_of(h1)) = h1;
 
     // fix half-edges
-    h0_ref.to_vertex = h0_next_ref.to_vertex;
-    h1_ref.to_vertex = h1_next_ref.to_vertex;
-    h0_next_ref.face = h1_ref.face;
-    h1_next_ref.face = h0_ref.face;
+    to_vertex_of(h0) = to_vertex_of(h0_next);
+    to_vertex_of(h1) = to_vertex_of(h1_next);
+    face_of(h0_next) = face_of(h1);
+    face_of(h1_next) = face_of(h0);
 
     // move to next
     connect_prev_next(h1_prev, h0_next);
@@ -977,8 +917,8 @@ inline void Mesh::edge_rotate_next(edge_index e)
     connect_prev_next(h1, h1_next_next);
 
     // fix boundary state
-    fix_boundary_state_of(h0_ref.face);
-    fix_boundary_state_of(h1_ref.face);
+    fix_boundary_state_of(face_of(h0));
+    fix_boundary_state_of(face_of(h1));
 }
 
 inline void Mesh::edge_rotate_prev(edge_index e)
@@ -989,39 +929,32 @@ inline void Mesh::edge_rotate_prev(edge_index e)
 
     auto h0 = halfedge_of(e, 0);
     auto h1 = halfedge_of(e, 1);
-    auto &h0_ref = halfedge(h0);
-    auto &h1_ref = halfedge(h1);
 
-    auto h0_next = h0_ref.next_halfedge;
-    auto h0_prev = h0_ref.prev_halfedge;
-    auto h1_next = h1_ref.next_halfedge;
-    auto h1_prev = h1_ref.prev_halfedge;
+    auto h0_next = next_halfedge_of(h0);
+    auto h0_prev = prev_halfedge_of(h0);
+    auto h1_next = next_halfedge_of(h1);
+    auto h1_prev = prev_halfedge_of(h1);
 
-    auto &h0_prev_ref = halfedge(h0_prev);
-    auto &h1_prev_ref = halfedge(h1_prev);
-
-    auto h0_prev_prev = h0_prev_ref.prev_halfedge;
-    auto &h0_prev_prev_ref = halfedge(h0_prev_prev);
-    auto h1_prev_prev = h1_prev_ref.prev_halfedge;
-    auto &h1_prev_prev_ref = halfedge(h1_prev_prev);
+    auto h0_prev_prev = prev_halfedge_of(h0_prev);
+    auto h1_prev_prev = prev_halfedge_of(h1_prev);
 
     // fix vertex
-    auto &v0 = vertex(h0_ref.to_vertex);
-    if (v0.outgoing_halfedge == h1)
-        v0.outgoing_halfedge = h0_next;
-    auto &v1 = vertex(h1_ref.to_vertex);
-    if (v1.outgoing_halfedge == h0)
-        v1.outgoing_halfedge = h1_next;
+    auto &v0_out = outgoing_halfedge_of(to_vertex_of(h0));
+    if (v0_out == h1)
+        v0_out = h0_next;
+    auto &v1_out = outgoing_halfedge_of(to_vertex_of(h1));
+    if (v1_out == h0)
+        v1_out = h1_next;
 
     // fix faces
-    face(h0_ref.face).halfedge = h0;
-    face(h1_ref.face).halfedge = h1;
+    halfedge_of(face_of(h0)) = h0;
+    halfedge_of(face_of(h1)) = h1;
 
     // fix half-edge
-    h1_ref.to_vertex = h0_prev_prev_ref.to_vertex;
-    h0_ref.to_vertex = h1_prev_prev_ref.to_vertex;
-    h0_prev_ref.face = h1_ref.face;
-    h1_prev_ref.face = h0_ref.face;
+    to_vertex_of(h1) = to_vertex_of(h0_prev_prev);
+    to_vertex_of(h0) = to_vertex_of(h1_prev_prev);
+    face_of(h0_prev) = face_of(h1);
+    face_of(h1_prev) = face_of(h0);
 
     // move to next
     connect_prev_next(h0_prev, h1_next);
@@ -1034,8 +967,8 @@ inline void Mesh::edge_rotate_prev(edge_index e)
     connect_prev_next(h1_prev_prev, h1);
 
     // fix boundary state
-    fix_boundary_state_of(h0_ref.face);
-    fix_boundary_state_of(h1_ref.face);
+    fix_boundary_state_of(face_of(h0));
+    fix_boundary_state_of(face_of(h1));
 }
 
 inline void Mesh::halfedge_rotate_next(halfedge_index h)
@@ -1046,26 +979,23 @@ inline void Mesh::halfedge_rotate_next(halfedge_index h)
 
     auto h0 = h;
     auto h1 = opposite(h);
-    auto &h0_ref = halfedge(h0);
-    auto &h1_ref = halfedge(h1);
 
-    auto h0_next = h0_ref.next_halfedge;
-    auto h1_prev = h1_ref.prev_halfedge;
-    auto &h0_next_ref = halfedge(h0_next);
-    auto h0_next_next = h0_next_ref.next_halfedge;
+    auto h0_next = next_halfedge_of(h0);
+    auto h1_prev = prev_halfedge_of(h1);
+    auto h0_next_next = next_halfedge_of(h0_next);
 
     // fix vertex
-    auto &v = vertex(h0_ref.to_vertex);
-    if (v.outgoing_halfedge == h1)
-        v.outgoing_halfedge = h0_next;
+    auto &v_out = outgoing_halfedge_of(to_vertex_of(h0));
+    if (v_out == h1)
+        v_out = h0_next;
 
     // fix faces
-    face(h0_ref.face).halfedge = h0;
-    face(h1_ref.face).halfedge = h1;
+    halfedge_of(face_of(h0)) = h0;
+    halfedge_of(face_of(h1)) = h1;
 
     // fix half-edges
-    h0_ref.to_vertex = h0_next_ref.to_vertex;
-    h0_next_ref.face = h1_ref.face;
+    to_vertex_of(h0) = to_vertex_of(h0_next);
+    face_of(h0_next) = face_of(h1);
 
     // move to next
     connect_prev_next(h1_prev, h0_next);
@@ -1073,8 +1003,8 @@ inline void Mesh::halfedge_rotate_next(halfedge_index h)
     connect_prev_next(h0, h0_next_next);
 
     // fix boundary state
-    fix_boundary_state_of(h0_ref.face);
-    fix_boundary_state_of(h1_ref.face);
+    fix_boundary_state_of(face_of(h0));
+    fix_boundary_state_of(face_of(h1));
 }
 
 inline void Mesh::halfedge_rotate_prev(halfedge_index h)
@@ -1085,27 +1015,23 @@ inline void Mesh::halfedge_rotate_prev(halfedge_index h)
 
     auto h0 = h;
     auto h1 = opposite(h);
-    auto &h0_ref = halfedge(h0);
-    auto &h1_ref = halfedge(h1);
 
-    auto h0_prev = h0_ref.prev_halfedge;
-    auto h1_next = h1_ref.next_halfedge;
-    auto &h0_prev_ref = halfedge(h0_prev);
-    auto h0_prev_prev = h0_prev_ref.prev_halfedge;
-    auto &h0_prev_prev_ref = halfedge(h0_prev_prev);
+    auto h0_prev = prev_halfedge_of(h0);
+    auto h1_next = next_halfedge_of(h1);
+    auto h0_prev_prev = prev_halfedge_of(h0_prev);
 
     // fix vertex
-    auto &v = vertex(h1_ref.to_vertex);
-    if (v.outgoing_halfedge == h0)
-        v.outgoing_halfedge = h1_next;
+    auto &v_out = outgoing_halfedge_of(to_vertex_of(h1));
+    if (v_out == h0)
+        v_out = h1_next;
 
     // fix faces
-    face(h0_ref.face).halfedge = h0;
-    face(h1_ref.face).halfedge = h1;
+    halfedge_of(face_of(h0)) = h0;
+    halfedge_of(face_of(h1)) = h1;
 
     // fix half-edge
-    h1_ref.to_vertex = h0_prev_prev_ref.to_vertex;
-    h0_prev_ref.face = h1_ref.face;
+    to_vertex_of(h1) = to_vertex_of(h0_prev_prev);
+    face_of(h0_prev) = face_of(h1);
 
     // move to next
     connect_prev_next(h0_prev, h1_next);
@@ -1113,8 +1039,8 @@ inline void Mesh::halfedge_rotate_prev(halfedge_index h)
     connect_prev_next(h0_prev_prev, h0);
 
     // fix boundary state
-    fix_boundary_state_of(h0_ref.face);
-    fix_boundary_state_of(h1_ref.face);
+    fix_boundary_state_of(face_of(h0));
+    fix_boundary_state_of(face_of(h1));
 }
 
 inline void Mesh::permute_vertices(std::vector<int> const &p)
