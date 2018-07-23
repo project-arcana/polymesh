@@ -16,6 +16,9 @@ struct valid_primitive_iterator
 {
     using handle_t = typename primitive<tag>::handle;
 
+    static const bool is_all_iterator = false;
+    static const bool is_valid_iterator = true;
+
     valid_primitive_iterator() = default;
     valid_primitive_iterator(handle_t handle) : handle(handle) { this->handle.idx = handle.mesh->next_valid_idx_from(handle.idx); }
 
@@ -52,6 +55,9 @@ template <typename tag>
 struct all_primitive_iterator
 {
     using handle_t = typename primitive<tag>::handle;
+
+    static const bool is_all_iterator = true;
+    static const bool is_valid_iterator = false;
 
     all_primitive_iterator() = default;
     all_primitive_iterator(handle_t handle) : handle(handle) {}

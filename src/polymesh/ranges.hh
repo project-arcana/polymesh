@@ -175,6 +175,12 @@ struct smart_collection : smart_range<smart_collection<mesh_ptr, tag, iterator>,
     iterator begin() const;
     iterator end() const;
 
+    /// returns a handle chosen uniformly at random
+    /// NOTE: when only valid handles are allowed, this will use rejection sampling
+    ///       and thus get very slow if a lot of data is invalid
+    template <class Generator>
+    handle random(Generator& g) const;
+
 protected:
     /// Backreference to mesh
     mesh_ptr mesh;

@@ -448,6 +448,23 @@ iterator smart_collection<mesh_ptr, tag, iterator>::end() const
     return {{this->mesh, typename primitive<tag>::index(primitive<tag>::all_size(*this->mesh))}};
 }
 
+template <class mesh_ptr, class tag, class iterator>
+template <class Generator>
+typename primitive<tag>::handle smart_collection<mesh_ptr, tag, iterator>::random(Generator &g) const
+{
+    auto s = primitive<tag>::all_size(*this->mesh);
+    assert(s > 0 && "Cannot chose from empty mesh");
+    std::uniform_int_distribution<> uniform(0, s - 1);
+
+    typename primitive<tag>::handle h = {this->mesh, typename primitive<tag>::index(uniform(g))};
+
+    if (iterator::is_valid_iterator)
+        while (h.is_removed())
+            h = {this->mesh, typename primitive<tag>::index(uniform(g))};
+
+    return h;
+}
+
 template <class iterator>
 void vertex_collection<iterator>::remove(vertex_handle v) const
 {
