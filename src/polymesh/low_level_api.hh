@@ -182,10 +182,13 @@ public:
     // removing primitives
 public:
     /// Marks this vertex as removed
+    /// (Also updates remove counts and compact status)
     void set_removed(vertex_index idx) const;
     /// Marks this face as removed
+    /// (Also updates remove counts and compact status)
     void set_removed(face_index idx) const;
     /// Marks this edge as removed
+    /// (Also updates remove counts and compact status)
     void set_removed(edge_index idx) const;
 
     /// removes a face (actually sets the removed status)
@@ -195,6 +198,10 @@ public:
     void remove_edge(edge_index e_idx) const;
     /// removes all adjacent edges, then the vertex
     void remove_vertex(vertex_index v_idx) const;
+
+    /// Overrides the saved number of removed primitives
+    /// CAUTION: only use if you know what you do!
+    void set_removed_counts(int r_vertices, int r_faces, int r_edges);
 
     // reordering
 public:
@@ -278,4 +285,5 @@ inline low_level_api_const low_level_api(Mesh const& m) { return {m}; }
 inline low_level_api_const low_level_api(Mesh const* m) { return {*m}; }
 inline low_level_api_mutable low_level_api(Mesh& m) { return {m}; }
 inline low_level_api_mutable low_level_api(Mesh* m) { return {*m}; }
+
 }

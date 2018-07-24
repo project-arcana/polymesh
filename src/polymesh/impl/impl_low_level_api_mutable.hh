@@ -249,10 +249,6 @@ inline void low_level_api_mutable::remove_face(face_index f_idx) const
     // mark removed
     // (at the end!)
     set_removed(f_idx);
-
-    // bookkeeping
-    m.mRemovedFaces++;
-    m.mCompact = false;
 }
 
 inline void low_level_api_mutable::remove_edge(edge_index e_idx) const
@@ -307,11 +303,6 @@ inline void low_level_api_mutable::remove_edge(edge_index e_idx) const
 
     // remove half-edges
     set_removed(e_idx);
-
-    // bookkeeping
-    m.mRemovedHalfedges++;
-    m.mRemovedHalfedges++;
-    m.mCompact = false;
 }
 
 inline void low_level_api_mutable::remove_vertex(vertex_index v_idx) const
@@ -324,10 +315,6 @@ inline void low_level_api_mutable::remove_vertex(vertex_index v_idx) const
 
     // mark removed
     set_removed(v_idx);
-
-    // bookkeeping
-    m.mRemovedVertices++;
-    m.mCompact = false;
 }
 
 inline void low_level_api_mutable::fix_boundary_state_of(vertex_index v_idx) const
@@ -381,12 +368,45 @@ inline void low_level_api_mutable::fix_boundary_state_of_vertices(face_index f_i
         he = next_halfedge_of(he);
     } while (he != he_begin);
 }
-inline void low_level_api_mutable::set_removed(vertex_index idx) const { outgoing_halfedge_of(idx) = halfedge_index::invalid(); }
-inline void low_level_api_mutable::set_removed(face_index idx) const { halfedge_of(idx) = halfedge_index::invalid(); }
+
+inline void low_level_api_mutable::set_removed(vertex_index idx) const
+{
+    assert(!is_removed(idx) && "cannot remove an already removed entry");
+    outgoing_halfedge_of(idx) = halfedge_index::invalid();
+
+    // bookkeeping
+    m.mRemovedVertices++;
+    m.mCompact = false;
+}
+
+inline void low_level_api_mutable::set_removed(face_index idx) const
+{
+    assert(!is_removed(idx) && "cannot remove an already removed entry");
+    halfedge_of(idx) = halfedge_index::invalid();
+
+    // bookkeeping
+    m.mRemovedFaces++;
+    m.mCompact = false;
+}
+
 inline void low_level_api_mutable::set_removed(edge_index idx) const
 {
+    assert(!is_removed(idx) && "cannot remove an already removed entry");
     to_vertex_of(halfedge_of(idx, 0)) = vertex_index::invalid();
     to_vertex_of(halfedge_of(idx, 1)) = vertex_index::invalid();
+
+    // bookkeeping
+    m.mRemovedHalfedges++;
+    m.mRemovedHalfedges++;
+    m.mCompact = false;
+}
+
+inline void low_level_api_mutable::set_removed_counts(int r_vertices, int r_faces, int r_edges)
+{
+    m.mRemovedVertices = r_vertices;
+    m.mRemovedFaces = r_faces;
+    m.mRemovedHalfedges = r_edges * 2;
+    m.mCompact = r_vertices == 0 && r_faces == 0 && r_edges == 0;
 }
 
 inline void low_level_api_mutable::connect_prev_next(halfedge_index prev, halfedge_index next) const
@@ -493,8 +513,6 @@ inline vertex_index low_level_api_mutable::edge_split(edge_index e) const
 
     // remove edge
     set_removed(e);
-    m.mRemovedHalfedges += 2;
-    m.mCompact = false;
 
     return v;
 }
