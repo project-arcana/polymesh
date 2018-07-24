@@ -177,13 +177,13 @@ inline edge_index low_level_api_mutable::add_or_get_edge(halfedge_index h_from, 
     auto h_from_next = next_halfedge_of(h_from);
 
     connect_prev_next(h_from, h_from_to);
-    connect_prev_next(h_from_next, h_to_from);
+    connect_prev_next(h_to_from, h_from_next);
 
     // Link to side
     auto h_to_next = next_halfedge_of(h_to);
 
     connect_prev_next(h_to, h_to_from);
-    connect_prev_next(h_to_next, h_from_to);
+    connect_prev_next(h_from_to, h_to_next);
 
     return e;
 }
