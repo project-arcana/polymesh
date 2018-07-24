@@ -13,7 +13,6 @@ Best used with glm and glow.
 * attribute transformations (also between different types)
 * Debug: store compactify generation in handles to check for invalidation
 * Debug: insert is_removed assertions into handle access
-* Switch primitives and valid_primitives, check if compact flag is inlined
 * Test self-adjacent faces
 * smart ranges: filter, map
 * vector, set, map -> range
@@ -30,7 +29,3 @@ Best used with glm and glow.
 * structure of arrays instead of AOS
 * lowlevel API that allows direct half-edge manipulation and does not fix boundaries (but also mirrors high level one)
 * primitive collection sort and sort_by functions
-
-Low-level TODO:
-
-* face_of(opposite(h)) -> opposite_face_of

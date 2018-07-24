@@ -24,5 +24,30 @@ struct result_of
 
 template <class FuncT, class ArgT>
 using result_type_of = typename result_of<FuncT, ArgT>::type;
+
+template <class T>
+using enable_if_const_t = typename std::enable_if<std::is_const<T>::value, std::nullptr_t>::type;
+template <class T>
+using enable_if_mutable_t = typename std::enable_if<!std::is_const<T>::value, std::nullptr_t>::type;
+
+template <bool Condition, class TrueType, class FalseType>
+struct if_then_else;
+
+template <class TrueType, class FalseType>
+struct if_then_else<true, TrueType, FalseType>
+{
+    using result = TrueType;
+};
+template <class TrueType, class FalseType>
+struct if_then_else<false, TrueType, FalseType>
+{
+    using result = FalseType;
+};
+
+template <class TargetT, class TestT>
+using ref_if_mut = typename if_then_else<std::is_const<TestT>::value, TargetT, typename std::add_lvalue_reference<TargetT>::type>::result;
+
+// std::add_lvalue_reference
+// template <class T>
 }
 }

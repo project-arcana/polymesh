@@ -20,13 +20,13 @@ struct valid_primitive_iterator
     static const bool is_valid_iterator = true;
 
     valid_primitive_iterator() = default;
-    valid_primitive_iterator(handle_t handle) : handle(handle) { this->handle.idx = handle.mesh->next_valid_idx_from(handle.idx); }
+    valid_primitive_iterator(handle_t handle) : handle(handle) { this->handle.idx = low_level_api(handle.mesh).next_valid_idx_from(handle.idx); }
 
     handle_t operator*() const { return handle; }
     valid_primitive_iterator& operator++()
     {
         ++handle.idx.value;
-        handle.idx = handle.mesh->next_valid_idx_from(handle.idx);
+        handle.idx = low_level_api(handle.mesh).next_valid_idx_from(handle.idx);
         return *this;
     }
     valid_primitive_iterator operator++(int) const

@@ -10,6 +10,7 @@
 
 // often used helper
 #include "attribute_collection.hh"
+#include "low_level_api.hh"
 
 namespace polymesh
 {
@@ -113,14 +114,18 @@ public:
     /// Creates a new mesh and calls copy_from(*this);
     SharedMesh copy() const;
 
-    // internal helper
+    // internal primitives
 private:
-    // reserves a certain number of primitives
-    void reserve_faces(int capacity);
-    void reserve_vertices(int capacity);
-    void reserve_edges(int capacity);
-    void reserve_halfedges(int capacity);
+    std::vector<halfedge_index> mFaceToHalfedge;
+    std::vector<halfedge_index> mVertexToOutgoingHalfedge;
 
+    std::vector<vertex_index> mHalfedgeToVertex;
+    std::vector<face_index> mHalfedgeToFace;
+    std::vector<halfedge_index> mHalfedgeToNextHalfedge;
+    std::vector<halfedge_index> mHalfedgeToPrevHalfedge;
+
+    // primitive size
+private:
     int size_all_faces() const { return (int)mFaceToHalfedge.size(); }
     int size_all_vertices() const { return (int)mVertexToOutgoingHalfedge.size(); }
     int size_all_edges() const { return (int)mHalfedgeToNextHalfedge.size() >> 1; }
@@ -131,121 +136,8 @@ private:
     int size_valid_edges() const { return ((int)mHalfedgeToNextHalfedge.size() - mRemovedHalfedges) >> 1; }
     int size_valid_halfedges() const { return (int)mHalfedgeToNextHalfedge.size() - mRemovedHalfedges; }
 
-    // returns the next valid idx (returns the given one if valid)
-    // NOTE: the result can be invalid if no valid one was found
-    vertex_index next_valid_idx_from(vertex_index idx) const;
-    edge_index next_valid_idx_from(edge_index idx) const;
-    face_index next_valid_idx_from(face_index idx) const;
-    halfedge_index next_valid_idx_from(halfedge_index idx) const;
-    // returns the next valid idx (returns the given one if valid) counting DOWNWARDS
-    vertex_index prev_valid_idx_from(vertex_index idx) const;
-    edge_index prev_valid_idx_from(edge_index idx) const;
-    face_index prev_valid_idx_from(face_index idx) const;
-    halfedge_index prev_valid_idx_from(halfedge_index idx) const;
-
-    /// Adds a single non-connected vertex
-    /// Does NOT invalidate iterators!
-    vertex_index add_vertex();
-
-    /// Allocates a new vertex
-    vertex_index alloc_vertex();
-    /// Allocates a new face
-    face_index alloc_face();
-    /// Allocates a new edge
-    edge_index alloc_edge();
-
-    /// Allocates a given amount of vertices, faces, and halfedges
-    /// NOTE: leaves ALL of them in an unspecified state
-    void alloc_primitives(int vertices, int faces, int halfedges);
-
-    /// Adds a face consisting of N vertices
-    /// The vertices must already be sorted in CCW order
-    /// (note: trying to add already existing halfedges triggers assertions)
-    face_index add_face(vertex_handle const *v_handles, int vcnt);
-    face_index add_face(vertex_index const *v_indices, int vcnt);
-    face_index add_face(halfedge_handle const *half_loop, int vcnt);
-    face_index add_face(halfedge_index const *half_loop, int vcnt);
-
-    /// Adds an edge between two existing, distinct vertices
-    /// if edge already exists, returns it
-    edge_index add_or_get_edge(vertex_index v_from, vertex_index v_to);
-    /// Adds an edge between to existing, distinct vertices that are pointed to by two given halfedges
-    /// if edge already exists, returns it
-    edge_index add_or_get_edge(halfedge_index h_from, halfedge_index h_to);
-
-    /// same as add_or_get_edge but returns the apattrriate half-edge
-    /// Assures:
-    ///     return_value.from_vertex == v_from
-    ///     return_value.to_vertex == v_to
-    halfedge_index add_or_get_halfedge(vertex_index v_from, vertex_index v_to);
-    /// same as add_or_get_edge but returns the apattrriate half-edge
-    /// Assures:
-    ///     return_value.from_vertex == h_from.to_vertex
-    ///     return_value.to_vertex == h_to.to_vertex
-    halfedge_index add_or_get_halfedge(halfedge_index h_from, halfedge_index h_to);
-
-    /// connect two half-edges in a prev-next relation
-    void connect_prev_next(halfedge_index prev, halfedge_index next);
-
-    /// splits a face
-    vertex_index face_split(face_index f);
-    /// splits an edge
-    vertex_index edge_split(edge_index e);
-    /// splits a half-edge
-    vertex_index halfedge_split(halfedge_index h);
-
-    /// fills a face
-    face_index face_fill(halfedge_index h);
-
-    /// attaches a given vertex to the to-vertex of a given half-edge
-    void halfedge_attach(halfedge_index h, vertex_index v);
-
-    /// collapse a vertex
-    void vertex_collapse(vertex_index v);
-    /// collapse a half-edge
-    void halfedge_collapse(halfedge_index h);
-
-    /// rotates an edge to next
-    void edge_rotate_next(edge_index e);
-    /// rotates an edge to prev
-    void edge_rotate_prev(edge_index e);
-    /// rotates a half-edge to next
-    void halfedge_rotate_next(halfedge_index h);
-    /// rotates a half-edge to prev
-    void halfedge_rotate_prev(halfedge_index h);
-
-    /// removes a face (actually sets the removed status)
-    /// modifies all adjacent vertices so that they correctly report is_boundary true
-    void remove_face(face_index f_idx);
-    /// removes both adjacent faces, then removes both half edges
-    void remove_edge(edge_index e_idx);
-    /// removes all adjacent edges, then the vertex
-    void remove_vertex(vertex_index v_idx);
-
-    /// choses a new outgoing half-edge for a given vertex, prefers boundary ones
-    /// assumes non-isolated vertex
-    void fix_boundary_state_of(vertex_index v_idx);
-    /// choses a new half-edge for a given face, prefers boundary ones
-    void fix_boundary_state_of(face_index f_idx);
-    /// choses a new half-edge for all vertices of a face, prefers boundary ones
-    void fix_boundary_state_of_vertices(face_index f_idx);
-
-    // attributes
-    bool is_free(halfedge_index idx) const;
-
-    bool is_boundary(vertex_index idx) const;
-    bool is_boundary(halfedge_index idx) const;
-    bool is_boundary(edge_index idx) const;
-    bool is_boundary(face_index idx) const;
-
-    bool is_removed(vertex_index idx) const;
-    bool is_removed(face_index idx) const;
-    bool is_removed(edge_index idx) const;
-    bool is_removed(halfedge_index idx) const;
-
-    bool is_isolated(vertex_index idx) const;
-    bool is_isolated(edge_index idx) const;
-
+    // primitive access
+private:
     vertex_index &to_vertex_of(halfedge_index idx);
     face_index &face_of(halfedge_index idx);
     halfedge_index &next_halfedge_of(halfedge_index idx);
@@ -260,151 +152,32 @@ private:
     halfedge_index halfedge_of(face_index idx) const;
     halfedge_index outgoing_halfedge_of(vertex_index idx) const;
 
-    void set_removed(vertex_index idx);
-    void set_removed(face_index idx);
-    void set_removed(edge_index idx);
+    // primitive allocation
+private:
+    /// Allocates a new vertex
+    vertex_index alloc_vertex();
+    /// Allocates a new face
+    face_index alloc_face();
+    /// Allocates a new edge
+    edge_index alloc_edge();
+    /// Allocates a given amount of vertices, faces, and halfedges
+    /// NOTE: leaves ALL of them in an unspecified state
+    void alloc_primitives(int vertices, int faces, int halfedges);
 
-    /// Returns the opposite of a given valid half-edge
-    halfedge_index opposite(halfedge_index he) const;
-    face_index opposite_face_of(halfedge_index he) const;
+    // reserves a certain number of primitives
+    void reserve_faces(int capacity);
+    void reserve_vertices(int capacity);
+    void reserve_edges(int capacity);
+    void reserve_halfedges(int capacity);
 
-    /// Makes two half-edges adjacent
-    /// Ensures:
-    ///     * he_in->next == he_out
-    ///     * he_out->prev == he_in
-    /// Requires:
-    ///     * he_in->is_free()
-    ///     * he_out->is_free()
-    /// Only works if a free incident half-edge is available
-    void make_adjacent(halfedge_index he_in, halfedge_index he_out);
-
-    /// finds the next free incoming half-edge around a certain vertex
-    /// starting from in_begin, EXCLUDING in_end (if in_begin == in_end, the whole vertex is searched)
-    /// returns invalid index if no edge is found
-    halfedge_index find_free_incident(halfedge_index in_begin, halfedge_index in_end) const;
-    /// finds a free incident incoming half-edge around a given vertex
-    halfedge_index find_free_incident(vertex_index v) const;
-
-    /// returns half-edge going from `from`, point to `to`
-    /// returns invalid index if not exists
-    halfedge_index find_halfedge(vertex_index from, vertex_index to) const;
-
-    /// returns edge index belonging to a half-edge
-    edge_index edge_of(halfedge_index idx) const { return edge_index(idx.value >> 1); }
-    /// returns a half-edge belonging to an edge
-    halfedge_index halfedge_of(edge_index idx, int i) const { return halfedge_index((idx.value << 1) + i); }
-    vertex_index to_vertex_of(edge_index idx, int i) const { return to_vertex_of(halfedge_of(idx, i)); }
-    face_index face_of(edge_index idx, int i) const { return face_of(halfedge_of(idx, i)); }
-
-    vertex_index &from_vertex_of(halfedge_index idx);
-    vertex_index from_vertex_of(halfedge_index idx) const;
-
+    // primitive reordering
+private:
     /// applies an index remapping to all face indices (p[curr_idx] = new_idx)
     void permute_faces(std::vector<int> const &p);
     /// applies an index remapping to all edge (and half-edge) indices (p[curr_idx] = new_idx)
     void permute_edges(std::vector<int> const &p);
     /// applies an index remapping to all vertices indices (p[curr_idx] = new_idx)
     void permute_vertices(std::vector<int> const &p);
-
-    // internal datastructures
-private:
-    // 4 byte per face
-    struct face_info
-    {
-        halfedge_index halfedge; ///< one half-edge bounding this face
-
-        bool is_valid() const { return halfedge.is_valid(); }
-        void set_removed() { halfedge = halfedge_index::invalid(); }
-        // is_boundary: check if half-edge is boundary
-    };
-
-    // 4 byte per vertex
-    struct vertex_info
-    {
-        halfedge_index outgoing_halfedge;
-
-        /// a vertex can be valid even without outgoing halfedge
-        bool is_valid() const { return outgoing_halfedge.value >= -1; }
-        bool is_isolated() const { return !outgoing_halfedge.is_valid(); }
-        void set_removed() { outgoing_halfedge = halfedge_index(-2); }
-        // is_boundary: check if outgoing_halfedge is boundary
-    };
-
-    // 16 byte per edge
-    struct halfedge_info
-    {
-        vertex_index to_vertex;       ///< half-edge points towards this vertex
-        face_index face;              ///< might be invalid if boundary
-        halfedge_index next_halfedge; ///< CCW
-        halfedge_index prev_halfedge; ///< CW
-        // opposite half-edge idx is "idx ^ 1"
-        // edge idx is "idx >> 1"
-
-        bool is_valid() const { return to_vertex.is_valid(); }
-
-        /// a half-edge is free if it is a boundary, aka has no associated face
-        bool is_free() const { return !face.is_valid(); }
-
-        // CAUTION: remove both HE belonging to an edge
-        void set_removed() { to_vertex = vertex_index::invalid(); }
-    };
-
-    // internal primitives
-private:
-    // std::vector<face_info> mFaces;
-    // std::vector<vertex_info> mVertices;
-    // std::vector<halfedge_info> mHalfedges;
-
-    std::vector<halfedge_index> mFaceToHalfedge;
-    std::vector<halfedge_index> mVertexToOutgoingHalfedge;
-
-    std::vector<vertex_index> mHalfedgeToVertex;
-    std::vector<face_index> mHalfedgeToFace;
-    std::vector<halfedge_index> mHalfedgeToNextHalfedge;
-    std::vector<halfedge_index> mHalfedgeToPrevHalfedge;
-
-    /*
-    struct face_info &face(face_index i)
-    {
-        assert(i.is_valid() && i.value < size_all_faces());
-        return mFaces[i.value];
-    }
-    struct face_info const &face(face_index i) const
-    {
-        assert(i.is_valid() && i.value < size_all_faces());
-        return mFaces[i.value];
-    }
-    struct vertex_info &vertex(vertex_index i)
-    {
-        assert(i.is_valid() && i.value < size_all_vertices());
-        return mVertices[i.value];
-    }
-    struct vertex_info const &vertex(vertex_index i) const
-    {
-        assert(i.is_valid() && i.value < size_all_vertices());
-        return mVertices[i.value];
-    }
-    struct halfedge_info &halfedge(halfedge_index i)
-    {
-        assert(i.is_valid() && i.value < size_all_halfedges());
-        return mHalfedges[i.value];
-    }
-    struct halfedge_info const &halfedge(halfedge_index i) const
-    {
-        assert(i.is_valid() && i.value < size_all_halfedges());
-        return mHalfedges[i.value];
-    }
-    struct halfedge_info &halfedge(edge_index i, int h)
-    {
-        assert(i.is_valid() && i.value < size_all_edges());
-        return mHalfedges[(i.value << 1) + h];
-    }
-    struct halfedge_info const &halfedge(edge_index i, int h) const
-    {
-        assert(i.is_valid() && i.value < size_all_edges());
-        return mHalfedges[(i.value << 1) + h];
-    }
-    */
 
     // internal state
 private:
@@ -434,7 +207,7 @@ private:
 
     // friends
 private:
-    friend struct vertex_handle;
+    /*friend struct vertex_handle;
     friend struct all_vertex_iterator;
     friend struct valid_vertex_iterator;
     friend struct vertex_attribute_base;
@@ -479,9 +252,17 @@ private:
     template <class iterator>
     friend struct edge_collection;
     template <class iterator>
-    friend struct halfedge_collection;
+    friend struct halfedge_collection;*/
 
-    friend struct low_level_api;
+    // for attribute registration
+    template <class tag>
+    friend struct primitive_attribute_base;
+
+    // for low level access
+    template <class MeshT>
+    friend struct low_level_api_base;
+    friend struct low_level_api_const;
+    friend struct low_level_api_mutable;
 };
 }
 
@@ -490,6 +271,8 @@ private:
 #include "impl/impl_attributes.hh"
 #include "impl/impl_cursors.hh"
 #include "impl/impl_iterators.hh"
+#include "impl/impl_low_level_api_base.hh"
+#include "impl/impl_low_level_api_mutable.hh"
 #include "impl/impl_mesh.hh"
 #include "impl/impl_primitive.hh"
 #include "impl/impl_ranges.hh"
