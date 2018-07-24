@@ -497,6 +497,8 @@ inline vertex_index low_level_api_mutable::edge_split(edge_index e) const
     if (v1_out == h0)
         v1_out = e2h0;
 
+    outgoing_halfedge_of(v) = is_boundary(e1h0) ? e1h0 : e2h1;
+
     // rewire faces
     if (f0.is_valid())
     {
@@ -557,7 +559,7 @@ inline vertex_index low_level_api_mutable::halfedge_split(halfedge_index h) cons
     if (v0_out == h1)
         v0_out = h3;
 
-    outgoing_halfedge_of(v) = is_free(h1) ? h1 : h2; // boundary
+    outgoing_halfedge_of(v) = is_boundary(h1) ? h1 : h2; // boundary
 
     // rewire faces
     // -> already ok
