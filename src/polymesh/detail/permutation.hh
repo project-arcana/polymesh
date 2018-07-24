@@ -29,7 +29,7 @@ inline bool is_valid_permutation(std::vector<int> const& p)
     for (auto i = 0u; i < p.size(); ++i)
     {
         auto pi = p[i];
-        if (pi < 0 || pi >= p.size())
+        if (pi < 0 || pi >= (int)p.size())
             return false; // out of bound
 
         if (r[pi] != -1)
