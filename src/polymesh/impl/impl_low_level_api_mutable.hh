@@ -372,7 +372,7 @@ inline void low_level_api_mutable::fix_boundary_state_of_vertices(face_index f_i
 inline void low_level_api_mutable::set_removed(vertex_index idx) const
 {
     assert(!is_removed(idx) && "cannot remove an already removed entry");
-    outgoing_halfedge_of(idx) = halfedge_index::invalid();
+    outgoing_halfedge_of(idx).value = -2;
 
     // bookkeeping
     m.mRemovedVertices++;
