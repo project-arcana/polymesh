@@ -1,5 +1,6 @@
 #include "pm.hh"
 #include <fstream>
+#include <glm/glm.hpp>
 #include <iostream>
 #include <mutex>
 #include <typeindex>
@@ -195,4 +196,42 @@ bool read_pm(const std::string &filename, Mesh &mesh, attribute_collection &attr
     std::ifstream in(filename, std::ios::binary);
     return read_pm(in, mesh, attributes);
 }
+
+
+#define REGISTER_TYPE(type) register_type<type>(#type)
+static bool registered_default_types = []() {
+    REGISTER_TYPE(float);
+    REGISTER_TYPE(double);
+    REGISTER_TYPE(int8_t);
+    REGISTER_TYPE(int16_t);
+    REGISTER_TYPE(int32_t);
+    REGISTER_TYPE(int64_t);
+    REGISTER_TYPE(uint8_t);
+    REGISTER_TYPE(uint16_t);
+    REGISTER_TYPE(uint32_t);
+    REGISTER_TYPE(uint64_t);
+    REGISTER_TYPE(glm::vec2);
+    REGISTER_TYPE(glm::vec3);
+    REGISTER_TYPE(glm::vec4);
+    REGISTER_TYPE(glm::dvec2);
+    REGISTER_TYPE(glm::dvec3);
+    REGISTER_TYPE(glm::dvec4);
+    REGISTER_TYPE(glm::ivec2);
+    REGISTER_TYPE(glm::ivec3);
+    REGISTER_TYPE(glm::ivec4);
+    REGISTER_TYPE(glm::uvec2);
+    REGISTER_TYPE(glm::uvec3);
+    REGISTER_TYPE(glm::uvec4);
+    REGISTER_TYPE(glm::mat2x2);
+    REGISTER_TYPE(glm::mat2x3);
+    REGISTER_TYPE(glm::mat2x4);
+    REGISTER_TYPE(glm::mat3x2);
+    REGISTER_TYPE(glm::mat3x3);
+    REGISTER_TYPE(glm::mat3x4);
+    REGISTER_TYPE(glm::mat4x2);
+    REGISTER_TYPE(glm::mat4x3);
+    REGISTER_TYPE(glm::mat4x4);
+    register_type<std::string>("std::string", detail::string_serdes{});
+    return true;
+}();
 }

@@ -22,7 +22,10 @@ namespace detail
 template <typename T>
 struct bytewise_serdes
 {
-    void serialize(std::ostream &out, T const *data, size_t num_items) const { out.write(reinterpret_cast<char const *>(data), num_items * sizeof(T)); }
+    void serialize(std::ostream &out, T const *data, size_t num_items) const
+    {
+        out.write(reinterpret_cast<char const *>(data), num_items * sizeof(T));
+    }
     void deserialize(std::istream &in, T *data, size_t num_items) const { in.read(reinterpret_cast<char *>(data), num_items * sizeof(T)); }
 };
 
