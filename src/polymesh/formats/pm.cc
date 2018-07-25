@@ -26,7 +26,7 @@ std::pair<std::string, detail::GenericAttributeSerializer *> find_serializer_for
     return {{}, nullptr};
 }
 
-struct PMHeader
+struct pm_header
 {
     char pm[4] = {'P', 'M', 0, 0};
     int32_t num_vertices;
@@ -41,8 +41,8 @@ struct PMHeader
     bool valid() const { return pm[0] == 'P' && pm[1] == 'M' && pm[2] == 0 && pm[3] == 0; }
 };
 
-template <class Tag>
-static std::istream &read_index(std::istream &in, primitive_index<Tag> &idx)
+template <class tag>
+static std::istream &read_index(std::istream &in, primitive_index<tag> &idx)
 {
     int32_t val;
     in.read(reinterpret_cast<char *>(&val), sizeof(int32_t));
@@ -50,8 +50,8 @@ static std::istream &read_index(std::istream &in, primitive_index<Tag> &idx)
     return in;
 }
 
-template <class Tag>
-static std::ostream &write_index(std::ostream &out, primitive_index<Tag> const &idx)
+template <class tag>
+static std::ostream &write_index(std::ostream &out, primitive_index<tag> const &idx)
 {
     const int32_t val = idx.value;
     return out.write(reinterpret_cast<char const *>(&val), sizeof(int32_t));
@@ -60,8 +60,8 @@ static std::ostream &write_index(std::ostream &out, primitive_index<Tag> const &
 static std::ostream &write_string(std::ostream &out, std::string const &text) { return out.write(text.c_str(), text.size() + 1); }
 static std::istream &read_string(std::istream &in, std::string &text) { return std::getline(in, text, '\0'); }
 
-template <class Tag>
-static std::ostream &storeAttributes(std::ostream &out, std::map<std::string, std::unique_ptr<primitive_attribute_base<Tag>>> const &attrs)
+template <class tag>
+static std::ostream &storeAttributes(std::ostream &out, std::map<std::string, std::unique_ptr<primitive_attribute_base<tag>>> const &attrs)
 {
     for (auto const &attr : attrs)
     {
@@ -80,10 +80,10 @@ static std::ostream &storeAttributes(std::ostream &out, std::map<std::string, st
     return out;
 }
 
-template <class Tag>
+template <class tag>
 static bool restoreAttributes(std::istream &in, Mesh const &mesh, attribute_collection &attrs, uint32_t count)
 {
-    using TagPtr = Tag *;
+    using tag_ptr = tag *;
 
     for (uint32_t i = 0; i < count; i++)
     {
@@ -94,7 +94,7 @@ static bool restoreAttributes(std::istream &in, Mesh const &mesh, attribute_coll
         auto it = sSerializers.find(attrType);
         if (it != sSerializers.end())
         {
-            it->second->deserialize(in, mesh, attrs, attrName, TagPtr{});
+            it->second->deserialize(in, mesh, attrs, attrName, tag_ptr{});
         }
         else
         {
@@ -113,7 +113,7 @@ void write_pm(std::ostream &out, const Mesh &mesh, const attribute_collection &a
     if (!mesh.is_compact())
         std::cout << "polymesh::write_pm: saving a non-compact mesh." << std::endl;
 
-    PMHeader header;
+    pm_header header;
     header.num_vertices = mesh.all_vertices().size();
     header.num_halfedges = mesh.all_halfedges().size();
     header.num_faces = mesh.all_faces().size();
@@ -147,7 +147,7 @@ void write_pm(std::ostream &out, const Mesh &mesh, const attribute_collection &a
 
 bool read_pm(std::istream &input, Mesh &mesh, attribute_collection &attributes)
 {
-    PMHeader header;
+    pm_header header;
     input.read(reinterpret_cast<char *>(&header), sizeof(header));
     assert(header.valid() && "PM-File contains the wrong magic number!");
 
@@ -169,13 +169,12 @@ bool read_pm(std::istream &input, Mesh &mesh, attribute_collection &attributes)
     for (int i = 0; i < header.num_halfedges; ++i)
         read_index(input, ll.prev_halfedge_of(halfedge_index(i)));
 
-    // Store attributes
-    restoreAttributes<vertex_tag>(input, mesh, attributes, header.num_vertex_attributes)
-        && restoreAttributes<halfedge_tag>(input, mesh, attributes, header.num_halfedge_attributes)
-        && restoreAttributes<edge_tag>(input, mesh, attributes, header.num_edge_attributes)
-        && restoreAttributes<face_tag>(input, mesh, attributes, header.num_face_attributes);
-
-    return !input.fail();
+    // Restore attributes
+    return restoreAttributes<vertex_tag>(input, mesh, attributes, header.num_vertex_attributes)
+           && restoreAttributes<halfedge_tag>(input, mesh, attributes, header.num_halfedge_attributes)
+           && restoreAttributes<edge_tag>(input, mesh, attributes, header.num_edge_attributes)
+           && restoreAttributes<face_tag>(input, mesh, attributes, header.num_face_attributes) //
+           && !input.fail();
 }
 
 void write_pm(const std::string &filename, const Mesh &mesh, const attribute_collection &attributes)
