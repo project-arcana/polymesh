@@ -417,6 +417,14 @@ inline void low_level_api_mutable::connect_prev_next(halfedge_index prev, halfed
 
 inline vertex_index low_level_api_mutable::face_split(face_index f) const
 {
+    auto v = add_vertex();
+    face_split(f, v);
+    return v;
+}
+
+inline void low_level_api_mutable::face_split(face_index f, vertex_index v) const
+{
+    assert(is_isolated(v));
     // TODO: can be made more performant
 
     auto h_begin = halfedge_of(f);
@@ -426,7 +434,7 @@ inline vertex_index low_level_api_mutable::face_split(face_index f) const
 
     // add vertex
     vertex_index vs[3];
-    vs[0] = add_vertex();
+    vs[0] = v;
 
     // add triangles
     auto h = h_begin;
@@ -440,12 +448,19 @@ inline vertex_index low_level_api_mutable::face_split(face_index f) const
         // NOTE: add_face inserted a new halfedge
         h = next_halfedge_of(opposite(next_halfedge_of(h)));
     } while (h != h_begin);
-
-    return vs[0];
 }
 
 inline vertex_index low_level_api_mutable::edge_split(edge_index e) const
 {
+    auto v = add_vertex();
+    edge_split(e, v);
+    return v;
+}
+
+inline void low_level_api_mutable::edge_split(edge_index e, vertex_index v) const
+{
+    assert(is_isolated(v));
+
     auto h0 = halfedge_of(e, 0);
     auto h1 = halfedge_of(e, 1);
 
@@ -453,9 +468,6 @@ inline vertex_index low_level_api_mutable::edge_split(edge_index e) const
     auto v1 = to_vertex_of(h1);
     auto f0 = face_of(h0);
     auto f1 = face_of(h1);
-
-    // add vertex
-    auto v = add_vertex();
 
     // add two new edges
     auto e1 = alloc_edge();
@@ -515,14 +527,18 @@ inline vertex_index low_level_api_mutable::edge_split(edge_index e) const
 
     // remove edge
     set_removed(e);
-
-    return v;
 }
 
 inline vertex_index low_level_api_mutable::halfedge_split(halfedge_index h) const
 {
-    // add vertex and edge
     auto v = add_vertex();
+    halfedge_split(h, v);
+    return v;
+}
+
+inline void low_level_api_mutable::halfedge_split(halfedge_index h, vertex_index v) const
+{
+    // add edge
     auto e = alloc_edge();
 
     auto h0 = h;
@@ -563,8 +579,6 @@ inline vertex_index low_level_api_mutable::halfedge_split(halfedge_index h) cons
 
     // rewire faces
     // -> already ok
-
-    return v;
 }
 
 inline face_index low_level_api_mutable::face_fill(halfedge_index h) const
