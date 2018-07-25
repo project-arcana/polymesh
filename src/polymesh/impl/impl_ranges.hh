@@ -735,6 +735,12 @@ vertex_handle face_collection<iterator>::split(face_handle f) const
 }
 
 template <class iterator>
+void face_collection<iterator>::split(face_handle f, vertex_handle v) const
+{
+    low_level_api(this->mesh).face_split(f.idx, v.idx);
+}
+
+template <class iterator>
 face_handle face_collection<iterator>::fill(halfedge_handle h) const
 {
     return this->mesh->handle_of(low_level_api(this->mesh).face_fill(h.idx));
@@ -744,6 +750,12 @@ template <class iterator>
 vertex_handle edge_collection<iterator>::split(edge_handle e) const
 {
     return this->mesh->handle_of(low_level_api(this->mesh).edge_split(e.idx));
+}
+
+template <class iterator>
+void edge_collection<iterator>::split(edge_handle e, vertex_handle v) const
+{
+    low_level_api(this->mesh).edge_split(e.idx, v.idx);
 }
 
 template <class iterator>
@@ -774,6 +786,12 @@ template <class iterator>
 vertex_handle halfedge_collection<iterator>::split(halfedge_handle h) const
 {
     return this->mesh->handle_of(low_level_api(this->mesh).halfedge_split(h.idx));
+}
+
+template <class iterator>
+void halfedge_collection<iterator>::split(halfedge_handle h, vertex_handle v) const
+{
+    low_level_api(this->mesh).halfedge_split(h.idx, v.idx);
 }
 
 template <class iterator>
