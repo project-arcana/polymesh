@@ -60,20 +60,24 @@ static std::ostream &write_index(std::ostream &out, primitive_index<tag> const &
 static std::ostream &write_string(std::ostream &out, std::string const &text) { return out.write(text.c_str(), text.size() + 1); }
 static std::istream &read_string(std::istream &in, std::string &text) { return std::getline(in, text, '\0'); }
 
+static const std::string unregistered_type_name = "UNREGISTERED_TYPE";
+
 template <class tag>
 static std::ostream &storeAttributes(std::ostream &out, std::map<std::string, std::unique_ptr<primitive_attribute_base<tag>>> const &attrs)
 {
     for (auto const &attr : attrs)
     {
+        write_string(out, attr.first); // Attribute Name
+
         auto const &ser = find_serializer_for(*attr.second);
         if (ser.second)
         {
-            write_string(out, attr.first);            // Attribute Name
             write_string(out, ser.first);             // Attribute Type
             ser.second->serialize(out, *attr.second); // Attribute Data
         }
         else
         {
+            write_string(out, unregistered_type_name);
             std::cout << "polymesh::write_pm: " << attr.first << " has unregistered type and is not going to be written." << std::endl;
         }
     }
@@ -90,6 +94,9 @@ static bool restoreAttributes(std::istream &in, Mesh const &mesh, attribute_coll
         std::string attrName, attrType;
         read_string(in, attrName);
         read_string(in, attrType);
+
+        if (attrType == unregistered_type_name)
+            continue;
 
         auto it = sSerializers.find(attrType);
         if (it != sSerializers.end())
