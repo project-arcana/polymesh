@@ -1,6 +1,6 @@
 #include "pm.hh"
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <mutex>
 #include <typeindex>
 #include <unordered_map>
@@ -8,28 +8,35 @@
 
 namespace polymesh
 {
-static std::unordered_map<std::string, std::unique_ptr<detail::GenericAttributeSerializer>> sSerializersByName;
-static std::unordered_map<std::type_index, detail::GenericAttributeSerializer *> sSerializersByTypeIndex;
-static std::mutex sSerializersMutex;
+static std::unordered_map<std::string, std::unique_ptr<detail::GenericAttributeSerializer>> sSerializers;
 
-void registerAttributeSerializer(const std::string &identifier, std::unique_ptr<detail::GenericAttributeSerializer> ptr)
+void detail::register_attribute_serializer(const std::string &identifier, std::unique_ptr<detail::GenericAttributeSerializer> ptr)
 {
-    std::lock_guard<std::mutex> _(sSerializersMutex);
-    sSerializersByTypeIndex[ptr->vertexAttributeType()] = ptr.get();
-    sSerializersByName[identifier] = std::move(ptr);
+    sSerializers[identifier] = std::move(ptr);
+}
+
+template <class Tag>
+std::pair<std::string, detail::GenericAttributeSerializer *> find_serializer_for(primitive_attribute_base<Tag> const &attr)
+{
+    for (auto const &pair : sSerializers)
+    {
+        if (pair.second->is_compatible_to(attr))
+            return {pair.first, pair.second.get()};
+    }
+    return {{}, nullptr};
 }
 
 struct PMHeader
 {
     char pm[4] = {'P', 'M', 0, 0};
-    uint32_t num_vertices;
-    uint32_t num_halfedges;
-    uint32_t num_faces;
+    int32_t num_vertices;
+    int32_t num_halfedges;
+    int32_t num_faces;
 
-    uint32_t num_vertex_attributes;
-    uint32_t num_halfedge_attributes;
-    uint32_t num_edge_attributes;
-    uint32_t num_face_attributes;
+    int32_t num_vertex_attributes;
+    int32_t num_halfedge_attributes;
+    int32_t num_edge_attributes;
+    int32_t num_face_attributes;
 
     bool valid() const { return pm[0] == 'P' && pm[1] == 'M' && pm[2] == 0 && pm[3] == 0; }
 };
@@ -38,15 +45,65 @@ template <class Tag>
 static std::istream &read_index(std::istream &in, primitive_index<Tag> &idx)
 {
     int32_t val;
-    in.read(reinterpret_cast<char*>(&val), sizeof(int32_t));
+    in.read(reinterpret_cast<char *>(&val), sizeof(int32_t));
     idx.value = val;
     return in;
 }
 
 template <class Tag>
-static std::ostream& write_index(std::ostream& out, primitive_index<Tag> const& idx) {
+static std::ostream &write_index(std::ostream &out, primitive_index<Tag> const &idx)
+{
     const int32_t val = idx.value;
-    return out.write(reinterpret_cast<char const*>(&val), sizeof(int32_t));
+    return out.write(reinterpret_cast<char const *>(&val), sizeof(int32_t));
+}
+
+static std::ostream &write_string(std::ostream &out, std::string const &text) { return out.write(text.c_str(), text.size() + 1); }
+static std::istream &read_string(std::istream &in, std::string &text) { return std::getline(in, text, '\0'); }
+
+template <class Tag>
+static std::ostream &storeAttributes(std::ostream &out, std::map<std::string, std::unique_ptr<primitive_attribute_base<Tag>>> const &attrs)
+{
+    for (auto const &attr : attrs)
+    {
+        auto const &ser = find_serializer_for(*attr.second);
+        if (ser.second)
+        {
+            write_string(out, attr.first);            // Attribute Name
+            write_string(out, ser.first);             // Attribute Type
+            ser.second->serialize(out, *attr.second); // Attribute Data
+        }
+        else
+        {
+            std::cout << "polymesh::write_pm: " << attr.first << " has unregistered type and is not going to be written." << std::endl;
+        }
+    }
+    return out;
+}
+
+template <class Tag>
+static bool restoreAttributes(std::istream &in, Mesh const &mesh, attribute_collection &attrs, uint32_t count)
+{
+    using TagPtr = Tag *;
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        std::string attrName, attrType;
+        read_string(in, attrName);
+        read_string(in, attrType);
+
+        auto it = sSerializers.find(attrType);
+        if (it != sSerializers.end())
+        {
+            it->second->deserialize(in, mesh, attrs, attrName, TagPtr{});
+        }
+        else
+        {
+            std::cout << "polymesh::read_pm: " << attrName << " has unregistered type " << attrType << ", unable to restore remaining attributes." << std::endl;
+            return false;
+        }
+    }
+
+    return true;
 }
 
 void write_pm(std::ostream &out, const Mesh &mesh, const attribute_collection &attributes)
@@ -60,25 +117,32 @@ void write_pm(std::ostream &out, const Mesh &mesh, const attribute_collection &a
     header.num_vertices = mesh.all_vertices().size();
     header.num_halfedges = mesh.all_halfedges().size();
     header.num_faces = mesh.all_faces().size();
+    header.num_vertex_attributes = attributes.vertex_attributes().size();
+    header.num_halfedge_attributes = attributes.halfedge_attributes().size();
+    header.num_edge_attributes = attributes.edge_attributes().size();
+    header.num_face_attributes = attributes.face_attributes().size();
     out.write(reinterpret_cast<char *>(&header), sizeof(header));
 
-    for (int i = 0; i < header.num_halfedges; ++i)
-        write_index(out, ll.face_of(halfedge_index(i)));
+    // Store mesh topology
+    for (int i = 0; i < header.num_faces; ++i)
+        write_index(out, ll.halfedge_of(face_index(i)));
+    for (int i = 0; i < header.num_vertices; i++)
+        write_index(out, ll.outgoing_halfedge_of(vertex_index(i)));
 
     for (int i = 0; i < header.num_halfedges; ++i)
         write_index(out, ll.to_vertex_of(halfedge_index(i)));
-
+    for (int i = 0; i < header.num_halfedges; ++i)
+        write_index(out, ll.face_of(halfedge_index(i)));
     for (int i = 0; i < header.num_halfedges; ++i)
         write_index(out, ll.next_halfedge_of(halfedge_index(i)));
-
     for (int i = 0; i < header.num_halfedges; ++i)
         write_index(out, ll.prev_halfedge_of(halfedge_index(i)));
 
-    for (int i = 0; i < header.num_faces; ++i)
-        write_index(out, ll.halfedge_of(face_index(i)));
-
-    for (int i = 0; i < header.num_vertices; i++)
-        write_index(out, ll.outgoing_halfedge_of(vertex_index(i)));
+    // Store attributes
+    storeAttributes(out, attributes.vertex_attributes());
+    storeAttributes(out, attributes.halfedge_attributes());
+    storeAttributes(out, attributes.edge_attributes());
+    storeAttributes(out, attributes.face_attributes());
 }
 
 bool read_pm(std::istream &input, Mesh &mesh, attribute_collection &attributes)
@@ -91,23 +155,25 @@ bool read_pm(std::istream &input, Mesh &mesh, attribute_collection &attributes)
     auto ll = low_level_api(mesh);
     ll.alloc_primitives(header.num_vertices, header.num_faces, header.num_halfedges);
 
-    for (int i = 0; i < header.num_halfedges; ++i)
-        read_index(input, ll.face_of(halfedge_index(i)));
+    for (int i = 0; i < header.num_faces; ++i)
+        read_index(input, ll.halfedge_of(face_index(i)));
+    for (int i = 0; i < header.num_vertices; i++)
+        read_index(input, ll.outgoing_halfedge_of(vertex_index(i)));
 
     for (int i = 0; i < header.num_halfedges; ++i)
         read_index(input, ll.to_vertex_of(halfedge_index(i)));
-
+    for (int i = 0; i < header.num_halfedges; ++i)
+        read_index(input, ll.face_of(halfedge_index(i)));
     for (int i = 0; i < header.num_halfedges; ++i)
         read_index(input, ll.next_halfedge_of(halfedge_index(i)));
-
     for (int i = 0; i < header.num_halfedges; ++i)
         read_index(input, ll.prev_halfedge_of(halfedge_index(i)));
 
-    for (int i = 0; i < header.num_faces; ++i)
-        read_index(input, ll.halfedge_of(face_index(i)));
-
-    for (int i = 0; i < header.num_vertices; i++)
-        read_index(input, ll.outgoing_halfedge_of(vertex_index(i)));
+    // Store attributes
+    restoreAttributes<vertex_tag>(input, mesh, attributes, header.num_vertex_attributes)
+        && restoreAttributes<halfedge_tag>(input, mesh, attributes, header.num_halfedge_attributes)
+        && restoreAttributes<edge_tag>(input, mesh, attributes, header.num_edge_attributes)
+        && restoreAttributes<face_tag>(input, mesh, attributes, header.num_face_attributes);
 
     return !input.fail();
 }
@@ -123,5 +189,4 @@ bool read_pm(const std::string &filename, Mesh &mesh, attribute_collection &attr
     std::ifstream in(filename, std::ios::binary);
     return read_pm(in, mesh, attributes);
 }
-
 }
