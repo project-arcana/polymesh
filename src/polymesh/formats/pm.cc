@@ -200,6 +200,7 @@ bool read_pm(const std::string &filename, Mesh &mesh, attribute_collection &attr
 
 #define REGISTER_TYPE(type) register_type<type>(#type)
 static bool registered_default_types = []() {
+    REGISTER_TYPE(bool);
     REGISTER_TYPE(float);
     REGISTER_TYPE(double);
     REGISTER_TYPE(int8_t);
