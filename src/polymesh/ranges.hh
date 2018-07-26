@@ -329,6 +329,10 @@ struct halfedge_collection : smart_collection<Mesh*, halfedge_tag, iterator>
     /// Given an isolated vertex v, inserts a self-adjacent edge at the to-vertex to v
     void attach(halfedge_handle h, vertex_handle v) const;
 
+    /// Merges the vertex_from into the vertex_to of this halfedge.
+    /// From_vertex must have valence 2
+    void merge(halfedge_handle h) const;
+
     /// Moves the to-vertex of this half-edge to the same as the next half-edge
     /// Preserves all attributes
     /// NOTE: does not work on boundaries!

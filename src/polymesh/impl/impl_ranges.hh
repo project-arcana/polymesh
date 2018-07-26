@@ -801,6 +801,12 @@ void halfedge_collection<iterator>::attach(halfedge_handle h, vertex_handle v) c
 }
 
 template <class iterator>
+void halfedge_collection<iterator>::merge(halfedge_handle h) const
+{
+    low_level_api(this->mesh).halfedge_merge(h.idx);
+}
+
+template <class iterator>
 void halfedge_collection<iterator>::rotate_next(halfedge_handle h) const
 {
     low_level_api(this->mesh).halfedge_rotate_next(h.idx);
