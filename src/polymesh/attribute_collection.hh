@@ -80,21 +80,21 @@ public:
         template <class AttrT>
         face_attribute<AttrT>& face()
         {
-            auto pa = ref.mVertexAttrs.at(name).get();
+            auto pa = ref.mFaceAttrs.at(name).get();
             assert(pa && "non-existent attribute");
             return *dynamic_cast<face_attribute<AttrT>*>(pa);
         }
         template <class AttrT>
         edge_attribute<AttrT>& edge()
         {
-            auto pa = ref.mVertexAttrs.at(name).get();
+            auto pa = ref.mEdgeAttrs.at(name).get();
             assert(pa && "non-existent attribute");
             return *dynamic_cast<edge_attribute<AttrT>*>(pa);
         }
         template <class AttrT>
         halfedge_attribute<AttrT>& halfedge()
         {
-            auto pa = ref.mVertexAttrs.at(name).get();
+            auto pa = ref.mHalfedgeAttrs.at(name).get();
             assert(pa && "non-existent attribute");
             return *dynamic_cast<halfedge_attribute<AttrT>*>(pa);
         }
@@ -114,21 +114,21 @@ public:
         template <class AttrT>
         face_attribute<AttrT>& face()
         {
-            auto pa = ref.mVertexAttrs.at(name).get();
+            auto pa = ref.mFaceAttrs.at(name).get();
             assert(pa && "non-existent attribute");
             return *dynamic_cast<face_attribute<AttrT>*>(pa);
         }
         template <class AttrT>
         edge_attribute<AttrT>& edge()
         {
-            auto pa = ref.mVertexAttrs.at(name).get();
+            auto pa = ref.mEdgeAttrs.at(name).get();
             assert(pa && "non-existent attribute");
             return *dynamic_cast<edge_attribute<AttrT>*>(pa);
         }
         template <class AttrT>
         halfedge_attribute<AttrT>& halfedge()
         {
-            auto pa = ref.mVertexAttrs.at(name).get();
+            auto pa = ref.mHalfedgeAttrs.at(name).get();
             assert(pa && "non-existent attribute");
             return *dynamic_cast<halfedge_attribute<AttrT>*>(pa);
         }
