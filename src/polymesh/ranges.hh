@@ -23,9 +23,14 @@ struct weighted_sample
     W weight;
 };
 
+template <class ElementT, class RangeT, class PredT>
+struct filtered_range;
+
 template <class this_t, class ElementT>
 struct smart_range
 {
+    // using iterator_t = decltype(std::declval<this_t*>()->begin());
+
     /// returns the first element in this range
     /// returns invalid on empty ranges (or default ctor'd one)
     ElementT first() const;
@@ -83,8 +88,8 @@ struct smart_range
     /// calculates the avg of f(e) over all elements
     /// undefined behavior if range is empty
     /// requires operator+ for the elements as well as operator/(ElementT, int)
-    template <class FuncT>
-    auto avg(FuncT&& f) const -> tmp::decayed_result_type_of<FuncT, ElementT>;
+    template <class FuncT = tmp::identity>
+    auto avg(FuncT&& f = {}) const -> tmp::decayed_result_type_of<FuncT, ElementT>;
 
     /// calculates the weighted avg of f(e) with weight w(e) over all elements
     /// undefined behavior if range is empty
@@ -131,6 +136,17 @@ struct smart_range
     template <class FuncT>
     auto to_map(FuncT&& f) const -> std::map<ElementT, tmp::decayed_result_type_of<FuncT, ElementT>>;
 
+    /// returns a new range that consists of all elements where p(x) is true
+    template <class PredT>
+    auto where(PredT&& p) const -> filtered_range<ElementT, this_t const&, PredT>;
+    template <class PredT>
+    auto where(PredT&& p) -> filtered_range<ElementT, this_t&, PredT>;
+    /// same as where
+    template <class PredT>
+    auto filter(PredT&& p) const -> filtered_range<ElementT, this_t const&, PredT>;
+    template <class PredT>
+    auto filter(PredT&& p) -> filtered_range<ElementT, this_t&, PredT>;
+
     // TODO: (requires new ranges)
     // - filter (or where?)
     // - map
@@ -138,6 +154,46 @@ struct smart_range
     // - only_valid
     // - conversions from vector/set/map
 };
+
+// ================= FILTER + MAP =================
+
+template <class ElementT, class RangeT, class PredT>
+struct filtered_range : smart_range<filtered_range<ElementT, RangeT, PredT>, ElementT>
+{
+    using IteratorT = decltype(std::declval<RangeT>().begin());
+
+    filtering_iterator<IteratorT, PredT> begin() const { return {obegin, oend, pred}; }
+    filtering_iterator<IteratorT, PredT> end() const { return {oend, oend, pred}; }
+
+    IteratorT obegin;
+    IteratorT oend;
+    PredT pred;
+
+    filtered_range() = default;
+    filtered_range(IteratorT begin, IteratorT end, PredT predicate);
+    filtered_range(filtered_range const&) = delete;
+    filtered_range(filtered_range&&) = delete;
+    filtered_range& operator=(filtered_range const&) = delete;
+    filtered_range& operator=(filtered_range&&) = delete;
+};
+/*template <class ElementT, class IteratorT, class PredT>
+struct filtered_range : smart_range<filtered_range<ElementT, IteratorT, PredT>, IteratorT, ElementT>
+{
+    filtering_iterator<IteratorT, PredT> begin() const { return {obegin, oend, pred}; }
+    filtering_iterator<IteratorT, PredT> end() const { return {oend, oend, pred}; }
+
+    IteratorT obegin;
+    IteratorT oend;
+    PredT pred;
+
+    filtered_range() = default;
+    filtered_range(filtered_range const&) = delete;
+    filtered_range(filtered_range &&) = delete;
+    filtered_range& operator=(filtered_range const&) = delete;
+    filtered_range& operator=(filtered_range &&) = delete;
+};*/
+
+// TODO: mapped_range
 
 // ================= COLLECTION =================
 
@@ -523,4 +579,5 @@ struct halfedge_ring : halfedge_primitive_ring<halfedge_tag, halfedge_ring_circu
 {
     using halfedge_primitive_ring<halfedge_tag, halfedge_ring_circulator>::halfedge_primitive_ring;
 };
+
 }
