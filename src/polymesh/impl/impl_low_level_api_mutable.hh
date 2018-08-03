@@ -640,7 +640,8 @@ inline void low_level_api_mutable::halfedge_attach(halfedge_index h, vertex_inde
     connect_prev_next(h1, h_next);
 }
 
-inline void low_level_api_mutable::halfedge_merge(halfedge_index h) const{
+inline void low_level_api_mutable::halfedge_merge(halfedge_index h) const
+{
     auto v_center = from_vertex_of(h);
 
     assert(m.handle_of(v_center).adjacent_vertices().size() == 2 && "vertex_from must have valence 2");
@@ -660,7 +661,7 @@ inline void low_level_api_mutable::halfedge_merge(halfedge_index h) const{
     auto f_a = face_of(h);
     auto f_b = face_of(h_opp);
 
-    //auto v_to = to_vertex_of(h);
+    // auto v_to = to_vertex_of(h);
     auto v_from = from_vertex_of(h_prev);
 
     // Set from vertex
@@ -672,17 +673,15 @@ inline void low_level_api_mutable::halfedge_merge(halfedge_index h) const{
     connect_prev_next(h_opp, h_prev_opp_next);
 
     // fix vertex
-    if(outgoing_halfedge_of(v_from) == h_prev){
+    if (outgoing_halfedge_of(v_from) == h_prev)
         outgoing_halfedge_of(v_from) = h;
-    }
 
     // fix adjacent faces
-    if(f_a.is_valid() && halfedge_of(f_a) == h_prev){
+    if (f_a.is_valid() && halfedge_of(f_a) == h_prev)
         halfedge_of(f_a) = h;
-    }
-    if(f_b.is_valid() && halfedge_of(f_b) == h_prev_opp){
+
+    if (f_b.is_valid() && halfedge_of(f_b) == h_prev_opp)
         halfedge_of(f_b) = h_opp;
-    }
 
     // remove
     set_removed(edge_of(h_prev));
