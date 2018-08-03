@@ -23,11 +23,7 @@ struct readonly_property
     int size() const { return mCollection.size(); }
 
     template <class Func2T>
-    auto view(Func2T&& f) const -> readonly_property<readonly_property<CollectionT, FuncT>, Func2T>
-    {
-        // TODO: move to impl_properties
-        return {*this, f};
-    }
+    auto view(Func2T&& f) const -> readonly_property<readonly_property<CollectionT, FuncT>, Func2T>;
 
 private:
     CollectionT mCollection;
