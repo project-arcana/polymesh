@@ -79,6 +79,14 @@ void primitive_attribute<tag, AttrT>::copy_from(attribute<AttrT> const &data)
 }
 
 template <class tag, class AttrT>
+auto primitive_attribute<tag, AttrT>::copy_to(Mesh const &m) const -> attribute<AttrT>
+{
+    attribute<AttrT> new_attr(m, this->mDefaultValue);
+    new_attr.copy_from(this->data(), this->size());
+    return new_attr;
+}
+
+template <class tag, class AttrT>
 std::vector<AttrT> primitive_attribute<tag, AttrT>::to_vector() const
 {
     auto s = this->size();
@@ -348,9 +356,8 @@ void primitive_attribute<tag, AttrT>::compute(FuncT &&f)
 
 template <class tag, class AttrT>
 template <class FuncT>
-auto primitive_attribute<tag, AttrT>::view(FuncT &&f) const -> readonly_property<primitive_attribute<tag, AttrT> const&, FuncT>
+auto primitive_attribute<tag, AttrT>::view(FuncT &&f) const -> readonly_property<primitive_attribute<tag, AttrT> const &, FuncT>
 {
-    return readonly_property<primitive_attribute<tag, AttrT> const&, FuncT>(*this, f);
+    return readonly_property<primitive_attribute<tag, AttrT> const &, FuncT>(*this, f);
 }
-
 }

@@ -91,6 +91,10 @@ public:
     /// copies as much data as possible from the given attribute
     void copy_from(attribute<AttrT> const& data);
 
+    /// copies all attribute data to another mesh
+    /// asserts that sizes are correct
+    attribute<AttrT> copy_to(Mesh const& m) const;
+
     /// Saves ALL data into a vector (includes possibly removed ones)
     std::vector<AttrT> to_vector() const;
     // TODO: specialized implementation of to_vector(FuncT&&)
