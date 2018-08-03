@@ -29,7 +29,7 @@ struct valid_primitive_iterator
         handle.idx = low_level_api(handle.mesh).next_valid_idx_from(handle.idx);
         return *this;
     }
-    valid_primitive_iterator operator++(int) const
+    valid_primitive_iterator operator++(int)const
     {
         auto i = *this;
         return ++i;
@@ -68,7 +68,7 @@ struct all_primitive_iterator
         ++handle.idx.value;
         return *this;
     }
-    all_primitive_iterator operator++(int) const
+    all_primitive_iterator operator++(int)const
     {
         auto i = *this;
         return ++i;
@@ -90,13 +90,67 @@ private:
     handle_t handle;
 };
 
+// ================= ATTRIBUTES =================
+
+template <class AttributeT>
+struct attribute_iterator
+{
+    int idx;
+    AttributeT attr;
+
+    auto operator*() const -> decltype(attr.data()[idx]) { return attr.data()[idx]; }
+
+    attribute_iterator& operator++()
+    {
+        ++idx;
+        return *this;
+    }
+    attribute_iterator operator++(int)const
+    {
+        auto i = *this;
+        return ++i;
+    }
+    bool operator==(attribute_iterator const& rhs) const { return idx == rhs.idx; }
+    bool operator!=(attribute_iterator const& rhs) const { return idx != rhs.idx; }
+};
+
+// ================= FILTER + MAP =================
+
+template <class IteratorT, class PredT>
+struct filtering_iterator
+{
+    IteratorT ocurr;
+    IteratorT oend;
+    PredT pred;
+
+    auto operator*() const -> decltype(*ocurr) { return *ocurr; }
+
+    filtering_iterator& operator++()
+    {
+        do
+            ++ocurr;
+        while (ocurr != oend && !pred(*ocurr));
+
+        return *this;
+    }
+    filtering_iterator operator++(int)const
+    {
+        auto i = *this;
+        return ++i;
+    }
+    bool operator==(filtering_iterator const& rhs) const { return ocurr == rhs.ocurr; }
+    bool operator!=(filtering_iterator const& rhs) const { return ocurr != rhs.ocurr; }
+};
+
+// TODO: mapped_iterator
+
 // ================= CIRCULATOR =================
 
 /// Generic half-edge circulator (via CRTP)
 /// implement operator* given the current `handle`
 /// implement void advance() to change `handle`
 /// inherit ctor's from primitive_circulator
-template<typename this_t>
+template <typename this_t>
 struct primitive_circulator
 {
     primitive_circulator() = default;
@@ -108,7 +162,7 @@ struct primitive_circulator
         not_at_begin = true;
         return *this;
     }
-    primitive_circulator operator++(int) const
+    primitive_circulator operator++(int)const
     {
         auto i = *this;
         return ++i;

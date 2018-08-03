@@ -345,4 +345,12 @@ void primitive_attribute<tag, AttrT>::compute(FuncT &&f)
     for (auto h : primitive<tag>::valid_collection_of(*this->mMesh))
         d[(int)h] = f(h);
 }
+
+template <class tag, class AttrT>
+template <class FuncT>
+auto primitive_attribute<tag, AttrT>::view(FuncT &&f) const -> readonly_property<primitive_attribute<tag, AttrT> const&, FuncT>
+{
+    return readonly_property<primitive_attribute<tag, AttrT> const&, FuncT>(*this, f);
+}
+
 }

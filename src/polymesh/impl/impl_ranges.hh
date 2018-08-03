@@ -230,6 +230,8 @@ auto smart_range<this_t, ElementT>::avg(FuncT &&f) const -> tmp::decayed_result_
     assert(it_begin != it_end && "requires non-empty range");
     auto s = f(*it_begin);
     auto cnt = 1;
+    static_assert(tmp::can_divide_by<decltype(s), decltype(cnt)>::value,
+                  "Cannot divide sum by an integer. (if glm is used, including <glm/ext.hpp> might help)");
     ++it_begin;
     while (it_begin != it_end)
     {
@@ -250,6 +252,8 @@ auto smart_range<this_t, ElementT>::weighted_avg(FuncT &&f, WeightT &&w) const -
     auto e = *it_begin;
     auto s = f(e);
     auto ws = w(e);
+    static_assert(tmp::can_divide_by<decltype(s), decltype(ws)>::value,
+                  "Cannot divide sum by weight. (if glm is used, including <glm/ext.hpp> might help)");
     ++it_begin;
     while (it_begin != it_end)
     {
@@ -362,8 +366,46 @@ auto smart_range<this_t, ElementT>::to_map(FuncT &&f) const -> std::map<ElementT
     return m;
 }
 
-template <class this_t, class element_handle>
-int primitive_ring<this_t, element_handle>::size() const
+
+template <class this_t, class ElementT>
+template <class PredT>
+auto smart_range<this_t, ElementT>::where(PredT &&p) const -> filtered_range<ElementT, this_t const &, PredT>
+{
+    auto it_begin = static_cast<this_t const *>(this)->begin();
+    auto it_end = static_cast<this_t const *>(this)->end();
+    return {it_begin, it_end, p};
+}
+
+template <class this_t, class ElementT>
+template <class PredT>
+auto smart_range<this_t, ElementT>::where(PredT &&p) -> filtered_range<ElementT, this_t &, PredT>
+{
+    auto it_begin = static_cast<this_t *>(this)->begin();
+    auto it_end = static_cast<this_t *>(this)->end();
+    return {it_begin, it_end, p};
+}
+
+template <class this_t, class ElementT>
+template <class PredT>
+auto smart_range<this_t, ElementT>::filter(PredT &&p) const -> filtered_range<ElementT, this_t const &, PredT>
+{
+    auto it_begin = static_cast<this_t const *>(this)->begin();
+    auto it_end = static_cast<this_t const *>(this)->end();
+    static_assert(std::is_same<decltype(it_begin), typename filtered_range<ElementT, this_t const &, PredT>::IteratorT>::value, "");
+    return filtered_range<ElementT, this_t const &, PredT>(it_begin, it_end, p);
+}
+
+template <class this_t, class ElementT>
+template <class PredT>
+auto smart_range<this_t, ElementT>::filter(PredT &&p) -> filtered_range<ElementT, this_t &, PredT>
+{
+    auto it_begin = static_cast<this_t *>(this)->begin();
+    auto it_end = static_cast<this_t *>(this)->end();
+    return {it_begin, it_end, p};
+}
+
+template <class this_t, class tag>
+int primitive_ring<this_t, tag>::size() const
 {
     auto cnt = 0;
     for (auto v : *static_cast<this_t const *>(this))
@@ -816,5 +858,11 @@ template <class iterator>
 void halfedge_collection<iterator>::rotate_prev(halfedge_handle h) const
 {
     low_level_api(this->mesh).halfedge_rotate_prev(h.idx);
+}
+
+template <class ElementT, class RangeT, class PredT>
+filtered_range<ElementT, RangeT, PredT>::filtered_range(filtered_range::IteratorT begin, filtered_range::IteratorT end, PredT predicate)
+  : obegin(begin), oend(end), pred(predicate)
+{
 }
 }

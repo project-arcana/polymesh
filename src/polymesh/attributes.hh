@@ -5,6 +5,8 @@
 
 #include "attribute_base.hh"
 #include "cursors.hh"
+#include "properties.hh"
+#include "ranges.hh"
 #include "tmp.hh"
 
 /** Attributes
@@ -21,7 +23,7 @@
  *   myAttr[v] = 7;
  *
  * TODO:
- *   for (auto& a : myAttr) // NOTE: does not include deleted primitives (and is thus a bit slower)
+ *   for (auto& a : myAttr) // NOTE: does include deleted primitives
  *     a += 1;
  *   // auto and auto const& also work of course
  */
@@ -29,7 +31,7 @@
 namespace polymesh
 {
 template <class tag, class AttrT>
-struct primitive_attribute : primitive_attribute_base<tag>
+struct primitive_attribute : primitive_attribute_base<tag>, smart_range<primitive_attribute<tag, AttrT>, AttrT>
 {
     template <class A>
     using attribute = typename primitive<tag>::template attribute<A>;
@@ -52,6 +54,11 @@ public:
     AttrT const* data() const { return mData.data; }
     int size() const;
 
+    attribute_iterator<primitive_attribute&> begin() { return {0, *this}; }
+    attribute_iterator<primitive_attribute const&> begin() const { return {0, *this}; }
+    attribute_iterator<primitive_attribute&> end() { return {size(), *this}; }
+    attribute_iterator<primitive_attribute const&> end() const { return {size(), *this}; }
+
     // methods
 public:
     void clear(AttrT const& value);
@@ -67,6 +74,16 @@ public:
     template <class FuncT>
     void compute(FuncT&& f);
 
+    template <class FuncT>
+    auto view(FuncT&& f) const -> readonly_property<primitive_attribute<tag, AttrT> const&, FuncT>;
+    template <class FuncT>
+    void view(FuncT&& f) && = delete;
+
+    // template <class ReadT, class WriteT>
+    // auto view(ReadT&& r, WriteT&& w) -> readwrite_property<primitive_attribute<tag, AttrT>, ReadT, WriteT>;
+    // template <class ReadT, class WriteT>
+    // void view(ReadT&& r, WriteT&& w) && = delete;
+
     /// copies as much data as possible from the given vector
     void copy_from(std::vector<AttrT> const& data);
     /// copies as much data as possible from the given array
@@ -76,6 +93,8 @@ public:
 
     /// Saves ALL data into a vector (includes possibly removed ones)
     std::vector<AttrT> to_vector() const;
+    // TODO: specialized implementation of to_vector(FuncT&&)
+    using smart_range<primitive_attribute<tag, AttrT>, AttrT>::to_vector;
 
     // public ctor
 public:
