@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <utility>
 
 namespace polymesh
@@ -49,5 +50,12 @@ using ref_if_mut = typename if_then_else<std::is_const<TestT>::value, TargetT, t
 
 // std::add_lvalue_reference
 // template <class T>
+
+/// For C++11
+template <typename T, typename... Args>
+std::unique_ptr<T> make_unique(Args&&... args)
+{
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
 }
 }

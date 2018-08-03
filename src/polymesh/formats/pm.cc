@@ -1,15 +1,23 @@
 #include "pm.hh"
+
 #include <fstream>
-#include <glm/glm.hpp>
 #include <iostream>
 #include <mutex>
 #include <typeindex>
 #include <unordered_map>
+
+#include <glm/ext.hpp>
+#include <glm/glm.hpp>
+
 #include "../low_level_api.hh"
 
 namespace polymesh
 {
-static std::unordered_map<std::string, std::unique_ptr<detail::GenericAttributeSerializer>> sSerializers;
+namespace
+{
+std::unordered_map<std::string, std::unique_ptr<detail::GenericAttributeSerializer>> sSerializers;
+const std::string unregistered_type_name = "UNREGISTERED_TYPE";
+}
 
 void detail::register_attribute_serializer(const std::string &identifier, std::unique_ptr<detail::GenericAttributeSerializer> ptr)
 {
@@ -60,8 +68,6 @@ static std::ostream &write_index(std::ostream &out, primitive_index<tag> const &
 
 static std::ostream &write_string(std::ostream &out, std::string const &text) { return out.write(text.c_str(), text.size() + 1); }
 static std::istream &read_string(std::istream &in, std::string &text) { return std::getline(in, text, '\0'); }
-
-static const std::string unregistered_type_name = "UNREGISTERED_TYPE";
 
 template <class tag>
 static std::ostream &storeAttributes(std::ostream &out, std::map<std::string, std::unique_ptr<primitive_attribute_base<tag>>> const &attrs)
@@ -203,6 +209,7 @@ static bool registered_default_types = []() {
     REGISTER_TYPE(bool);
     REGISTER_TYPE(float);
     REGISTER_TYPE(double);
+
     REGISTER_TYPE(int8_t);
     REGISTER_TYPE(int16_t);
     REGISTER_TYPE(int32_t);
@@ -211,9 +218,13 @@ static bool registered_default_types = []() {
     REGISTER_TYPE(uint16_t);
     REGISTER_TYPE(uint32_t);
     REGISTER_TYPE(uint64_t);
+
     REGISTER_TYPE(glm::vec2);
     REGISTER_TYPE(glm::vec3);
     REGISTER_TYPE(glm::vec4);
+    REGISTER_TYPE(glm::bvec2);
+    REGISTER_TYPE(glm::bvec3);
+    REGISTER_TYPE(glm::bvec4);
     REGISTER_TYPE(glm::dvec2);
     REGISTER_TYPE(glm::dvec3);
     REGISTER_TYPE(glm::dvec4);
@@ -223,6 +234,7 @@ static bool registered_default_types = []() {
     REGISTER_TYPE(glm::uvec2);
     REGISTER_TYPE(glm::uvec3);
     REGISTER_TYPE(glm::uvec4);
+
     REGISTER_TYPE(glm::mat2x2);
     REGISTER_TYPE(glm::mat2x3);
     REGISTER_TYPE(glm::mat2x4);
@@ -232,7 +244,21 @@ static bool registered_default_types = []() {
     REGISTER_TYPE(glm::mat4x2);
     REGISTER_TYPE(glm::mat4x3);
     REGISTER_TYPE(glm::mat4x4);
+
+    REGISTER_TYPE(glm::dmat2x2);
+    REGISTER_TYPE(glm::dmat2x3);
+    REGISTER_TYPE(glm::dmat2x4);
+    REGISTER_TYPE(glm::dmat3x2);
+    REGISTER_TYPE(glm::dmat3x3);
+    REGISTER_TYPE(glm::dmat3x4);
+    REGISTER_TYPE(glm::dmat4x2);
+    REGISTER_TYPE(glm::dmat4x3);
+    REGISTER_TYPE(glm::dmat4x4);
+
+    REGISTER_TYPE(glm::quat);
+
     register_type<std::string>("std::string", detail::string_serdes{});
+
     return true;
 }();
 }

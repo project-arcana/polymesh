@@ -49,7 +49,7 @@ void register_attribute_serializer(std::string const &identifier, std::unique_pt
 template <typename T, typename serdes = detail::bytewise_serdes<T>>
 void register_type(std::string const &identifier, serdes &&serializer = detail::bytewise_serdes<T>{})
 {
-    auto ptr = std::make_unique<detail::AttributeSerializer<T, serdes>>(serializer);
+    auto ptr = tmp::make_unique<detail::AttributeSerializer<T, serdes>>(serializer);
     detail::register_attribute_serializer(identifier, std::move(ptr));
 }
 }
