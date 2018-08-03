@@ -247,6 +247,10 @@ public:
     /// attaches a given vertex to the to-vertex of a given half-edge
     void halfedge_attach(halfedge_index h, vertex_index v) const;
 
+    /// merges the given and the previous halfedge.
+    /// The center vertex must have valence 2
+    void halfedge_merge(halfedge_index h) const;
+
     /// collapse a vertex
     void vertex_collapse(vertex_index v) const;
     /// collapse a half-edge
