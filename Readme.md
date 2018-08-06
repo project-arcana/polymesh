@@ -24,9 +24,9 @@ Best used with glm and glow.
 * vertex split?
 * half-edge collapse
 * normal, tangent, bitangent computation
-* attribute iterator
 * primitive sort functions, better remap function, cache optimization
-* structure of arrays instead of AOS
 * lowlevel API that allows direct half-edge manipulation and does not fix boundaries (but also mirrors high level one)
 * primitive collection sort and sort_by functions
 * paired_with function for smart range
+* operator +-*/ for attributes (similar to valarray)
+* dual mesh construction

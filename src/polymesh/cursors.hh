@@ -26,6 +26,10 @@ struct primitive_index
     bool is_invalid() const { return value < 0; }
     static index_t invalid() { return {}; }
 
+    bool operator<(index_t const& rhs) const { return value < rhs.value; }
+    bool operator<=(index_t const& rhs) const { return value <= rhs.value; }
+    bool operator>(index_t const& rhs) const { return value > rhs.value; }
+    bool operator>=(index_t const& rhs) const { return value >= rhs.value; }
     bool operator==(index_t const& rhs) const { return value == rhs.value; }
     bool operator!=(index_t const& rhs) const { return value != rhs.value; }
     bool operator==(handle_t const& rhs) const { return value == rhs.idx.value; }
