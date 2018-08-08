@@ -141,6 +141,8 @@ void obj_reader::parse(std::istream &in, Mesh &mesh)
     while (std::getline(in, line_s))
     {
         ++line_nr;
+        while (line_s.size() > 0 && (line_s.back() == '\r' || line_s.back() == ' ' || line_s.back() == '\t'))
+            line_s.pop_back();
         std::istringstream line(line_s);
         std::string type;
 
