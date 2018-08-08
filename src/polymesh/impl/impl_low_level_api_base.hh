@@ -41,52 +41,199 @@ tmp::ref_if_mut<halfedge_index, MeshT> low_level_api_base<MeshT>::outgoing_halfe
 }
 
 
-template<class MeshT>
+template <class MeshT>
 int low_level_api_base<MeshT>::size_all_faces() const
 {
     return m.size_all_faces();
 }
 
-template<class MeshT>
+template <class MeshT>
 int low_level_api_base<MeshT>::size_all_vertices() const
 {
     return m.size_all_vertices();
 }
 
-template<class MeshT>
+template <class MeshT>
 int low_level_api_base<MeshT>::size_all_edges() const
 {
     return m.size_all_edges();
 }
 
-template<class MeshT>
+template <class MeshT>
 int low_level_api_base<MeshT>::size_all_halfedges() const
 {
     return m.size_all_halfedges();
 }
 
-template<class MeshT>
+template <class MeshT>
 int low_level_api_base<MeshT>::size_valid_faces() const
 {
     return m.size_valid_faces();
 }
 
-template<class MeshT>
+template <class MeshT>
 int low_level_api_base<MeshT>::size_valid_vertices() const
 {
     return m.size_valid_vertices();
 }
 
-template<class MeshT>
+template <class MeshT>
 int low_level_api_base<MeshT>::size_valid_edges() const
 {
     return m.size_valid_edges();
 }
 
-template<class MeshT>
+template <class MeshT>
 int low_level_api_base<MeshT>::size_valid_halfedges() const
 {
     return m.size_valid_halfedges();
+}
+
+template <class MeshT>
+bool low_level_api_base<MeshT>::can_add_face(const vertex_handle *v_handles, int vcnt) const
+{
+    if (vcnt < 3)
+        return false; // too few vertices
+
+    // TODO: check duplicated vertices
+
+    // ensure that half-edges are adjacent at each vertex
+    for (auto i = 0; i < vcnt; ++i)
+    {
+        if (!is_boundary(v_handles[i]))
+            return false; // must be boundary
+
+        auto v0 = v_handles[i];
+        auto v1 = v_handles[(i + 1) % vcnt];
+        auto v2 = v_handles[(i + 2) % vcnt];
+
+        auto h0 = find_halfedge(v0, v1);
+        auto h1 = find_halfedge(v1, v2);
+
+        if (h0.is_valid() && !is_boundary(h0))
+            return false; // must be boundary
+
+        if (h0.is_invalid())
+            continue; // will be added
+        if (h1.is_invalid())
+            continue; // will be added
+
+        if (to_vertex_of(h0) != from_vertex_of(h1))
+            return false; // not a chain
+
+        if (next_halfedge_of(h0) == h1)
+            continue; // correctly wired
+
+        if (find_free_incident(opposite(h1), h0).is_invalid())
+            return false; // non-manifold
+    }
+
+    return true;
+}
+
+template <class MeshT>
+bool low_level_api_base<MeshT>::can_add_face(const vertex_index *v_indices, int vcnt) const
+{
+    if (vcnt < 3)
+        return false; // too few vertices
+
+    // TODO: check duplicated vertices
+
+    // ensure that half-edges are adjacent at each vertex
+    for (auto i = 0; i < vcnt; ++i)
+    {
+        if (!is_boundary(v_indices[i]))
+            return false; // must be boundary
+
+        auto v0 = v_indices[i];
+        auto v1 = v_indices[(i + 1) % vcnt];
+        auto v2 = v_indices[(i + 2) % vcnt];
+
+        auto h0 = find_halfedge(v0, v1);
+        auto h1 = find_halfedge(v1, v2);
+
+        if (h0.is_valid() && !is_boundary(h0))
+            return false; // must be boundary
+
+        if (h0.is_invalid())
+            continue; // will be added
+        if (h1.is_invalid())
+            continue; // will be added
+
+        if (to_vertex_of(h0) != from_vertex_of(h1))
+            return false; // not a chain
+
+        if (!is_free(h0))
+            return false; // already contains a face
+
+        if (next_halfedge_of(h0) == h1)
+            continue; // correctly wired
+
+        if (find_free_incident(opposite(h1), h0).is_invalid())
+            return false; // non-manifold
+    }
+
+    return true;
+}
+
+template <class MeshT>
+bool low_level_api_base<MeshT>::can_add_face(const halfedge_handle *half_loop, int vcnt) const
+{
+    if (vcnt < 3)
+        return false; // too few vertices
+
+    // TODO: check duplicated vertices
+
+    // ensure that half-edges are adjacent at each vertex
+    for (auto i = 0; i < vcnt; ++i)
+    {
+        auto h0 = half_loop[i].idx;
+        auto h1 = half_loop[(i + 1) % vcnt].idx;
+
+        if (to_vertex_of(h0) != from_vertex_of(h1))
+            return false; // not a chain
+
+        if (!is_free(h0))
+            return false; // already contains a face
+
+        if (next_halfedge_of(h0) == h1)
+            continue; // correctly wired
+
+        if (find_free_incident(opposite(h1), h0).is_invalid())
+            return false; // non-manifold
+    }
+
+    return true;
+}
+
+template <class MeshT>
+bool low_level_api_base<MeshT>::can_add_face(const halfedge_index *half_loop, int vcnt) const
+{
+    if (vcnt < 3)
+        return false; // too few vertices
+
+    // TODO: check duplicated vertices
+
+    // ensure that half-edges are adjacent at each vertex
+    for (auto i = 0; i < vcnt; ++i)
+    {
+        auto h0 = half_loop[i];
+        auto h1 = half_loop[(i + 1) % vcnt];
+
+        if (to_vertex_of(h0) != from_vertex_of(h1))
+            return false; // not a chain
+
+        if (!is_free(h0))
+            return false; // already contains a face
+
+        if (next_halfedge_of(h0) == h1)
+            continue; // correctly wired
+
+        if (find_free_incident(opposite(h1), h0).is_invalid())
+            return false; // non-manifold
+    }
+
+    return true;
 }
 
 template <class MeshT>

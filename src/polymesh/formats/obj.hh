@@ -14,7 +14,7 @@ void write_obj(std::string const& filename,
                vertex_attribute<glm::vec3> const& position,
                vertex_attribute<glm::vec2> const* tex_coord = nullptr,
                vertex_attribute<glm::vec3> const* normal = nullptr);
-void read_obj(std::string const& filename, Mesh& mesh, vertex_attribute<glm::vec3>& position);
+bool read_obj(std::string const& filename, Mesh& mesh, vertex_attribute<glm::vec3>& position);
 
 struct obj_writer
 {
@@ -56,11 +56,16 @@ public:
     halfedge_attribute<glm::vec2> tex_coords_vec2() const;
     halfedge_attribute<glm::vec3> normals_vec3() const;
 
+    /// Number of faces that could not be added
+    int error_faces() const { return n_error_faces; }
+
 private:
     void parse(std::istream& in, Mesh& mesh);
 
     vertex_attribute<glm::vec4> positions;
     halfedge_attribute<glm::vec3> tex_coords;
     halfedge_attribute<glm::vec3> normals;
+
+    int n_error_faces = 0;
 };
 }

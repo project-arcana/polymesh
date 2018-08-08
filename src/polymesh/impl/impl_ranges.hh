@@ -661,7 +661,19 @@ face_handle face_collection<iterator>::add(const vertex_handle *v_handles, int v
 }
 
 template <class iterator>
+face_handle face_collection<iterator>::add(const vertex_index *v_indices, int vcnt) const
+{
+    return this->mesh->handle_of(low_level_api(this->mesh).add_face(v_indices, vcnt));
+}
+
+template <class iterator>
 face_handle face_collection<iterator>::add(const halfedge_handle *half_loop, int vcnt) const
+{
+    return this->mesh->handle_of(low_level_api(this->mesh).add_face(half_loop, vcnt));
+}
+
+template <class iterator>
+face_handle face_collection<iterator>::add(const halfedge_index *half_loop, int vcnt) const
 {
     return this->mesh->handle_of(low_level_api(this->mesh).add_face(half_loop, vcnt));
 }
@@ -673,7 +685,19 @@ face_handle face_collection<iterator>::add(std::vector<vertex_handle> const &v_h
 }
 
 template <class iterator>
+face_handle face_collection<iterator>::add(std::vector<vertex_index> const &v_indices) const
+{
+    return add(v_indices.data(), v_indices.size());
+}
+
+template <class iterator>
 face_handle face_collection<iterator>::add(std::vector<halfedge_handle> const &half_loop) const
+{
+    return add(half_loop.data(), (int)half_loop.size());
+}
+
+template <class iterator>
+face_handle face_collection<iterator>::add(std::vector<halfedge_index> const &half_loop) const
 {
     return add(half_loop.data(), (int)half_loop.size());
 }
@@ -733,6 +757,111 @@ face_handle face_collection<iterator>::add(const halfedge_handle (&half_loop)[N]
     for (auto i = 0; i < N; ++i)
         hs[i] = half_loop[i].idx;
     return this->mesh->handle_of(low_level_api(this->mesh).add_face(hs, N));
+}
+
+template <class iterator>
+bool face_collection<iterator>::can_add(const vertex_handle *v_handles, int vcnt) const
+{
+    return low_level_api(this->mesh).can_add_face(v_handles, vcnt);
+}
+
+template <class iterator>
+bool face_collection<iterator>::can_add(const vertex_index *v_indices, int vcnt) const
+{
+    return low_level_api(this->mesh).can_add_face(v_indices, vcnt);
+}
+
+template <class iterator>
+bool face_collection<iterator>::can_add(const halfedge_handle *half_loop, int vcnt) const
+{
+    return low_level_api(this->mesh).can_add_face(half_loop, vcnt);
+}
+
+template <class iterator>
+bool face_collection<iterator>::can_add(const halfedge_index *half_loop, int vcnt) const
+{
+    return low_level_api(this->mesh).can_add_face(half_loop, vcnt);
+}
+
+template <class iterator>
+bool face_collection<iterator>::can_add(std::vector<vertex_handle> const &v_handles) const
+{
+    return can_add(v_handles.data(), v_handles.size());
+}
+
+template <class iterator>
+bool face_collection<iterator>::can_add(std::vector<vertex_index> const &v_indices) const
+{
+    return can_add(v_indices.data(), v_indices.size());
+}
+
+template <class iterator>
+bool face_collection<iterator>::can_add(std::vector<halfedge_handle> const &half_loop) const
+{
+    return can_add(half_loop.data(), (int)half_loop.size());
+}
+
+template <class iterator>
+bool face_collection<iterator>::can_add(std::vector<halfedge_index> const &half_loop) const
+{
+    return can_add(half_loop.data(), (int)half_loop.size());
+}
+
+template <class iterator>
+bool face_collection<iterator>::can_add(vertex_handle v0, vertex_handle v1, vertex_handle v2) const
+{
+    halfedge_index hs[3] = {
+        low_level_api(this->mesh).can_add_or_get_halfedge(v0.idx, v1.idx), //
+        low_level_api(this->mesh).can_add_or_get_halfedge(v1.idx, v2.idx), //
+        low_level_api(this->mesh).can_add_or_get_halfedge(v2.idx, v0.idx), //
+    };
+    return low_level_api(this->mesh).can_add_face(hs, 3);
+}
+
+template <class iterator>
+bool face_collection<iterator>::can_add(vertex_handle v0, vertex_handle v1, vertex_handle v2, vertex_handle v3) const
+{
+    halfedge_index hs[4] = {
+        low_level_api(this->mesh).can_add_or_get_halfedge(v0.idx, v1.idx), //
+        low_level_api(this->mesh).can_add_or_get_halfedge(v1.idx, v2.idx), //
+        low_level_api(this->mesh).can_add_or_get_halfedge(v2.idx, v3.idx), //
+        low_level_api(this->mesh).can_add_or_get_halfedge(v3.idx, v0.idx), //
+    };
+    return low_level_api(this->mesh).can_add_face(hs, 4);
+}
+
+template <class iterator>
+bool face_collection<iterator>::can_add(halfedge_handle h0, halfedge_handle h1, halfedge_handle h2) const
+{
+    halfedge_index hs[3] = {h0.idx, h1.idx, h2.idx};
+    return low_level_api(this->mesh).can_add_face(hs, 3);
+}
+
+template <class iterator>
+bool face_collection<iterator>::can_add(halfedge_handle h0, halfedge_handle h1, halfedge_handle h2, halfedge_handle h3) const
+{
+    halfedge_index hs[4] = {h0.idx, h1.idx, h2.idx, h3.idx};
+    return low_level_api(this->mesh).can_add_face(hs, 4);
+}
+
+template <class iterator>
+template <size_t N>
+bool face_collection<iterator>::can_add(const vertex_handle (&v_handles)[N]) const
+{
+    halfedge_index hs[N];
+    for (auto i = 0; i < N; ++i)
+        hs[i] = low_level_api(this->mesh).find_halfedge(v_handles[i].idx, v_handles[(i + 1) % N].idx);
+    return low_level_api(this->mesh).can_add_face(hs, N);
+}
+
+template <class iterator>
+template <size_t N>
+bool face_collection<iterator>::can_add(const halfedge_handle (&half_loop)[N]) const
+{
+    halfedge_index hs[N];
+    for (auto i = 0; i < N; ++i)
+        hs[i] = half_loop[i].idx;
+    return low_level_api(this->mesh).can_add_face(hs, N);
 }
 
 template <class iterator>

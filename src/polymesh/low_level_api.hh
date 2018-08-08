@@ -64,6 +64,14 @@ public:
     face_index prev_valid_idx_from(face_index idx) const;
     halfedge_index prev_valid_idx_from(halfedge_index idx) const;
 
+    // modification checks
+public:
+    /// Returns true iff the face can be added
+    bool can_add_face(vertex_handle const* v_handles, int vcnt) const;
+    bool can_add_face(vertex_index const* v_indices, int vcnt) const;
+    bool can_add_face(halfedge_handle const* half_loop, int vcnt) const;
+    bool can_add_face(halfedge_index const* half_loop, int vcnt) const;
+
     // topology helper
 public:
     /// Returns the opposite of a given valid half-edge
@@ -296,5 +304,4 @@ inline low_level_api_const low_level_api(Mesh const& m) { return {m}; }
 inline low_level_api_const low_level_api(Mesh const* m) { return {*m}; }
 inline low_level_api_mutable low_level_api(Mesh& m) { return {m}; }
 inline low_level_api_mutable low_level_api(Mesh* m) { return {*m}; }
-
 }

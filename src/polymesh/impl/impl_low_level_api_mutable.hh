@@ -104,8 +104,8 @@ inline edge_index low_level_api_mutable::add_or_get_edge(vertex_index v_from, ve
     // setup data (self-connected edge)
     to_vertex_of(h_from_to) = v_to;
     to_vertex_of(h_to_from) = v_from;
-    next_halfedge_of(h_from_to) = h_to_from;
-    next_halfedge_of(h_to_from) = h_from_to;
+    connect_prev_next(h_from_to, h_to_from);
+    connect_prev_next(h_to_from, h_from_to);
 
     // link from vertex
     if (is_isolated(v_from))

@@ -134,6 +134,7 @@ void obj_reader::parse(std::istream &in, Mesh &mesh)
 
     std::vector<face> poly;
     std::vector<halfedge_handle> poly_hs;
+    std::vector<vertex_index> poly_vs;
     std::string fs;
 
     std::string line_s;
@@ -205,6 +206,7 @@ void obj_reader::parse(std::istream &in, Mesh &mesh)
         else if (type == "f")
         {
             poly_hs.clear();
+            poly_vs.clear();
             poly.clear();
 
             while (line.good())
@@ -244,11 +246,18 @@ void obj_reader::parse(std::istream &in, Mesh &mesh)
 
                 f.vh = mesh.handle_of(vertex_index(f.v - 1));
                 poly.push_back(f);
+                poly_vs.push_back(f.vh);
             }
 
             if (poly.size() < 3)
             {
                 std::cerr << "faces with less than 3 vertices are not supported. Use lines instead." << std::endl;
+                continue;
+            }
+
+            if (!mesh.faces().can_add(poly_vs))
+            {
+                n_error_faces++;
                 continue;
             }
 
@@ -302,10 +311,16 @@ void obj_reader::parse(std::istream &in, Mesh &mesh)
             std::cerr << "Unable to parse line " << line_nr << ": " << line_s << std::endl;
         }
     }
+
+    if (n_error_faces > 0)
+    {
+        std::cerr << "skipped " << n_error_faces << " face(s) because mesh would become non-manifold" << std::endl;
+    }
 }
 
-void polymesh::read_obj(const std::string &filename, Mesh &mesh, vertex_attribute<glm::vec3> &position)
+bool polymesh::read_obj(const std::string &filename, Mesh &mesh, vertex_attribute<glm::vec3> &position)
 {
     obj_reader reader(filename, mesh);
     position = reader.positions_vec3();
+    return reader.error_faces() == 0;
 }

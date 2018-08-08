@@ -263,13 +263,35 @@ struct face_collection : smart_collection<Mesh*, face_tag, iterator>
     face_handle add(vertex_handle v0, vertex_handle v1, vertex_handle v2) const;
     face_handle add(vertex_handle v0, vertex_handle v1, vertex_handle v2, vertex_handle v3) const;
     face_handle add(std::vector<vertex_handle> const& v_handles) const;
+    face_handle add(std::vector<vertex_index> const& v_indices) const;
     face_handle add(vertex_handle const* v_handles, int vcnt) const;
+    face_handle add(vertex_index const* v_indices, int vcnt) const;
     template <size_t N>
     face_handle add(const halfedge_handle (&half_loop)[N]) const;
     face_handle add(halfedge_handle h0, halfedge_handle h1, halfedge_handle h2) const;
     face_handle add(halfedge_handle h0, halfedge_handle h1, halfedge_handle h2, halfedge_handle h3) const;
     face_handle add(std::vector<halfedge_handle> const& half_loop) const;
+    face_handle add(std::vector<halfedge_index> const& half_loop) const;
     face_handle add(halfedge_handle const* half_loop, int vcnt) const;
+    face_handle add(halfedge_index const* half_loop, int vcnt) const;
+
+    /// Returns true if face can be added
+    template <size_t N>
+    bool can_add(const vertex_handle (&v_handles)[N]) const;
+    bool can_add(vertex_handle v0, vertex_handle v1, vertex_handle v2) const;
+    bool can_add(vertex_handle v0, vertex_handle v1, vertex_handle v2, vertex_handle v3) const;
+    bool can_add(std::vector<vertex_handle> const& v_handles) const;
+    bool can_add(std::vector<vertex_index> const& v_indices) const;
+    bool can_add(vertex_handle const* v_handles, int vcnt) const;
+    bool can_add(vertex_index const* v_indices, int vcnt) const;
+    template <size_t N>
+    bool can_add(const halfedge_handle (&half_loop)[N]) const;
+    bool can_add(halfedge_handle h0, halfedge_handle h1, halfedge_handle h2) const;
+    bool can_add(halfedge_handle h0, halfedge_handle h1, halfedge_handle h2, halfedge_handle h3) const;
+    bool can_add(std::vector<halfedge_handle> const& half_loop) const;
+    bool can_add(std::vector<halfedge_index> const& half_loop) const;
+    bool can_add(halfedge_handle const* half_loop, int vcnt) const;
+    bool can_add(halfedge_index const* half_loop, int vcnt) const;
 
     /// Splits a face by inserting a vertex (which is returned) and creating triangles towards it
     /// Preserves half-edge attributes
