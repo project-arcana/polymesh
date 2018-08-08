@@ -209,7 +209,7 @@ inline void low_level_api_mutable::make_adjacent(halfedge_index he_in, halfedge_
 
     // find free half-edge after `out` but before `in`
     auto he_g = find_free_incident(opposite(he_out), he_in);
-    assert(he_g.is_valid()); // unable to make adjacent
+    assert(he_g.is_valid() && "unable to make halfedges adjacent. maybe mesh is not manifold?"); // unable to make adjacent
 
     auto he_h = next_halfedge_of(he_g);
 
