@@ -30,3 +30,4 @@ Best used with glm and glow.
 * paired_with function for smart range
 * operator +-*/ for attributes (similar to valarray)
 * dual mesh construction
+* cast<> function

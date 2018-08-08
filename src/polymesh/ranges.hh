@@ -29,8 +29,6 @@ struct filtered_range;
 template <class this_t, class ElementT>
 struct smart_range
 {
-    // using iterator_t = decltype(std::declval<this_t*>()->begin());
-
     /// returns the first element in this range
     /// returns invalid on empty ranges (or default ctor'd one)
     ElementT first() const;
@@ -41,16 +39,14 @@ struct smart_range
 
     /// returns true if the range is empty
     bool empty() const;
-    /// returns true if the range is non-empty
-    bool any() const;
     /// returns true if any value fulfils p(v)
     /// also works for boolean attributes
-    template <class PredT>
-    bool any(PredT&& p) const;
+    template <class PredT = tmp::identity>
+    bool any(PredT&& p = {}) const;
     /// returns true if all values fulfil p(v)
     /// also works for boolean attributes
-    template <class PredT>
-    bool all(PredT&& p) const;
+    template <class PredT = tmp::identity>
+    bool all(PredT&& p = {}) const;
 
     /// returns the number of elements in this range
     /// NOTE: this is an O(n) operation, prefer size() if available
@@ -63,8 +59,8 @@ struct smart_range
     /// calculates min(f(e)) over all elements
     /// undefined behavior if range is empty
     /// works for std::min and everything reachable by ADL (calls min(_, _))
-    template <class FuncT>
-    auto min(FuncT&& f) const -> tmp::decayed_result_type_of<FuncT, ElementT>;
+    template <class FuncT = tmp::identity>
+    auto min(FuncT&& f = {}) const -> tmp::decayed_result_type_of<FuncT, ElementT>;
     /// returns e that minimizes f(e)
     /// undefined behavior if range is empty
     /// requires working comparison operators for the result
@@ -73,8 +69,8 @@ struct smart_range
     /// calculates max(f(e)) over all elements
     /// undefined behavior if range is empty
     /// works for std::max and everything reachable by ADL (calls max(_, _))
-    template <class FuncT>
-    auto max(FuncT&& f) const -> tmp::decayed_result_type_of<FuncT, ElementT>;
+    template <class FuncT = tmp::identity>
+    auto max(FuncT&& f = {}) const -> tmp::decayed_result_type_of<FuncT, ElementT>;
     /// returns e that maximizes f(e)
     /// undefined behavior if range is empty
     /// requires working comparison operators for the result
@@ -83,8 +79,8 @@ struct smart_range
     /// calculates the sum of f(e) over all elements
     /// undefined behavior if range is empty
     /// requires operator+ for the elements
-    template <class FuncT>
-    auto sum(FuncT&& f) const -> tmp::decayed_result_type_of<FuncT, ElementT>;
+    template <class FuncT = tmp::identity>
+    auto sum(FuncT&& f = {}) const -> tmp::decayed_result_type_of<FuncT, ElementT>;
     /// calculates the avg of f(e) over all elements
     /// undefined behavior if range is empty
     /// requires operator+ for the elements as well as operator/(ElementT, int)
@@ -102,20 +98,20 @@ struct smart_range
     template <class FuncT, class FuncInvT>
     auto f_mean(FuncT&& f, FuncInvT&& f_inv) const -> tmp::decayed_result_type_of<FuncInvT, tmp::decayed_result_type_of<FuncT, ElementT>>;
     /// calculates the arithmetic mean of f(e) for this range (same as avg)
-    template <class FuncT>
-    auto arithmetic_mean(FuncT&& f) const -> tmp::decayed_result_type_of<FuncT, ElementT>;
+    template <class FuncT = tmp::identity>
+    auto arithmetic_mean(FuncT&& f = {}) const -> tmp::decayed_result_type_of<FuncT, ElementT>;
     /// calculates the geometric mean of f(e) for this range (also known as log-average)
-    template <class FuncT>
-    auto geometric_mean(FuncT&& f) const -> tmp::decayed_result_type_of<FuncT, ElementT>;
+    template <class FuncT = tmp::identity>
+    auto geometric_mean(FuncT&& f = {}) const -> tmp::decayed_result_type_of<FuncT, ElementT>;
 
     /// calculates the aabb (min and max) of f(e) over all elements
     /// undefined behavior if range is empty
     /// works for std::min/max and everything reachable by ADL (calls min/max(_, _))
-    template <class FuncT>
-    auto aabb(FuncT&& f) const -> polymesh::aabb<tmp::decayed_result_type_of<FuncT, ElementT>>;
+    template <class FuncT = tmp::identity>
+    auto aabb(FuncT&& f = {}) const -> polymesh::aabb<tmp::decayed_result_type_of<FuncT, ElementT>>;
     /// same as aabb(...)
-    template <class FuncT>
-    auto minmax(FuncT&& f) const -> polymesh::aabb<tmp::decayed_result_type_of<FuncT, ElementT>>;
+    template <class FuncT = tmp::identity>
+    auto minmax(FuncT&& f = {}) const -> polymesh::aabb<tmp::decayed_result_type_of<FuncT, ElementT>>;
     /// returns {e_min, e_max} that minimizes/maximizes f(e)
     /// undefined behavior if range is empty
     /// requires working comparison operators for the result
@@ -127,14 +123,14 @@ struct smart_range
     /// converts this range to a set
     std::set<ElementT> to_set() const;
     /// converts this range to a vector containing f(v) entries
-    template <class FuncT>
-    auto to_vector(FuncT&& f) const -> std::vector<tmp::decayed_result_type_of<FuncT, ElementT>>;
+    template <class FuncT = tmp::identity>
+    auto to_vector(FuncT&& f = {}) const -> std::vector<tmp::decayed_result_type_of<FuncT, ElementT>>;
     /// converts this range to a set containing f(v) entries
-    template <class FuncT>
-    auto to_set(FuncT&& f) const -> std::set<tmp::decayed_result_type_of<FuncT, ElementT>>;
+    template <class FuncT = tmp::identity>
+    auto to_set(FuncT&& f = {}) const -> std::set<tmp::decayed_result_type_of<FuncT, ElementT>>;
     /// converts this range to a map containing {v, f(v)} entries
-    template <class FuncT>
-    auto to_map(FuncT&& f) const -> std::map<ElementT, tmp::decayed_result_type_of<FuncT, ElementT>>;
+    template <class FuncT = tmp::identity>
+    auto to_map(FuncT&& f = {}) const -> std::map<ElementT, tmp::decayed_result_type_of<FuncT, ElementT>>;
 
     /// returns a new range that consists of all elements where p(x) is true
     template <class PredT>
@@ -176,22 +172,6 @@ struct filtered_range : smart_range<filtered_range<ElementT, RangeT, PredT>, Ele
     filtered_range& operator=(filtered_range const&) = delete;
     filtered_range& operator=(filtered_range&&) = delete;
 };
-/*template <class ElementT, class IteratorT, class PredT>
-struct filtered_range : smart_range<filtered_range<ElementT, IteratorT, PredT>, IteratorT, ElementT>
-{
-    filtering_iterator<IteratorT, PredT> begin() const { return {obegin, oend, pred}; }
-    filtering_iterator<IteratorT, PredT> end() const { return {oend, oend, pred}; }
-
-    IteratorT obegin;
-    IteratorT oend;
-    PredT pred;
-
-    filtered_range() = default;
-    filtered_range(filtered_range const&) = delete;
-    filtered_range(filtered_range &&) = delete;
-    filtered_range& operator=(filtered_range const&) = delete;
-    filtered_range& operator=(filtered_range &&) = delete;
-};*/
 
 // TODO: mapped_range
 
@@ -226,6 +206,9 @@ struct smart_collection : smart_range<smart_collection<mesh_ptr, tag, iterator>,
     /// Creates a new primitive attribute and initializes it with f(h) for each handle h
     template <class FuncT, class AttrT = tmp::decayed_result_type_of<FuncT, handle>>
     attribute<AttrT> make_attribute(FuncT&& f, AttrT const& def_value = AttrT()) const;
+    /// same as make_attribute(f, def_value)
+    template <class FuncT, class AttrT = tmp::decayed_result_type_of<FuncT, handle>>
+    attribute<AttrT> map(FuncT&& f, AttrT const& def_value = AttrT()) const;
 
     // Iteration:
     iterator begin() const;
@@ -583,5 +566,4 @@ struct halfedge_ring : halfedge_primitive_ring<halfedge_tag, halfedge_ring_circu
 {
     using halfedge_primitive_ring<halfedge_tag, halfedge_ring_circulator>::halfedge_primitive_ring;
 };
-
 }

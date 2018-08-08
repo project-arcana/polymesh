@@ -37,12 +37,6 @@ ElementT smart_range<this_t, ElementT>::last() const
 }
 
 template <class this_t, class ElementT>
-bool smart_range<this_t, ElementT>::any() const
-{
-    return static_cast<this_t const *>(this)->begin() != static_cast<this_t const *>(this)->end();
-}
-
-template <class this_t, class ElementT>
 bool smart_range<this_t, ElementT>::empty() const
 {
     return static_cast<this_t const *>(this)->begin() == static_cast<this_t const *>(this)->end();
@@ -476,6 +470,13 @@ typename primitive<tag>::template attribute<AttrT> smart_collection<mesh_ptr, ta
     for (auto h : *this)
         attr[h] = f(h);
     return attr; // copy elison
+}
+
+template <class mesh_ptr, class tag, class iterator>
+template <class FuncT, class AttrT>
+typename primitive<tag>::template attribute<AttrT> smart_collection<mesh_ptr, tag, iterator>::map(FuncT &&f, AttrT const &def_value) const
+{
+    return this->make_attribute(f, def_value);
 }
 
 template <class mesh_ptr, class tag, class iterator>
