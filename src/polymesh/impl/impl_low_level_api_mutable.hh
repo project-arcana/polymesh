@@ -11,6 +11,11 @@ inline face_index low_level_api_mutable::alloc_face() const { return m.alloc_fac
 inline edge_index low_level_api_mutable::alloc_edge() const { return m.alloc_edge(); }
 inline void low_level_api_mutable::alloc_primitives(int vertices, int faces, int halfedges) const { m.alloc_primitives(vertices, faces, halfedges); }
 
+inline void low_level_api_mutable::reserve_vertices(int capacity) const { m.reserve_vertices(capacity); }
+inline void low_level_api_mutable::reserve_edges(int capacity) const { m.reserve_edges(capacity); }
+inline void low_level_api_mutable::reserve_halfedges(int capacity) const { m.reserve_halfedges(capacity); }
+inline void low_level_api_mutable::reserve_faces(int capacity) const { m.reserve_faces(capacity); }
+
 inline void low_level_api_mutable::permute_faces(const std::vector<int> &p) const { m.permute_faces(p); }
 inline void low_level_api_mutable::permute_edges(const std::vector<int> &p) const { m.permute_edges(p); }
 inline void low_level_api_mutable::permute_vertices(const std::vector<int> &p) const { m.permute_vertices(p); }

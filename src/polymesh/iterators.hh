@@ -12,7 +12,7 @@ namespace polymesh
 // ================= ITERATOR =================
 
 template <typename tag>
-struct valid_primitive_iterator
+struct valid_primitive_iterator final
 {
     using handle_t = typename primitive<tag>::handle;
 
@@ -32,7 +32,8 @@ struct valid_primitive_iterator
     valid_primitive_iterator operator++(int)const
     {
         auto i = *this;
-        return ++i;
+        operator++();
+        return i;
     }
     bool operator==(valid_primitive_iterator const& rhs) const
     {
@@ -52,7 +53,7 @@ private:
 };
 
 template <typename tag>
-struct all_primitive_iterator
+struct all_primitive_iterator final
 {
     using handle_t = typename primitive<tag>::handle;
 
@@ -71,7 +72,8 @@ struct all_primitive_iterator
     all_primitive_iterator operator++(int)const
     {
         auto i = *this;
-        return ++i;
+        operator++();
+        return i;
     }
     bool operator==(all_primitive_iterator const& rhs) const
     {
@@ -93,7 +95,7 @@ private:
 // ================= ATTRIBUTES =================
 
 template <class AttributeT>
-struct attribute_iterator
+struct attribute_iterator final
 {
     int idx;
     AttributeT attr;
@@ -108,7 +110,8 @@ struct attribute_iterator
     attribute_iterator operator++(int)const
     {
         auto i = *this;
-        return ++i;
+        operator++();
+        return i;
     }
     bool operator==(attribute_iterator const& rhs) const { return idx == rhs.idx; }
     bool operator!=(attribute_iterator const& rhs) const { return idx != rhs.idx; }
@@ -117,7 +120,7 @@ struct attribute_iterator
 // ================= FILTER + MAP =================
 
 template <class IteratorT, class PredT>
-struct filtering_iterator
+struct filtering_iterator final
 {
     IteratorT ocurr;
     IteratorT oend;
@@ -136,7 +139,8 @@ struct filtering_iterator
     filtering_iterator operator++(int)const
     {
         auto i = *this;
-        return ++i;
+        operator++();
+        return i;
     }
     bool operator==(filtering_iterator const& rhs) const { return ocurr == rhs.ocurr; }
     bool operator!=(filtering_iterator const& rhs) const { return ocurr != rhs.ocurr; }
@@ -156,16 +160,17 @@ struct primitive_circulator
     primitive_circulator() = default;
     primitive_circulator(halfedge_handle handle, bool not_at_begin) : handle(handle), not_at_begin(not_at_begin) {}
 
-    primitive_circulator& operator++()
+    this_t& operator++()
     {
         static_cast<this_t*>(this)->advance();
         not_at_begin = true;
-        return *this;
+        return static_cast<this_t&>(*this);
     }
-    primitive_circulator operator++(int)const
+    this_t operator++(int)
     {
-        auto i = *this;
-        return ++i;
+        auto i = static_cast<this_t const&>(*this);
+        operator++();
+        return i;
     }
     bool operator==(primitive_circulator const& rhs) const
     {

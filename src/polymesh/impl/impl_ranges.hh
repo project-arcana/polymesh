@@ -745,7 +745,7 @@ face_handle face_collection<iterator>::add(const vertex_handle (&v_handles)[N]) 
 {
     halfedge_index hs[N];
     for (auto i = 0; i < N; ++i)
-        hs[i] = low_level_api(this->mesh).find_halfedge(v_handles[i].idx, v_handles[(i + 1) % N].idx);
+        hs[i] = low_level_api(this->mesh).add_or_get_halfedge(v_handles[i].idx, v_handles[(i + 1) % N].idx);
     return this->mesh->handle_of(low_level_api(this->mesh).add_face(hs, N));
 }
 
