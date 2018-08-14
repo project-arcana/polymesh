@@ -5,17 +5,49 @@
 namespace polymesh
 {
 template <class tag>
-template <class FuncT>
-auto primitive_index<tag>::operator[](FuncT&& f) const -> tmp::result_type_of<FuncT, index_t>
+template <class FuncT, class ResultT>
+ResultT primitive_index<tag>::operator[](FuncT&& f) const
 {
     return f(*static_cast<typename primitive<tag>::index const*>(this));
 }
 
 template <class tag>
-template <class FuncT>
-auto primitive_handle<tag>::operator[](FuncT&& f) const -> tmp::result_type_of<FuncT, handle_t>
+template <class FuncT, class ResultT>
+ResultT primitive_handle<tag>::operator[](FuncT&& f) const
 {
     return f(*static_cast<typename primitive<tag>::handle const*>(this));
+}
+
+template <class tag>
+template <class AttrT>
+AttrT& primitive_index<tag>::operator[](attribute<AttrT>* attr) const
+{
+    static AttrT def_attr;
+    return attr ? (*attr)[*static_cast<typename primitive<tag>::handle const*>(this)] : def_attr;
+}
+
+template <class tag>
+template <class AttrT>
+AttrT const& primitive_index<tag>::operator[](attribute<AttrT> const* attr) const
+{
+    static AttrT const def_attr;
+    return attr ? (*attr)[*static_cast<typename primitive<tag>::handle const*>(this)] : def_attr;
+}
+
+template <class tag>
+template <class AttrT>
+AttrT& primitive_handle<tag>::operator[](attribute<AttrT>* attr) const
+{
+    static AttrT def_attr;
+    return attr ? (*attr)[*static_cast<typename primitive<tag>::handle const*>(this)] : def_attr;
+}
+
+template <class tag>
+template <class AttrT>
+AttrT const& primitive_handle<tag>::operator[](attribute<AttrT> const* attr) const
+{
+    static AttrT const def_attr;
+    return attr ? (*attr)[*static_cast<typename primitive<tag>::handle const*>(this)] : def_attr;
 }
 
 inline bool vertex_handle::is_removed() const { return idx.is_valid() && low_level_api(mesh).is_removed(idx); }
@@ -75,7 +107,10 @@ inline edge_handle vertex_handle::any_edge() const
     return mesh->handle_of(h.is_valid() ? low_level_api(mesh).edge_of(h) : edge_index::invalid());
 }
 
-inline vertex_handle face_handle::any_vertex() const { return mesh->handle_of(low_level_api(mesh).to_vertex_of(low_level_api(mesh).halfedge_of(idx))); }
+inline vertex_handle face_handle::any_vertex() const
+{
+    return mesh->handle_of(low_level_api(mesh).to_vertex_of(low_level_api(mesh).halfedge_of(idx)));
+}
 
 inline halfedge_handle face_handle::any_halfedge() const { return mesh->handle_of(low_level_api(mesh).halfedge_of(idx)); }
 

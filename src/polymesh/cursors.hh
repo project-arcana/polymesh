@@ -40,8 +40,18 @@ struct primitive_index
     /// indexes this primitive by a functor
     /// also works for attributes
     /// - e.g. v[position] or f[area]
-    template <class FuncT>
-    auto operator[](FuncT&& f) const -> tmp::result_type_of<FuncT, index_t>;
+    template <class FuncT, class ResultT = tmp::result_type_of<FuncT, index_t>>
+    ResultT operator[](FuncT&& f) const;
+
+    /// indexes this primitive by an attribute pointer
+    /// if attr is null, returns writeable dummy location
+    /// CAUTION: always returns same writeable dummy location, this is intended as a write-only value!
+    template <class AttrT>
+    AttrT& operator[](attribute<AttrT>* attr) const;
+    /// indexes this primitive by an attribute pointer
+    /// if attr is null, returns default constructed value
+    template <class AttrT>
+    AttrT const& operator[](attribute<AttrT> const* attr) const;
 };
 
 template <class tag>
@@ -69,8 +79,17 @@ struct primitive_handle
     /// indexes this primitive by a functor
     /// also works for attributes
     /// - e.g. v[position] or f[area]
-    template <class FuncT>
-    auto operator[](FuncT&& f) const -> tmp::result_type_of<FuncT, handle_t>;
+    template <class FuncT, class ResultT = tmp::result_type_of<FuncT, index_t>>
+    ResultT operator[](FuncT&& f) const;
+
+    /// indexes this primitive by an attribute pointer
+    /// if attr is null, returns writeable dummy location
+    template <class AttrT>
+    AttrT& operator[](attribute<AttrT>* attr) const;
+    /// indexes this primitive by an attribute pointer
+    /// if attr is null, returns default constructed value
+    template <class AttrT>
+    AttrT const& operator[](attribute<AttrT> const* attr) const;
 
     bool is_valid() const { return idx.is_valid(); }    ///< valid idx (but could be deleted in some iterators)
     bool is_invalid() const { return !idx.is_valid(); } ///< invalid idx

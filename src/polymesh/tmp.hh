@@ -8,23 +8,25 @@ namespace polymesh
 // small template metaprogramming
 namespace tmp
 {
-template <class FuncT, class ArgT>
+template <class FuncT>
 struct decayed_result_of
 {
+    template <class ArgT>
     using type = typename std::decay<decltype(std::declval<FuncT>()(std::declval<ArgT>()))>::type;
 };
 
 template <class FuncT, class ArgT>
-using decayed_result_type_of = typename decayed_result_of<FuncT, ArgT>::type;
+using decayed_result_type_of = typename decayed_result_of<FuncT>::template type<ArgT>;
 
-template <class FuncT, class ArgT>
+template <class FuncT>
 struct result_of
 {
+    template <class ArgT>
     using type = decltype(std::declval<FuncT>()(std::declval<ArgT>()));
 };
 
 template <class FuncT, class ArgT>
-using result_type_of = typename result_of<FuncT, ArgT>::type;
+using result_type_of = typename result_of<FuncT>::template type<ArgT>;
 
 template <class T>
 using enable_if_const_t = typename std::enable_if<std::is_const<T>::value, std::nullptr_t>::type;

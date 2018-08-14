@@ -287,13 +287,13 @@ auto smart_range<this_t, ElementT>::geometric_mean(FuncT &&f) const -> tmp::deca
 
 template <class this_t, class ElementT>
 template <class FuncT>
-auto smart_range<this_t, ElementT>::aabb(FuncT &&f) const -> polymesh::aabb<typename tmp::decayed_result_of<FuncT, ElementT>::type>
+auto smart_range<this_t, ElementT>::aabb(FuncT &&f) const -> polymesh::aabb<tmp::decayed_result_type_of<FuncT, ElementT>>
 {
     auto it_begin = static_cast<this_t const *>(this)->begin();
     auto it_end = static_cast<this_t const *>(this)->end();
     assert(it_begin != it_end && "requires non-empty range");
     auto v = f(*it_begin);
-    polymesh::aabb<typename tmp::decayed_result_of<FuncT, ElementT>::type> r = {v, v};
+    polymesh::aabb<tmp::decayed_result_type_of<FuncT, ElementT>> r = {v, v};
     ++it_begin;
     while (it_begin != it_end)
     {
@@ -307,7 +307,7 @@ auto smart_range<this_t, ElementT>::aabb(FuncT &&f) const -> polymesh::aabb<type
 
 template <class this_t, class ElementT>
 template <class FuncT>
-auto smart_range<this_t, ElementT>::minmax(FuncT &&f) const -> polymesh::aabb<typename tmp::decayed_result_of<FuncT, ElementT>::type>
+auto smart_range<this_t, ElementT>::minmax(FuncT &&f) const -> polymesh::aabb<tmp::decayed_result_type_of<FuncT, ElementT>>
 {
     return aabb(f);
 }
@@ -428,7 +428,7 @@ int smart_collection<mesh_ptr, tag, iterator>::size() const
 template <class mesh_ptr, class tag, class iterator>
 void smart_collection<mesh_ptr, tag, iterator>::reserve(int capacity) const
 {
-    return typename primitive<tag>::reserve(*mesh, capacity);
+    return primitive<tag>::reserve(*mesh, capacity);
 }
 
 template <class mesh_ptr, class tag, class iterator>
