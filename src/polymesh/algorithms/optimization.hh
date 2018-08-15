@@ -63,22 +63,116 @@ inline void optimize_for_rendering(Mesh& m)
 
 inline std::vector<int> cache_coherent_face_layout(Mesh const& m)
 {
-    // build binary tree
-    // - approx min cut
-    // - refine approx
-    // - split
+    if (m.faces().empty())
+        return {};
+    assert(m.faces().size() == m.all_faces().size() && "non-compact currently not supported");
 
-    std::vector<std::pair<int, int>> edges;
+    polymesh::detail::disjoint_set clusters(m.all_faces().size());
+
+    std::vector<std::pair<float, std::pair<int, int>>> edges;
     for (auto e : m.edges())
-        edges.emplace_back((int)e.faceA(), (int)e.faceB());
+        edges.push_back({-1, {(int)e.faceA(), (int)e.faceB()}});
 
-    // TODO
+    struct node
+    {
+        int rep;
+        std::vector<node*> children;
 
-    std::vector<int> id;
-    for (auto i = 0u; i < m.faces().size(); ++i)
-        id.push_back(i);
-    // TODO
-    return id;
+        bool is_leaf() const { return children.empty(); }
+
+        void assign_idx(int& next_idx, std::vector<int>& indices) const
+        {
+            if (is_leaf())
+            {
+                indices[rep] = next_idx++;
+            }
+            else
+            {
+                for (auto n : children)
+                    n->assign_idx(next_idx, indices);
+            }
+        }
+
+        ~node()
+        {
+            for (auto n : children)
+                delete n;
+        }
+    };
+
+    std::map<int, node*> cluster_centers;
+    for (auto f : m.faces())
+        cluster_centers[(int)f] = new node{(int)f};
+
+    std::map<std::pair<int, int>, float> cluster_neighbors;
+
+    // bottom-up clustering
+    auto cluster_limit = 1;
+    while (!edges.empty())
+    {
+        cluster_limit *= 2;
+
+        // merge edges where appropriate
+        for (auto e : edges)
+        {
+            auto f0 = e.second.first;
+            auto f1 = e.second.second;
+
+            auto s0 = clusters.size_of(f0);
+            auto s1 = clusters.size_of(f1);
+
+            if (s0 + s1 <= cluster_limit)
+                clusters.do_union(f0, f1);
+        }
+
+        // collect new neighbors
+        cluster_neighbors.clear();
+        for (auto e : edges)
+        {
+            auto w = e.first;
+            auto f0 = clusters.find(e.second.first);
+            auto f1 = clusters.find(e.second.second);
+
+            if (f0 == f1)
+                continue;
+
+            if (f0 > f1)
+                std::swap(f0, f1);
+
+            cluster_neighbors[{f0, f1}] += w;
+        }
+
+        // create new edges
+        edges.clear();
+        for (auto const& kvp : cluster_neighbors)
+            edges.push_back({kvp.second, kvp.first});
+        sort(edges.begin(), edges.end());
+
+        // new cluster centers
+        std::map<int, node*> new_centers;
+        // .. create nodes
+        for (auto const& kvp : cluster_centers)
+            if (clusters.is_representative(kvp.first))
+                new_centers[kvp.first] = new node{kvp.first};
+        // .. add children
+        for (auto const& kvp : cluster_centers)
+            new_centers[clusters.find(kvp.first)]->children.push_back(kvp.second);
+        // .. replace old
+        cluster_centers = new_centers;
+    }
+
+    // distribute indices
+    std::vector<int> new_indices(m.all_faces().size());
+    int next_idx = 0;
+    for (auto const& kvp : cluster_centers)
+        kvp.second->assign_idx(next_idx, new_indices);
+    assert(next_idx == m.faces().size());
+
+    // cleanup
+    for (auto const& kvp : cluster_centers)
+        delete kvp.second;
+
+    return new_indices;
 }
 
 inline std::vector<int> cache_coherent_vertex_layout(Mesh const& m)
@@ -97,7 +191,7 @@ inline void optimize_edges_for_faces(Mesh& m)
         auto fA = e.faceA();
         auto fB = e.faceB();
         auto f = fA.is_invalid() ? fB : fB.is_invalid() ? fA : detail::xorshift64star(rng) % 2 ? fA : fB;
-        face_edge_indices.emplace_back(f.idx.value, e.idx.value);
+        face_edge_indices.emplace_back((int)f, (int)e);
     }
 
     // sort by face idx
@@ -106,7 +200,7 @@ inline void optimize_edges_for_faces(Mesh& m)
     // extract edge indices
     std::vector<int> permutation(face_edge_indices.size());
     for (auto i = 0u; i < face_edge_indices.size(); ++i)
-        permutation[i] = face_edge_indices[i].second;
+        permutation[face_edge_indices[i].second] = i;
 
     // apply permutation
     m.edges().permute(permutation);
@@ -129,7 +223,7 @@ inline void optimize_edges_for_vertices(Mesh& m)
     // extract edge indices
     std::vector<int> permutation(vertex_edge_indices.size());
     for (auto i = 0u; i < vertex_edge_indices.size(); ++i)
-        permutation[i] = vertex_edge_indices[i].second;
+        permutation[vertex_edge_indices[i].second] = i;
 
     // apply permutation
     m.edges().permute(permutation);
@@ -159,7 +253,7 @@ inline void optimize_faces_for_vertices(Mesh& m)
     // extract face indices
     std::vector<int> permutation(vertex_face_indices.size());
     for (auto i = 0u; i < vertex_face_indices.size(); ++i)
-        permutation[i] = vertex_face_indices[i].second;
+        permutation[vertex_face_indices[i].second] = i;
 
     // apply permutation
     m.faces().permute(permutation);
@@ -192,7 +286,7 @@ inline void optimize_vertices_for_faces(Mesh& m)
     // extract vertex indices
     std::vector<int> permutation(face_vertex_indices.size());
     for (auto i = 0u; i < face_vertex_indices.size(); ++i)
-        permutation[i] = face_vertex_indices[i].second;
+        permutation[face_vertex_indices[i].second] = i;
 
     // apply permutation
     m.vertices().permute(permutation);

@@ -19,6 +19,9 @@ public:
         }
     }
 
+    int size_of(int idx) { return entries[find(idx)].size; }
+    bool is_representative(int idx) { return find(idx) == idx; }
+
     int find(int idx)
     {
         auto& e = entries[idx];

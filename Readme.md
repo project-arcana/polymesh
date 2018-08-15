@@ -10,7 +10,6 @@ Best used with glm and glow.
 * Algorithms
 * Tests
 * std::less and std::hash for _index (and maybe _handle)
-* attribute transformations (also between different types)
 * Debug: store compactify generation in handles to check for invalidation
 * Debug: insert is_removed assertions into handle access
 * Test self-adjacent faces
@@ -19,7 +18,6 @@ Best used with glm and glow.
 * opposite edges (from vertex)
 * cotangents weights etc.
 * smoothing
-* make handle.<primitives>() contain only valid ones and provide an all_<primitives>() version
 * _copy versions of topological operations that copy attributes
 * vertex split?
 * half-edge collapse
@@ -30,5 +28,5 @@ Best used with glm and glow.
 * paired_with function for smart range
 * operator +-*/ for attributes (similar to valarray)
 * dual mesh construction
-* cast<> function
+* cast<>, reinterpret<> function
 * surface tracing
