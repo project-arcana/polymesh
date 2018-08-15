@@ -20,35 +20,43 @@ inline void low_level_api_mutable::permute_faces(const std::vector<int> &p) cons
 inline void low_level_api_mutable::permute_edges(const std::vector<int> &p) const { m.permute_edges(p); }
 inline void low_level_api_mutable::permute_vertices(const std::vector<int> &p) const { m.permute_vertices(p); }
 
-inline face_index low_level_api_mutable::add_face(const vertex_handle *v_handles, int vcnt) const
+inline face_index low_level_api_mutable::add_face(const vertex_handle *v_handles, int vcnt, face_index res_idx) const
 {
     m.mFaceInsertCache.resize(vcnt);
     for (auto i = 0; i < vcnt; ++i)
         m.mFaceInsertCache[i] = add_or_get_halfedge(v_handles[i].idx, v_handles[(i + 1) % vcnt].idx);
-    return add_face(m.mFaceInsertCache.data(), vcnt);
+    return add_face(m.mFaceInsertCache.data(), vcnt, res_idx);
 }
 
-inline face_index low_level_api_mutable::add_face(const vertex_index *v_indices, int vcnt) const
+inline face_index low_level_api_mutable::add_face(const vertex_index *v_indices, int vcnt, face_index res_idx) const
 {
     m.mFaceInsertCache.resize(vcnt);
     for (auto i = 0; i < vcnt; ++i)
         m.mFaceInsertCache[i] = add_or_get_halfedge(v_indices[i], v_indices[(i + 1) % vcnt]);
-    return add_face(m.mFaceInsertCache.data(), vcnt);
+    return add_face(m.mFaceInsertCache.data(), vcnt, res_idx);
 }
 
-inline face_index low_level_api_mutable::add_face(const halfedge_handle *half_loop, int vcnt) const
+inline face_index low_level_api_mutable::add_face(const halfedge_handle *half_loop, int vcnt, face_index res_idx) const
 {
     m.mFaceInsertCache.resize(vcnt);
     for (auto i = 0; i < vcnt; ++i)
         m.mFaceInsertCache[i] = half_loop[i].idx;
-    return add_face(m.mFaceInsertCache.data(), vcnt);
+    return add_face(m.mFaceInsertCache.data(), vcnt, res_idx);
 }
 
-inline face_index low_level_api_mutable::add_face(const halfedge_index *half_loop, int vcnt) const
+inline face_index low_level_api_mutable::add_face(const halfedge_index *half_loop, int vcnt, face_index res_idx) const
 {
     assert(vcnt >= 3 && "no support for less-than-triangular faces");
+    assert(res_idx.is_invalid() || is_removed(res_idx) && "resurrected index must be previously removed!");
 
-    auto fidx = alloc_face();
+    auto fidx = res_idx.is_valid() ? res_idx : alloc_face();
+
+    // on resurrect: fix counts
+    if (res_idx.is_valid())
+    {
+        m.mRemovedFaces--;
+        // no mCompact change!
+    }
 
     // ensure that half-edges are adjacent at each vertex
     for (auto i = 0; i < vcnt; ++i)
@@ -320,6 +328,19 @@ inline void low_level_api_mutable::remove_vertex(vertex_index v_idx) const
 
     // mark removed
     set_removed(v_idx);
+}
+
+inline void low_level_api_mutable::clear_removed_edge_vector() const
+{
+    assert(m.edges().empty() && "only works for no-edge meshes");
+
+    m.mHalfedgeToFace.clear();
+    m.mHalfedgeToNextHalfedge.clear();
+    m.mHalfedgeToPrevHalfedge.clear();
+    m.mHalfedgeToVertex.clear();
+
+    m.mRemovedHalfedges = 0;
+    // no mCompact change!
 }
 
 inline void low_level_api_mutable::fix_boundary_state_of(vertex_index v_idx) const

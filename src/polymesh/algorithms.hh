@@ -17,7 +17,7 @@
 // Basic mesh operations, including:
 // - elementary subdivision
 // - intersections
-#include "algorithms/operations.hh"
+#include "algorithms/remeshing/triangulate.hh"
 
 // Mesh statistics
 #include "algorithms/components.hh"

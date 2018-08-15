@@ -90,6 +90,30 @@ int low_level_api_base<MeshT>::size_valid_halfedges() const
 }
 
 template <class MeshT>
+int low_level_api_base<MeshT>::size_removed_faces() const
+{
+    return m.size_all_faces() - m.size_removed_faces();
+}
+
+template <class MeshT>
+int low_level_api_base<MeshT>::size_removed_vertices() const
+{
+    return m.size_all_vertices() - m.size_removed_vertices();
+}
+
+template <class MeshT>
+int low_level_api_base<MeshT>::size_removed_edges() const
+{
+    return m.size_all_edges() - m.size_removed_edges();
+}
+
+template <class MeshT>
+int low_level_api_base<MeshT>::size_removed_halfedges() const
+{
+    return m.size_all_halfedges() - m.size_removed_halfedges();
+}
+
+template <class MeshT>
 bool low_level_api_base<MeshT>::can_add_face(const vertex_handle *v_handles, int vcnt) const
 {
     if (vcnt < 3)

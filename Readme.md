@@ -31,3 +31,4 @@ Best used with glm and glow.
 * operator +-*/ for attributes (similar to valarray)
 * dual mesh construction
 * cast<> function
+* surface tracing

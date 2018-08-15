@@ -1,8 +1,6 @@
 #pragma once
 
-#include "../Mesh.hh"
-
-#include <glm/glm.hpp>
+#include <polymesh/Mesh.hh>
 
 // Basic mesh operations, including:
 // - elementary subdivision
@@ -10,26 +8,43 @@
 
 namespace polymesh
 {
-/// Given a flat polymesh with convex faces, naively triangulates all faces
-void triangulate_naive(Mesh& m);
+/// Removes all faces of a given mesh
+/// NOTE: does NOT compactify!
+void remove_faces(Mesh& m);
+
+/// Removes all edges and faces of a given mesh
+/// NOTE: does NOT compactify!
+void remove_edges_and_faces(Mesh& m);
 
 /// ======== IMPLEMENTATION ========
 
-inline void triangulate_naive(Mesh& m)
+inline void remove_faces(Mesh& m)
 {
-    std::vector<vertex_handle> vs;
+    auto ll = low_level_api(m);
+
+    // set faces to removed
     for (auto f : m.faces())
-    {
-        vs = f.vertices().to_vector();
-        if (vs.size() <= 3)
-            continue;
+        ll.set_removed(f);
 
-        // remove
-        m.faces().remove(f);
+    // remove all faces from half-edges
+    for (auto h : m.halfedges())
+        ll.face_of(h) = face_index::invalid();
+}
 
-        // triangulate
-        for (auto i = 2u; i < vs.size(); ++i)
-            m.faces().add(vs[0], vs[1], vs[i]);
-    }
+inline void remove_edges_and_faces(Mesh& m)
+{
+    auto ll = low_level_api(m);
+
+    // set faces to removed
+    for (auto f : m.faces())
+        ll.set_removed(f);
+
+    // set edges to removed
+    for (auto e : m.edges())
+        ll.set_removed(e);
+
+    // remove all halfedges from vertices
+    for (auto v : m.vertices())
+        ll.outgoing_halfedge_of(v) = halfedge_index::invalid();
 }
 }

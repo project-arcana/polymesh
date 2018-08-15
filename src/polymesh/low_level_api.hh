@@ -50,6 +50,11 @@ public:
     int size_valid_edges() const;
     int size_valid_halfedges() const;
 
+    int size_removed_faces() const;
+    int size_removed_vertices() const;
+    int size_removed_edges() const;
+    int size_removed_halfedges() const;
+
     // traversal helper
 public:
     // returns the next valid idx (returns the given one if valid)
@@ -164,10 +169,11 @@ public:
     /// Adds a face consisting of N vertices
     /// The vertices must already be sorted in CCW order
     /// (note: trying to add already existing halfedges triggers assertions)
-    face_index add_face(vertex_handle const* v_handles, int vcnt) const;
-    face_index add_face(vertex_index const* v_indices, int vcnt) const;
-    face_index add_face(halfedge_handle const* half_loop, int vcnt) const;
-    face_index add_face(halfedge_index const* half_loop, int vcnt) const;
+    /// Optional: provide an index that should be "resurrected" (must be a removed slot)
+    face_index add_face(vertex_handle const* v_handles, int vcnt, face_index res_idx = {}) const;
+    face_index add_face(vertex_index const* v_indices, int vcnt, face_index res_idx = {}) const;
+    face_index add_face(halfedge_handle const* half_loop, int vcnt, face_index res_idx = {}) const;
+    face_index add_face(halfedge_index const* half_loop, int vcnt, face_index res_idx = {}) const;
 
     /// Adds an edge between two existing, distinct vertices
     /// if edge already exists, returns it
@@ -206,6 +212,11 @@ public:
     void remove_edge(edge_index e_idx) const;
     /// removes all adjacent edges, then the vertex
     void remove_vertex(vertex_index v_idx) const;
+
+    /// special purpose function:
+    /// CAUTION: only works if edges.size() == 0
+    /// clears the edge vector
+    void clear_removed_edge_vector() const;
 
     /// Overrides the saved number of removed primitives
     /// CAUTION: only use if you know what you do!
