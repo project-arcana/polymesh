@@ -52,7 +52,7 @@ public:
 
     AttrT* data() { return mData.data; }
     AttrT const* data() const { return mData.data; }
-    int size() const;
+    int size() const; ///< INCLUDES flagged-for-removal entries!
 
     attribute_iterator<primitive_attribute&> begin() { return {0, *this}; }
     attribute_iterator<primitive_attribute const&> begin() const { return {0, *this}; }

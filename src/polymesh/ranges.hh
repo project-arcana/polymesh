@@ -222,9 +222,13 @@ struct smart_collection : smart_range<smart_collection<mesh_ptr, tag, iterator>,
 
 protected:
     /// Backreference to mesh
-    mesh_ptr mesh;
+    mesh_ptr m;
 
     friend class Mesh;
+
+public:
+    /// returns reference to mesh
+    decltype(*m) mesh() const { return *m; }
 };
 
 /// Collection of all vertices of a mesh

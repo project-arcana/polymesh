@@ -128,5 +128,7 @@ protected:
 
 public:
     virtual ~primitive_attribute_base() { deregister_attr(); }
+
+    Mesh const& mesh() { return *mMesh; }
 };
 }

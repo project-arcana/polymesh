@@ -1,10 +1,14 @@
 #pragma once
 
+#include <unordered_map>
+
 #include "../Mesh.hh"
 
 #include "../detail/permutation.hh"
 #include "../detail/random.hh"
 #include "../detail/union_find.hh"
+
+#include "../data/partitioning.hh"
 
 namespace polymesh
 {
@@ -67,15 +71,15 @@ inline std::vector<int> cache_coherent_face_layout(Mesh const& m)
         return {};
     assert(m.faces().size() == m.all_faces().size() && "non-compact currently not supported");
 
-    polymesh::detail::disjoint_set clusters(m.all_faces().size());
+    auto clusters = make_partitioning(m.faces());
 
-    std::vector<std::pair<float, std::pair<int, int>>> edges;
+    std::vector<std::pair<float, std::pair<face_index, face_index>>> edges;
     for (auto e : m.edges())
-        edges.push_back({-1, {(int)e.faceA(), (int)e.faceB()}});
+        edges.push_back({-1, {e.faceA(), e.faceB()}});
 
     struct node
     {
-        int rep;
+        face_index rep;
         std::vector<node*> children;
 
         bool is_leaf() const { return children.empty(); }
@@ -84,7 +88,7 @@ inline std::vector<int> cache_coherent_face_layout(Mesh const& m)
         {
             if (is_leaf())
             {
-                indices[rep] = next_idx++;
+                indices[(int)rep] = next_idx++;
             }
             else
             {
@@ -100,11 +104,12 @@ inline std::vector<int> cache_coherent_face_layout(Mesh const& m)
         }
     };
 
-    std::map<int, node*> cluster_centers;
+    std::unordered_map<face_index, node*> cluster_centers;
     for (auto f : m.faces())
-        cluster_centers[(int)f] = new node{(int)f};
+        cluster_centers[f] = new node{f};
 
-    std::map<std::pair<int, int>, float> cluster_neighbors;
+    int64_t fcnt = m.all_faces().size();
+    std::unordered_map<int64_t, float> cluster_neighbors;
 
     // bottom-up clustering
     auto cluster_limit = 1;
@@ -118,11 +123,11 @@ inline std::vector<int> cache_coherent_face_layout(Mesh const& m)
             auto f0 = e.second.first;
             auto f1 = e.second.second;
 
-            auto s0 = clusters.size_of(f0);
-            auto s1 = clusters.size_of(f1);
+            auto s0 = clusters[f0].size();
+            auto s1 = clusters[f1].size();
 
             if (s0 + s1 <= cluster_limit)
-                clusters.do_union(f0, f1);
+                clusters.merge(f0, f1);
         }
 
         // collect new neighbors
@@ -130,8 +135,8 @@ inline std::vector<int> cache_coherent_face_layout(Mesh const& m)
         for (auto e : edges)
         {
             auto w = e.first;
-            auto f0 = clusters.find(e.second.first);
-            auto f1 = clusters.find(e.second.second);
+            auto f0 = clusters[e.second.first].root();
+            auto f1 = clusters[e.second.second].root();
 
             if (f0 == f1)
                 continue;
@@ -139,24 +144,28 @@ inline std::vector<int> cache_coherent_face_layout(Mesh const& m)
             if (f0 > f1)
                 std::swap(f0, f1);
 
-            cluster_neighbors[{f0, f1}] += w;
+            cluster_neighbors[(int)f0 * fcnt + (int)f1] += w;
         }
 
         // create new edges
         edges.clear();
         for (auto const& kvp : cluster_neighbors)
-            edges.push_back({kvp.second, kvp.first});
+        {
+            auto f0 = face_index(kvp.first / fcnt);
+            auto f1 = face_index(kvp.first % fcnt);
+            edges.push_back({kvp.second, {f0, f1}});
+        }
         sort(edges.begin(), edges.end());
 
         // new cluster centers
-        std::map<int, node*> new_centers;
+        std::unordered_map<face_index, node*> new_centers;
         // .. create nodes
         for (auto const& kvp : cluster_centers)
-            if (clusters.is_representative(kvp.first))
+            if (clusters[kvp.first].is_root())
                 new_centers[kvp.first] = new node{kvp.first};
         // .. add children
         for (auto const& kvp : cluster_centers)
-            new_centers[clusters.find(kvp.first)]->children.push_back(kvp.second);
+            new_centers[clusters[kvp.first].root()]->children.push_back(kvp.second);
         // .. replace old
         cluster_centers = new_centers;
     }
@@ -177,8 +186,121 @@ inline std::vector<int> cache_coherent_face_layout(Mesh const& m)
 
 inline std::vector<int> cache_coherent_vertex_layout(Mesh const& m)
 {
-    assert(0 && "TODO");
-    return {};
+    if (m.vertices().empty())
+        return {};
+    assert(m.vertices().size() == m.all_vertices().size() && "non-compact currently not supported");
+
+    auto clusters = make_partitioning(m.vertices());
+
+    std::vector<std::pair<float, std::pair<vertex_index, vertex_index>>> edges;
+    for (auto e : m.edges())
+        edges.push_back({-1, {e.vertexA(), e.vertexB()}});
+
+    struct node
+    {
+        vertex_index rep;
+        std::vector<node*> children;
+
+        bool is_leaf() const { return children.empty(); }
+
+        void assign_idx(int& next_idx, std::vector<int>& indices) const
+        {
+            if (is_leaf())
+            {
+                indices[(int)rep] = next_idx++;
+            }
+            else
+            {
+                for (auto n : children)
+                    n->assign_idx(next_idx, indices);
+            }
+        }
+
+        ~node()
+        {
+            for (auto n : children)
+                delete n;
+        }
+    };
+
+    std::unordered_map<vertex_index, node*> cluster_centers;
+    for (auto f : m.vertices())
+        cluster_centers[f] = new node{f};
+
+    int64_t vcnt = m.all_vertices().size();
+    std::unordered_map<int64_t, float> cluster_neighbors;
+
+    // bottom-up clustering
+    auto cluster_limit = 1;
+    while (!edges.empty())
+    {
+        cluster_limit *= 2;
+
+        // merge edges where appropriate
+        for (auto e : edges)
+        {
+            auto f0 = e.second.first;
+            auto f1 = e.second.second;
+
+            auto s0 = clusters[f0].size();
+            auto s1 = clusters[f1].size();
+
+            if (s0 + s1 <= cluster_limit)
+                clusters.merge(f0, f1);
+        }
+
+        // collect new neighbors
+        cluster_neighbors.clear();
+        for (auto e : edges)
+        {
+            auto w = e.first;
+            auto f0 = clusters[e.second.first].root();
+            auto f1 = clusters[e.second.second].root();
+
+            if (f0 == f1)
+                continue;
+
+            if (f0 > f1)
+                std::swap(f0, f1);
+
+            cluster_neighbors[(int)f0 * vcnt + (int)f1] += w;
+        }
+
+        // create new edges
+        edges.clear();
+        for (auto const& kvp : cluster_neighbors)
+        {
+            auto f0 = vertex_index(kvp.first / vcnt);
+            auto f1 = vertex_index(kvp.first % vcnt);
+            edges.push_back({kvp.second, {f0, f1}});
+        }
+        sort(edges.begin(), edges.end());
+
+        // new cluster centers
+        std::unordered_map<vertex_index, node*> new_centers;
+        // .. create nodes
+        for (auto const& kvp : cluster_centers)
+            if (clusters[kvp.first].is_root())
+                new_centers[kvp.first] = new node{kvp.first};
+        // .. add children
+        for (auto const& kvp : cluster_centers)
+            new_centers[clusters[kvp.first].root()]->children.push_back(kvp.second);
+        // .. replace old
+        cluster_centers = new_centers;
+    }
+
+    // distribute indices
+    std::vector<int> new_indices(m.all_vertices().size());
+    int next_idx = 0;
+    for (auto const& kvp : cluster_centers)
+        kvp.second->assign_idx(next_idx, new_indices);
+    assert(next_idx == m.vertices().size());
+
+    // cleanup
+    for (auto const& kvp : cluster_centers)
+        delete kvp.second;
+
+    return new_indices;
 }
 
 inline void optimize_edges_for_faces(Mesh& m)
