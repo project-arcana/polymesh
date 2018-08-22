@@ -20,6 +20,8 @@ namespace polymesh
 ///     preserves (first) vertex and face attributes ONLY!
 ///     edge/halfedge attributes are UNDEFINED (will probably contain uncorrelated old data)
 ///
+/// CAUTION: currently only works on faces and will remove isolated vertices/edges
+///
 /// returns number of removed vertices (-1 if deduplication failed (e.g. due to non-manifoldness))
 template <class KeyF>
 int deduplicate(Mesh& m, KeyF&& kf);
