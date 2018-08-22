@@ -7,5 +7,5 @@
 namespace polymesh
 {
 /// loads a mesh from a file
-void load(std::string const& filename, Mesh& m, vertex_attribute<glm::vec3>& pos);
+bool load(std::string const& filename, Mesh& m, vertex_attribute<glm::vec3>& pos);
 }

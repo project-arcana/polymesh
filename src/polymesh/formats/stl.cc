@@ -76,6 +76,11 @@ bool read_stl_binary(std::istream &input, Mesh &mesh, vertex_attribute<glm::vec3
 {
     mesh.clear();
 
+    auto savp = input.tellg();
+    input.seekg(0, std::ios_base::end);
+    auto fs_real = input.tellg();
+    input.seekg(savp, std::ios_base::beg);
+
     char header[80];
     input.read(header, sizeof(header));
 
@@ -87,6 +92,13 @@ bool read_stl_binary(std::istream &input, Mesh &mesh, vertex_attribute<glm::vec3
 
     uint32_t n_triangles;
     input.read((char *)&n_triangles, sizeof(n_triangles));
+
+    auto fs_expect = 80 + sizeof(n_triangles) + n_triangles * (sizeof(glm::vec3) * 4 + sizeof(uint16_t));
+    if (fs_expect != fs_real)
+    {
+        std::cerr << "Expected file size mismatch: " << fs_expect << " vs " << fs_real << " bytes (file corrupt or wrong format?)" << std::endl;
+        return false;
+    }
 
     mesh.faces().reserve(n_triangles);
     mesh.vertices().reserve(n_triangles * 3);
@@ -116,6 +128,19 @@ bool read_stl_binary(std::istream &input, Mesh &mesh, vertex_attribute<glm::vec3
     return true;
 }
 
+static float read_float_with_nan(std::istream &input)
+{
+    std::string s;
+    input >> s;
+    if (s == "NaN" || s == "nan" || s == "NAN")
+        return std::numeric_limits<float>::quiet_NaN();
+
+    std::istringstream ss(s);
+    float f;
+    ss >> f;
+    return f;
+}
+
 bool read_stl_ascii(std::istream &input, Mesh &mesh, vertex_attribute<glm::vec3> &position, face_attribute<glm::vec3> *normals)
 {
     mesh.clear();
@@ -133,11 +158,11 @@ bool read_stl_ascii(std::istream &input, Mesh &mesh, vertex_attribute<glm::vec3>
     do
     {
         input >> s;
-    } while (input.good() && s != "endsolid" && s != "facet");
+    } while (input.good() && s != "endsolid" && s != "facet" && s != "faced");
 
     while (input.good() && s != "endsolid")
     {
-        assert(s == "facet");
+        assert(s == "facet" || s == "faced");
 
         vertex_handle v[3];
         v[0] = mesh.vertices().add();
@@ -148,7 +173,9 @@ bool read_stl_ascii(std::istream &input, Mesh &mesh, vertex_attribute<glm::vec3>
         input >> s;
         assert(s == "normal");
         glm::vec3 n;
-        input >> n.x >> n.y >> n.z;
+        n.x = read_float_with_nan(input);
+        n.y = read_float_with_nan(input);
+        n.z = read_float_with_nan(input);
         f[normals] = n;
 
         input >> s;
@@ -161,7 +188,9 @@ bool read_stl_ascii(std::istream &input, Mesh &mesh, vertex_attribute<glm::vec3>
             input >> s;
             assert(s == "vertex");
             glm::vec3 p;
-            input >> p.x >> p.y >> p.z;
+            p.x = read_float_with_nan(input);
+            p.y = read_float_with_nan(input);
+            p.z = read_float_with_nan(input);
             position[v[i]] = p;
         }
 
@@ -181,10 +210,10 @@ bool is_ascii_stl(std::istream &input)
 {
     auto savp = input.tellg();
 
-    char solid[6];
+    char solid[5];
     input.read(solid, sizeof(solid));
 
-    if (solid[0] != 's' || solid[1] != 'o' || solid[2] != 'l' || solid[3] != 'i' || solid[4] != 'd' || solid[5] != ' ')
+    if (solid[0] != 's' || solid[1] != 'o' || solid[2] != 'l' || solid[3] != 'i' || solid[4] != 'd')
     {
         input.seekg(savp, std::ios_base::beg);
         return false;
@@ -193,18 +222,27 @@ bool is_ascii_stl(std::istream &input)
     std::string s;
     input >> s;
 
-    if (s == "facet" || s == "endsolid")
+    if (s == "facet" || s == "faced" || s == "endsolid")
     {
         input.seekg(savp, std::ios_base::beg);
         return true;
     }
 
-    input >> s;
-
-    if (s == "facet" || s == "endsolid")
+    for (auto i = 0; i < 20; ++i)
     {
-        input.seekg(savp, std::ios_base::beg);
-        return true;
+        input >> s;
+
+        if (s == "facet" || s == "faced" || s == "endsolid")
+        {
+            input.seekg(savp, std::ios_base::beg);
+            return true;
+        }
+
+        if (!input)
+        {
+            input.seekg(savp, std::ios_base::beg);
+            return false;
+        }
     }
 
     input.seekg(savp, std::ios_base::beg);

@@ -60,6 +60,7 @@ bool read_off(std::istream &input, Mesh &mesh, vertex_attribute<glm::vec3> &posi
     }
 
     // read faces
+    auto non_manifold = 0;
     std::vector<vertex_handle> vs;
     for (auto i = 0; i < f_cnt; ++i)
     {
@@ -73,9 +74,18 @@ bool read_off(std::istream &input, Mesh &mesh, vertex_attribute<glm::vec3> &posi
             vs[vi] = mesh[vertex_index(v)];
         }
 
+        if (!mesh.faces().can_add(vs))
+        {
+            ++non_manifold;
+            continue;
+        }
+
         mesh.faces().add(vs);
     }
 
-    return true;
+    if (non_manifold > 0)
+        std::cerr << "skipped " << non_manifold << " face(s) because mesh would become non-manifold" << std::endl;
+
+    return non_manifold == 0;
 }
 }
