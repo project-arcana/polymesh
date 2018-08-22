@@ -119,7 +119,12 @@ bool low_level_api_base<MeshT>::can_add_face(const vertex_handle *v_handles, int
     if (vcnt < 3)
         return false; // too few vertices
 
-    // TODO: check duplicated vertices
+    // check duplicated vertices
+    // TODO: more performant for high number of vertices
+    for (auto i = 0; i < vcnt; ++i)
+        for (auto j = i + 1; j < vcnt; ++j)
+            if (v_handles[i] == v_handles[j])
+                return false;
 
     // ensure that half-edges are adjacent at each vertex
     for (auto i = 0; i < vcnt; ++i)
@@ -161,7 +166,12 @@ bool low_level_api_base<MeshT>::can_add_face(const vertex_index *v_indices, int 
     if (vcnt < 3)
         return false; // too few vertices
 
-    // TODO: check duplicated vertices
+    // check duplicated vertices
+    // TODO: more performant for high number of vertices
+    for (auto i = 0; i < vcnt; ++i)
+        for (auto j = i + 1; j < vcnt; ++j)
+            if (v_indices[i] == v_indices[j])
+                return false;
 
     // ensure that half-edges are adjacent at each vertex
     for (auto i = 0; i < vcnt; ++i)
