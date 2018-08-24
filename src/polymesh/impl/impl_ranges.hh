@@ -313,24 +313,6 @@ auto smart_range<this_t, ElementT>::minmax(FuncT &&f) const -> polymesh::aabb<tm
 }
 
 template <class this_t, class ElementT>
-std::vector<ElementT> smart_range<this_t, ElementT>::to_vector() const
-{
-    std::vector<ElementT> v;
-    for (auto h : *static_cast<this_t const *>(this))
-        v.push_back(h);
-    return v;
-}
-
-template <class this_t, class ElementT>
-std::set<ElementT> smart_range<this_t, ElementT>::to_set() const
-{
-    std::set<ElementT> s;
-    for (auto h : *static_cast<this_t const *>(this))
-        s.insert(h);
-    return s;
-}
-
-template <class this_t, class ElementT>
 template <class FuncT>
 auto smart_range<this_t, ElementT>::to_vector(FuncT &&f) const -> std::vector<tmp::decayed_result_type_of<FuncT, ElementT>>
 {
@@ -338,6 +320,24 @@ auto smart_range<this_t, ElementT>::to_vector(FuncT &&f) const -> std::vector<tm
     for (auto h : *static_cast<this_t const *>(this))
         v.push_back(f(h));
     return v;
+}
+
+template <class this_t, class ElementT>
+template <size_t N, class FuncT>
+auto smart_range<this_t, ElementT>::to_array(FuncT &&f) const -> std::array<tmp::decayed_result_type_of<FuncT, ElementT>, N>
+{
+    std::array<tmp::decayed_result_type_of<FuncT, ElementT>, N> a;
+    auto idx = 0;
+    for (auto h : *static_cast<this_t const *>(this))
+    {
+        if (idx >= N)
+            break;
+
+        a[idx] = f(h);
+
+        ++idx;
+    }
+    return a;
 }
 
 template <class this_t, class ElementT>
@@ -706,9 +706,9 @@ template <class iterator>
 face_handle face_collection<iterator>::add(vertex_handle v0, vertex_handle v1, vertex_handle v2) const
 {
     halfedge_index hs[3] = {
+        low_level_api(this->m).add_or_get_halfedge(v2.idx, v0.idx), //
         low_level_api(this->m).add_or_get_halfedge(v0.idx, v1.idx), //
         low_level_api(this->m).add_or_get_halfedge(v1.idx, v2.idx), //
-        low_level_api(this->m).add_or_get_halfedge(v2.idx, v0.idx), //
     };
     return this->m->handle_of(low_level_api(this->m).add_face(hs, 3));
 }
@@ -717,10 +717,10 @@ template <class iterator>
 face_handle face_collection<iterator>::add(vertex_handle v0, vertex_handle v1, vertex_handle v2, vertex_handle v3) const
 {
     halfedge_index hs[4] = {
+        low_level_api(this->m).add_or_get_halfedge(v3.idx, v0.idx), //
         low_level_api(this->m).add_or_get_halfedge(v0.idx, v1.idx), //
         low_level_api(this->m).add_or_get_halfedge(v1.idx, v2.idx), //
         low_level_api(this->m).add_or_get_halfedge(v2.idx, v3.idx), //
-        low_level_api(this->m).add_or_get_halfedge(v3.idx, v0.idx), //
     };
     return this->m->handle_of(low_level_api(this->m).add_face(hs, 4));
 }
@@ -745,7 +745,7 @@ face_handle face_collection<iterator>::add(const vertex_handle (&v_handles)[N]) 
 {
     halfedge_index hs[N];
     for (auto i = 0; i < N; ++i)
-        hs[i] = low_level_api(this->m).add_or_get_halfedge(v_handles[i].idx, v_handles[(i + 1) % N].idx);
+        hs[i] = low_level_api(this->m).add_or_get_halfedge(v_handles[(i + N - 1) % N].idx, v_handles[i].idx);
     return this->m->handle_of(low_level_api(this->m).add_face(hs, N));
 }
 
@@ -811,9 +811,9 @@ template <class iterator>
 bool face_collection<iterator>::can_add(vertex_handle v0, vertex_handle v1, vertex_handle v2) const
 {
     halfedge_index hs[3] = {
+        low_level_api(this->m).can_add_or_get_halfedge(v2.idx, v0.idx), //
         low_level_api(this->m).can_add_or_get_halfedge(v0.idx, v1.idx), //
         low_level_api(this->m).can_add_or_get_halfedge(v1.idx, v2.idx), //
-        low_level_api(this->m).can_add_or_get_halfedge(v2.idx, v0.idx), //
     };
     return low_level_api(this->m).can_add_face(hs, 3);
 }
@@ -822,10 +822,10 @@ template <class iterator>
 bool face_collection<iterator>::can_add(vertex_handle v0, vertex_handle v1, vertex_handle v2, vertex_handle v3) const
 {
     halfedge_index hs[4] = {
+        low_level_api(this->m).can_add_or_get_halfedge(v3.idx, v0.idx), //
         low_level_api(this->m).can_add_or_get_halfedge(v0.idx, v1.idx), //
         low_level_api(this->m).can_add_or_get_halfedge(v1.idx, v2.idx), //
         low_level_api(this->m).can_add_or_get_halfedge(v2.idx, v3.idx), //
-        low_level_api(this->m).can_add_or_get_halfedge(v3.idx, v0.idx), //
     };
     return low_level_api(this->m).can_add_face(hs, 4);
 }

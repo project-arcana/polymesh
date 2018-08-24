@@ -24,7 +24,7 @@ inline face_index low_level_api_mutable::add_face(const vertex_handle *v_handles
 {
     m.mFaceInsertCache.resize(vcnt);
     for (auto i = 0; i < vcnt; ++i)
-        m.mFaceInsertCache[i] = add_or_get_halfedge(v_handles[i].idx, v_handles[(i + 1) % vcnt].idx);
+        m.mFaceInsertCache[i] = add_or_get_halfedge(v_handles[(i + vcnt - 1) % vcnt].idx, v_handles[i].idx);
     return add_face(m.mFaceInsertCache.data(), vcnt, res_idx);
 }
 
@@ -32,7 +32,7 @@ inline face_index low_level_api_mutable::add_face(const vertex_index *v_indices,
 {
     m.mFaceInsertCache.resize(vcnt);
     for (auto i = 0; i < vcnt; ++i)
-        m.mFaceInsertCache[i] = add_or_get_halfedge(v_indices[i], v_indices[(i + 1) % vcnt]);
+        m.mFaceInsertCache[i] = add_or_get_halfedge(v_indices[(i + vcnt - 1) % vcnt], v_indices[i]);
     return add_face(m.mFaceInsertCache.data(), vcnt, res_idx);
 }
 

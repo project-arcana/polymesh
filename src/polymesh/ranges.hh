@@ -118,10 +118,6 @@ struct smart_range
     template <class FuncT>
     polymesh::aabb<ElementT> minmax_by(FuncT&& f) const;
 
-    /// converts this range to a vector
-    std::vector<ElementT> to_vector() const;
-    /// converts this range to a set
-    std::set<ElementT> to_set() const;
     /// converts this range to a vector containing f(v) entries
     template <class FuncT = tmp::identity>
     auto to_vector(FuncT&& f = {}) const -> std::vector<tmp::decayed_result_type_of<FuncT, ElementT>>;
@@ -131,6 +127,10 @@ struct smart_range
     /// converts this range to a map containing {v, f(v)} entries
     template <class FuncT = tmp::identity>
     auto to_map(FuncT&& f = {}) const -> std::map<ElementT, tmp::decayed_result_type_of<FuncT, ElementT>>;
+    /// converts this range to a fixed size array containing f(v) entries
+    /// NOTE: if less elements are present, array is filled with default constructed elements
+    template <size_t N, class FuncT = tmp::identity>
+    auto to_array(FuncT&& f = {}) const -> std::array<tmp::decayed_result_type_of<FuncT, ElementT>, N>;
 
     /// returns a new range that consists of all elements where p(x) is true
     template <class PredT>
