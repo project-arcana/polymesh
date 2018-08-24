@@ -1,7 +1,5 @@
 #pragma once
 
-#include <glm/glm.hpp>
-
 #include "../Mesh.hh"
 #include "../fields.hh"
 

@@ -37,6 +37,7 @@ struct primitive_attribute : primitive_attribute_base<tag>, smart_range<primitiv
     using attribute = typename primitive<tag>::template attribute<A>;
     using index_t = typename primitive<tag>::index;
     using handle_t = typename primitive<tag>::handle;
+    using tag_t = tag;
 
     // data access
 public:
