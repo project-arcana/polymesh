@@ -27,7 +27,7 @@ inline void triangulate_naive(Mesh& m)
 
         // triangulate
         for (auto i = 2u; i < vs.size(); ++i)
-            m.faces().add(vs[0], vs[1], vs[i]);
+            m.faces().add(vs[0], vs[i - 1], vs[i]);
     }
 }
 }
