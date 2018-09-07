@@ -287,6 +287,27 @@ auto smart_range<this_t, ElementT>::geometric_mean(FuncT &&f) const -> tmp::deca
 
 template <class this_t, class ElementT>
 template <class FuncT>
+auto smart_range<this_t, ElementT>::median(FuncT &&f) const -> tmp::decayed_result_type_of<FuncT, ElementT>
+{
+    return this->order_statistic(0.5f, f);
+}
+
+template <class this_t, class ElementT>
+template <class FuncT>
+auto smart_range<this_t, ElementT>::order_statistic(float p, FuncT &&f) const -> tmp::decayed_result_type_of<FuncT, ElementT>
+{
+    auto vals = this->to_vector();
+    assert(!vals.empty() && "requires non-empty range");
+    auto n = (int)(std::roundf(vals.size() * p));
+    if (n < 0)
+        n = 0;
+    if (n >= (int)vals.size())
+        n = (int)vals.size() - 1;
+    return std::nth_element(vals.begin(), vals.begin() + n, vals.end());
+}
+
+template <class this_t, class ElementT>
+template <class FuncT>
 auto smart_range<this_t, ElementT>::aabb(FuncT &&f) const -> polymesh::aabb<tmp::decayed_result_type_of<FuncT, ElementT>>
 {
     auto it_begin = static_cast<this_t const *>(this)->begin();

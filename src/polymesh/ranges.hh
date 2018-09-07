@@ -104,6 +104,16 @@ struct smart_range
     template <class FuncT = tmp::identity>
     auto geometric_mean(FuncT&& f = {}) const -> tmp::decayed_result_type_of<FuncT, ElementT>;
 
+    /// computes the median
+    /// NOTE: constructs an intermediate vector!
+    template <class FuncT = tmp::identity>
+    auto median(FuncT&& f = {}) const -> tmp::decayed_result_type_of<FuncT, ElementT>;
+    /// computes the p-order statistic (p in 0..1)
+    /// p: 0 is min, 0.5 is median, 1 is max
+    /// NOTE: constructs an intermediate vector!
+    template <class FuncT = tmp::identity>
+    auto order_statistic(float p, FuncT&& f = {}) const -> tmp::decayed_result_type_of<FuncT, ElementT>;
+
     /// calculates the aabb (min and max) of f(e) over all elements
     /// undefined behavior if range is empty
     /// works for std::min/max and everything reachable by ADL (calls min/max(_, _))
