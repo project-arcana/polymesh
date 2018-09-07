@@ -75,7 +75,8 @@ inline std::vector<int> cache_coherent_face_layout(Mesh const& m)
 
     std::vector<std::pair<float, std::pair<face_index, face_index>>> edges;
     for (auto e : m.edges())
-        edges.push_back({-1, {e.faceA(), e.faceB()}});
+        if (!e.is_boundary())
+            edges.push_back({-1, {e.faceA(), e.faceB()}});
 
     struct node
     {
@@ -88,6 +89,7 @@ inline std::vector<int> cache_coherent_face_layout(Mesh const& m)
         {
             if (is_leaf())
             {
+                assert((int)rep < (int)indices.size());
                 indices[(int)rep] = next_idx++;
             }
             else
@@ -207,6 +209,7 @@ inline std::vector<int> cache_coherent_vertex_layout(Mesh const& m)
         {
             if (is_leaf())
             {
+                assert((int)rep < (int)indices.size());
                 indices[(int)rep] = next_idx++;
             }
             else
@@ -305,15 +308,13 @@ inline std::vector<int> cache_coherent_vertex_layout(Mesh const& m)
 
 inline void optimize_edges_for_faces(Mesh& m)
 {
-    uint64_t rng = 1;
-
     std::vector<std::pair<int, int>> face_edge_indices;
     for (auto e : m.edges())
     {
         auto fA = e.faceA();
         auto fB = e.faceB();
-        auto f = fA.is_invalid() ? fB : fB.is_invalid() ? fA : detail::xorshift64star(rng) % 2 ? fA : fB;
-        face_edge_indices.emplace_back((int)f, (int)e);
+        auto f = fA.is_invalid() ? (int)fB : fB.is_invalid() ? (int)fA : std::min((int)fA, (int)fB);
+        face_edge_indices.emplace_back(f, (int)e);
     }
 
     // sort by face idx
@@ -330,14 +331,9 @@ inline void optimize_edges_for_faces(Mesh& m)
 
 inline void optimize_edges_for_vertices(Mesh& m)
 {
-    uint64_t rng = 1;
-
     std::vector<std::pair<int, int>> vertex_edge_indices;
     for (auto e : m.edges())
-    {
-        auto r = detail::xorshift64star(rng);
-        vertex_edge_indices.emplace_back(r % 2 ? e.vertexA().idx.value : e.vertexB().idx.value, e.idx.value);
-    }
+        vertex_edge_indices.emplace_back(std::min(e.vertexA().idx.value, e.vertexB().idx.value), e.idx.value);
 
     // sort by vertex idx
     sort(vertex_edge_indices.begin(), vertex_edge_indices.end());
@@ -353,8 +349,6 @@ inline void optimize_edges_for_vertices(Mesh& m)
 
 inline void optimize_faces_for_vertices(Mesh& m)
 {
-    uint64_t rng = 1;
-
     std::vector<std::pair<int, int>> vertex_face_indices;
     for (auto f : m.faces())
     {
@@ -363,7 +357,7 @@ inline void optimize_faces_for_vertices(Mesh& m)
         for (auto v : f.vertices())
         {
             ++cnt;
-            if (detail::xorshift64star(rng) % cnt == 0)
+            if (vv.is_invalid() || (int)v < (int)vv)
                 vv = v;
         }
         vertex_face_indices.emplace_back(vv.idx.value, f.idx.value);
@@ -383,8 +377,6 @@ inline void optimize_faces_for_vertices(Mesh& m)
 
 inline void optimize_vertices_for_faces(Mesh& m)
 {
-    uint64_t rng = 1;
-
     std::vector<std::pair<int, int>> face_vertex_indices;
     for (auto v : m.vertices())
     {
@@ -396,7 +388,7 @@ inline void optimize_vertices_for_faces(Mesh& m)
                 continue;
 
             ++cnt;
-            if (detail::xorshift64star(rng) % cnt == 0)
+            if (ff.is_invalid() || (int)f < (int)ff)
                 ff = f;
         }
         face_vertex_indices.emplace_back(ff.idx.value, v.idx.value);
