@@ -201,8 +201,9 @@ void Mesh::assert_consistency() const
         polyassert(h.prev().vertex_to() == h.vertex_from());
 
         auto ref_face = h.face();
-        for (auto h : h.ring())
-            polyassert(h.face() == ref_face);
+        if (ref_face.is_valid())
+            for (auto h : h.ring())
+                polyassert(h.face() == ref_face);
     }
 
     // check vertex consistencies
