@@ -303,7 +303,9 @@ auto smart_range<this_t, ElementT>::order_statistic(float p, FuncT &&f) const ->
         n = 0;
     if (n >= (int)vals.size())
         n = (int)vals.size() - 1;
-    return std::nth_element(vals.begin(), vals.begin() + n, vals.end());
+    auto itn = vals.begin() + n;
+    std::nth_element(vals.begin(), itn, vals.end());
+    return *itn;
 }
 
 template <class this_t, class ElementT>
