@@ -37,6 +37,10 @@ struct primitive_index
 
     explicit operator int() const { return value; }
 
+    /// creates a handle from this idx and the given mesh
+    handle_t of(Mesh const& m) const { return handle_t(&m, index_t(value)); }
+    handle_t of(Mesh const* m) const { return handle_t(m, index_t(value)); }
+
     /// indexes this primitive by a functor
     /// also works for attributes
     /// - e.g. v[position] or f[area]
