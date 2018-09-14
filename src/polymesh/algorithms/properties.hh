@@ -117,6 +117,11 @@ Scalar angle_defect(vertex_handle v, vertex_attribute<Vec3> const& position);
 template <class Vec3, class Scalar = typename field_3d<Vec3>::Scalar>
 vertex_attribute<Scalar> vertex_voronoi_areas(Mesh const& m, vertex_attribute<Vec3> const& position);
 
+/// returns true if the edge satisfies the delaunay property
+/// NOTE: only works on triangles
+template <class Vec3>
+bool is_delaunay(edge_handle e, vertex_attribute<Vec3> const& position);
+
 /// ======== IMPLEMENTATION ========
 
 inline bool is_boundary(vertex_handle v) { return v.is_boundary(); }
@@ -358,5 +363,28 @@ vertex_attribute<Scalar> vertex_voronoi_areas(Mesh const& m, vertex_attribute<Ve
     }
 
     return areas;
+}
+
+template <class Vec3>
+bool is_delaunay(edge_handle e, vertex_attribute<Vec3> const& position)
+{
+    auto h0 = e.halfedgeA();
+    auto h1 = e.halfedgeB();
+
+    auto pi = position[h0.vertex_to()];
+    auto pj = position[h1.vertex_to()];
+
+    auto pa = position[h0.next().vertex_to()];
+    auto pb = position[h1.next().vertex_to()];
+
+    auto e_ia = pi - pa;
+    auto e_ja = pj - pa;
+    auto e_ib = pi - pb;
+    auto e_jb = pj - pb;
+
+    auto cot_a = field_3d<Vec3>::dot(e_ia, e_ja) / field_3d<Vec3>::length(field_3d<Vec3>::cross(e_ia, e_ja));
+    auto cot_b = field_3d<Vec3>::dot(e_ib, e_jb) / field_3d<Vec3>::length(field_3d<Vec3>::cross(e_ib, e_jb));
+
+    return cot_a + cot_b >= 0;
 }
 }
