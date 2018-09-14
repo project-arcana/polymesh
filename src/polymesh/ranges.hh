@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <map>
 #include <set>
+#include <array>
 #include <vector>
 
 #include "iterators.hh"
