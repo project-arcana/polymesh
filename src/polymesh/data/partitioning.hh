@@ -42,7 +42,7 @@ public:
     void clear();
 
     /// returns the number of partitions
-    int size();
+    int size() const;
 
     // partition
 public:
@@ -119,7 +119,7 @@ int partitioning<tag>::size_of(index_t i)
 }
 
 template <class tag>
-int partitioning<tag>::size()
+int partitioning<tag>::size() const
 {
     return partitions;
 }
