@@ -340,8 +340,7 @@ template <class FuncT>
 auto smart_range<this_t, ElementT>::to_vector(FuncT &&f) const -> std::vector<tmp::decayed_result_type_of<FuncT, ElementT>>
 {
     std::vector<tmp::decayed_result_type_of<FuncT, ElementT>> v;
-    for (auto h : *static_cast<this_t const *>(this))
-        v.push_back(f(h));
+    this->into_vector(v, f);
     return v;
 }
 
@@ -350,16 +349,7 @@ template <size_t N, class FuncT>
 auto smart_range<this_t, ElementT>::to_array(FuncT &&f) const -> std::array<tmp::decayed_result_type_of<FuncT, ElementT>, N>
 {
     std::array<tmp::decayed_result_type_of<FuncT, ElementT>, N> a;
-    auto idx = 0;
-    for (auto h : *static_cast<this_t const *>(this))
-    {
-        if (idx >= N)
-            break;
-
-        a[idx] = f(h);
-
-        ++idx;
-    }
+    this->into_array(a, f);
     return a;
 }
 
@@ -368,8 +358,7 @@ template <class FuncT>
 auto smart_range<this_t, ElementT>::to_set(FuncT &&f) const -> std::set<tmp::decayed_result_type_of<FuncT, ElementT>>
 {
     std::set<tmp::decayed_result_type_of<FuncT, ElementT>> s;
-    for (auto h : *static_cast<this_t const *>(this))
-        s.insert(f(h));
+    this->into_set(s, f);
     return s;
 }
 
@@ -378,9 +367,48 @@ template <class FuncT>
 auto smart_range<this_t, ElementT>::to_map(FuncT &&f) const -> std::map<ElementT, tmp::decayed_result_type_of<FuncT, ElementT>>
 {
     std::map<ElementT, tmp::decayed_result_type_of<FuncT, ElementT>> m;
-    for (auto h : *static_cast<this_t const *>(this))
-        m[h] = f(h);
+    this->into_map(m, f);
     return m;
+}
+
+template <class this_t, class ElementT>
+template <class FuncT>
+void smart_range<this_t, ElementT>::into_vector(std::vector<tmp::decayed_result_type_of<FuncT, ElementT>> &container, FuncT &&f) const
+{
+    for (auto h : *static_cast<this_t const *>(this))
+        container.push_back(f(h));
+}
+
+template <class this_t, class ElementT>
+template <class FuncT>
+void smart_range<this_t, ElementT>::into_set(std::set<tmp::decayed_result_type_of<FuncT, ElementT>> &container, FuncT &&f) const
+{
+    for (auto h : *static_cast<this_t const *>(this))
+        container.insert(f(h));
+}
+
+template <class this_t, class ElementT>
+template <class FuncT>
+void smart_range<this_t, ElementT>::into_map(std::map<ElementT, tmp::decayed_result_type_of<FuncT, ElementT>> &container, FuncT &&f) const
+{
+    for (auto h : *static_cast<this_t const *>(this))
+        container[h] = f(h);
+}
+
+template <class this_t, class ElementT>
+template <size_t N, class FuncT>
+void smart_range<this_t, ElementT>::into_array(std::array<tmp::decayed_result_type_of<FuncT, ElementT>, N> &container, FuncT &&f) const
+{
+    auto idx = 0;
+    for (auto h : *static_cast<this_t const *>(this))
+    {
+        if (idx >= N)
+            break;
+
+        container[idx] = f(h);
+
+        ++idx;
+    }
 }
 
 

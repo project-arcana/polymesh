@@ -18,7 +18,9 @@ inline void triangulate_naive(Mesh& m)
     std::vector<vertex_handle> vs;
     for (auto f : m.faces())
     {
-        vs = f.vertices().to_vector();
+        vs.clear();
+        f.vertices().into_vector(vs);
+
         if (vs.size() <= 3)
             continue;
 

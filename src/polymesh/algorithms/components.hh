@@ -1,6 +1,8 @@
 #pragma once
 
 #include "../Mesh.hh"
+#include "../detail/primitive_set.hh"
+#include "../detail/topology_iterator.hh"
 
 #include <queue>
 
@@ -17,6 +19,13 @@ vertex_attribute<int> vertex_components(Mesh const& m, int* comps = nullptr);
 /// Returns a face attribute for 0-based per-face component
 /// Optionally returns the total number of components in `comps`
 face_attribute<int> face_components(Mesh const& m, int* comps = nullptr);
+
+/// returns a range that iterates over all connected vertices in BFS order
+detail::bfs_range<vertex_tag> vertex_component(vertex_handle v);
+
+/// returns a range that iterates over all connected faces in BFS order
+detail::bfs_range<face_tag> face_component(face_handle f);
+detail::bfs_range<face_tag> face_component(vertex_handle v);
 
 /// ======== IMPLEMENTATION ========
 
@@ -87,5 +96,16 @@ inline face_attribute<int> face_components(Mesh const& m, int* comps)
         *comps = c_cnt;
 
     return comp;
+}
+
+inline detail::bfs_range<vertex_tag> vertex_component(vertex_handle v) { return {v}; }
+
+inline detail::bfs_range<face_tag> face_component(face_handle f) { return {f}; }
+inline detail::bfs_range<face_tag> face_component(vertex_handle v)
+{
+    for (auto f : v.faces())
+        if (f.is_valid())
+            return {f};
+    return {face_handle()};
 }
 }

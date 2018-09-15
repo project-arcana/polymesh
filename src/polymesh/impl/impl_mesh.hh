@@ -320,7 +320,7 @@ inline void Mesh::compactify()
 inline void Mesh::clear()
 {
     for (auto &v_h : mVertexToOutgoingHalfedge)
-        v_h = halfedge_index::invalid();
+        v_h.value = -2;
     for (auto &f_h : mFaceToHalfedge)
         f_h = halfedge_index::invalid();
     for (auto &h_v : mHalfedgeToVertex)

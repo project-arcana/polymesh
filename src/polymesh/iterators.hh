@@ -29,7 +29,7 @@ struct valid_primitive_iterator final
         handle.idx = low_level_api(handle.mesh).next_valid_idx_from(handle.idx);
         return *this;
     }
-    valid_primitive_iterator operator++(int)const
+    valid_primitive_iterator operator++(int)
     {
         auto i = *this;
         operator++();
@@ -69,7 +69,7 @@ struct all_primitive_iterator final
         ++handle.idx.value;
         return *this;
     }
-    all_primitive_iterator operator++(int)const
+    all_primitive_iterator operator++(int)
     {
         auto i = *this;
         operator++();
@@ -107,7 +107,7 @@ struct attribute_iterator final
         ++idx;
         return *this;
     }
-    attribute_iterator operator++(int)const
+    attribute_iterator operator++(int)
     {
         auto i = *this;
         operator++();
@@ -136,7 +136,7 @@ struct filtering_iterator final
 
         return *this;
     }
-    filtering_iterator operator++(int)const
+    filtering_iterator operator++(int)
     {
         auto i = *this;
         operator++();

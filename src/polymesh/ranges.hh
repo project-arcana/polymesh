@@ -1,9 +1,9 @@
 #pragma once
 
+#include <array>
 #include <cstddef>
 #include <map>
 #include <set>
-#include <array>
 #include <vector>
 
 #include "iterators.hh"
@@ -142,6 +142,16 @@ struct smart_range
     /// NOTE: if less elements are present, array is filled with default constructed elements
     template <size_t N, class FuncT = tmp::identity>
     auto to_array(FuncT&& f = {}) const -> std::array<tmp::decayed_result_type_of<FuncT, ElementT>, N>;
+
+    /// same as to_* but takes the container as a parameter (does NOT clear the container!)
+    template <class FuncT = tmp::identity>
+    void into_vector(std::vector<tmp::decayed_result_type_of<FuncT, ElementT>>& container, FuncT&& f = {}) const;
+    template <class FuncT = tmp::identity>
+    void into_set(std::set<tmp::decayed_result_type_of<FuncT, ElementT>>& container, FuncT&& f = {}) const;
+    template <class FuncT = tmp::identity>
+    void into_map(std::map<ElementT, tmp::decayed_result_type_of<FuncT, ElementT>>& container, FuncT&& f = {}) const;
+    template <size_t N, class FuncT = tmp::identity>
+    void into_array(std::array<tmp::decayed_result_type_of<FuncT, ElementT>, N>& container, FuncT&& f = {}) const;
 
     /// returns a new range that consists of all elements where p(x) is true
     template <class PredT>
