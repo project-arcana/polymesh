@@ -76,6 +76,10 @@ Vec3 triangle_centroid(face_handle f, vertex_attribute<Vec3> const& position);
 template <class Vec3>
 Vec3 triangle_normal(face_handle f, vertex_attribute<Vec3> const& position);
 
+/// returns the (CCW) oriented face normal (not normalized, thus scaled by 2 * face_area)
+template <class Vec3>
+Vec3 triangle_normal_unorm(face_handle f, vertex_attribute<Vec3> const& position);
+
 /// returns a barycentric interpolation of a triangular face
 template <class Vec3>
 Vec3 bary_interpolate(face_handle f, Vec3 bary, vertex_attribute<Vec3> const& position);
@@ -116,6 +120,16 @@ Scalar angle_defect(vertex_handle v, vertex_attribute<Vec3> const& position);
 /// assumes triangle meshes for now
 template <class Vec3, class Scalar = typename field_3d<Vec3>::Scalar>
 vertex_attribute<Scalar> vertex_voronoi_areas(Mesh const& m, vertex_attribute<Vec3> const& position);
+
+/// efficiently computes vertex normals by uniformly weighting face normals
+/// assumes triangle meshes for now
+template <class Vec3, class Scalar = typename field_3d<Vec3>::Scalar>
+vertex_attribute<Vec3> vertex_normals_uniform(Mesh const& m, vertex_attribute<Vec3> const& position);
+
+/// efficiently computes vertex normals by area weighting face normals
+/// assumes triangle meshes for now
+template <class Vec3, class Scalar = typename field_3d<Vec3>::Scalar>
+vertex_attribute<Vec3> vertex_normals_by_area(Mesh const& m, vertex_attribute<Vec3> const& position);
 
 /// returns true if the edge satisfies the delaunay property
 /// NOTE: only works on triangles
@@ -194,6 +208,16 @@ Vec3 triangle_normal(face_handle f, vertex_attribute<Vec3> const& position)
     auto n = field_3d<Vec3>::cross(v1 - v0, v2 - v0);
     auto l = field_3d<Vec3>::length(n);
     return l == 0 ? field_3d<Vec3>::zero() : n / l;
+}
+
+template <class Vec3>
+Vec3 triangle_normal_unorm(face_handle f, vertex_attribute<Vec3> const& position)
+{
+    auto e = f.any_halfedge();
+    auto v0 = e.vertex_from()[position];
+    auto v1 = e.vertex_to()[position];
+    auto v2 = e.next().vertex_to()[position];
+    return field_3d<Vec3>::cross(v1 - v0, v2 - v0);
 }
 
 template <class Vec3, class Scalar>
@@ -363,6 +387,46 @@ vertex_attribute<Scalar> vertex_voronoi_areas(Mesh const& m, vertex_attribute<Ve
     }
 
     return areas;
+}
+
+template <class Vec3, class Scalar>
+vertex_attribute<Vec3> vertex_normals_uniform(Mesh const& m, vertex_attribute<Vec3> const& position)
+{
+    face_attribute<Vec3> fnormals = m.faces().map([&](face_handle f) { return triangle_normal(f, position); });
+    vertex_attribute<Vec3> normals = m.vertices().make_attribute_with_default(field_3d<Vec3>::make(0, 0, 0));
+
+    for (auto f : m.faces())
+        for (auto v : f.vertices())
+            normals[v] += fnormals[f];
+
+    for (auto& n : normals)
+    {
+        auto l = field_3d<Vec3>::length(n);
+        if (l > 0)
+            n /= l;
+    }
+
+    return normals;
+}
+
+template <class Vec3, class Scalar>
+vertex_attribute<Vec3> vertex_normals_by_area(Mesh const& m, vertex_attribute<Vec3> const& position)
+{
+    face_attribute<Vec3> fnormals = m.faces().map([&](face_handle f) { return triangle_normal_unorm(f, position); });
+    vertex_attribute<Vec3> normals = m.vertices().make_attribute_with_default(field_3d<Vec3>::make(0, 0, 0));
+
+    for (auto f : m.faces())
+        for (auto v : f.vertices())
+            normals[v] += fnormals[f];
+
+    for (auto& n : normals)
+    {
+        auto l = field_3d<Vec3>::length(n);
+        if (l > 0)
+            n /= l;
+    }
+
+    return normals;
 }
 
 template <class Vec3>
