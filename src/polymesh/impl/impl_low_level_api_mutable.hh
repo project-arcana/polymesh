@@ -47,7 +47,7 @@ inline face_index low_level_api_mutable::add_face(const halfedge_handle *half_lo
 inline face_index low_level_api_mutable::add_face(const halfedge_index *half_loop, int vcnt, face_index res_idx) const
 {
     assert(vcnt >= 3 && "no support for less-than-triangular faces");
-    assert(res_idx.is_invalid() || is_removed(res_idx) && "resurrected index must be previously removed!");
+    assert((res_idx.is_invalid() || is_removed(res_idx)) && "resurrected index must be previously removed!");
 
     auto fidx = res_idx.is_valid() ? res_idx : alloc_face();
 
@@ -519,13 +519,23 @@ inline void low_level_api_mutable::edge_split(edge_index e, vertex_index v) cons
     to_vertex_of(e1h1) = v;
     to_vertex_of(e2h1) = v1;
 
-    connect_prev_next(h0_prev, e2h0);
     connect_prev_next(e2h0, e1h0);
-    connect_prev_next(e1h0, h0_next);
-
-    connect_prev_next(h1_prev, e1h1);
     connect_prev_next(e1h1, e2h1);
+
+    connect_prev_next(h0_prev, e2h0);
+    connect_prev_next(e1h0, h0_next);
+    connect_prev_next(h1_prev, e1h1);
     connect_prev_next(e2h1, h1_next);
+
+    // self-connected?
+    if (h0_prev == h1)
+    {
+        connect_prev_next(e2h1, e2h0);
+    }
+    if (h1_next == h0)
+    {
+        connect_prev_next(e1h0, e1h1);
+    }
 
     // rewire vertices
     auto &v0_out = outgoing_halfedge_of(v0);
@@ -579,6 +589,7 @@ inline void low_level_api_mutable::halfedge_split(halfedge_index h, vertex_index
     auto h0_next = next_halfedge_of(h0);
     auto h1_prev = prev_halfedge_of(h1);
 
+
     auto f0 = face_of(h0);
     auto f1 = face_of(h1);
 
@@ -591,10 +602,18 @@ inline void low_level_api_mutable::halfedge_split(halfedge_index h, vertex_index
     to_vertex_of(h3) = v;
 
     connect_prev_next(h0, h2);
-    connect_prev_next(h2, h0_next);
-
-    connect_prev_next(h1_prev, h3);
     connect_prev_next(h3, h1);
+
+    if (h0_next == h1) // self connected?
+    {
+        connect_prev_next(h2, h3);
+    }
+    else
+    {
+        connect_prev_next(h2, h0_next);
+        connect_prev_next(h1_prev, h3);
+    }
+
 
     // rewire vertices
     auto &v0_out = outgoing_halfedge_of(v0);
