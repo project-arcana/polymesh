@@ -40,21 +40,21 @@ struct bfs_range
         return queue.empty() ? handle_t() : queue.front().of(mesh);
     }
 
-    template <class Enabled = typename std::enable_if<std::is_same<handle_t, vertex_handle>::value>::type>
+    template <class handle = handle_t, class Enabled = typename std::enable_if<std::is_same<handle, vertex_handle>::value>::type>
     void expand(vertex_handle v)
     {
         for (auto vv : v.adjacent_vertices())
             if (seen.insert(vv))
                 queue.push(vv);
     }
-    template <class Enabled = typename std::enable_if<std::is_same<handle_t, face_handle>::value>::type>
+    template <class handle = handle_t, class Enabled = typename std::enable_if<std::is_same<handle, face_handle>::value>::type>
     void expand(face_handle f)
     {
         for (auto ff : f.adjacent_faces())
             if (ff.is_valid() && seen.insert(ff))
                 queue.push(ff);
     }
-    template <class Enabled = typename std::enable_if<std::is_same<handle_t, edge_handle>::value>::type>
+    template <class handle = handle_t, class Enabled = typename std::enable_if<std::is_same<handle, edge_handle>::value>::type>
     void expand(edge_handle e)
     {
         for (auto ee : e.vertexA().edges())
@@ -65,7 +65,7 @@ struct bfs_range
             if (seen.insert(ee))
                 queue.push(ee);
     }
-    template <class Enabled = typename std::enable_if<std::is_same<handle_t, halfedge_handle>::value>::type>
+    template <class handle = handle_t, class Enabled = typename std::enable_if<std::is_same<handle, halfedge_handle>::value>::type>
     void expand(halfedge_handle h)
     {
         for (auto hh : h.vertex_to().outgoing_halfedges())
