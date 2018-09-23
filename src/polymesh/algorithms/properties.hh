@@ -131,6 +131,16 @@ vertex_attribute<Vec3> vertex_normals_uniform(Mesh const& m, vertex_attribute<Ve
 template <class Vec3, class Scalar = typename field_3d<Vec3>::Scalar>
 vertex_attribute<Vec3> vertex_normals_by_area(Mesh const& m, vertex_attribute<Vec3> const& position);
 
+/// efficiently computes face normal attribute
+template <class Vec3, class Scalar = typename field_3d<Vec3>::Scalar>
+face_attribute<Vec3> face_normals(Mesh const& m, vertex_attribute<Vec3> const& position);
+
+/// creates a vec3 halfedge attribute with barycentric coordinates per to-vertex (i.e. 100, 010, 001)
+/// assumes triangle mesh
+/// useful for creating renderable meshes with barycoords
+template <class Vec3>
+halfedge_attribute<Vec3> barycentric_coordinates(Mesh const& m);
+
 /// returns true if the edge satisfies the delaunay property
 /// NOTE: only works on triangles
 template <class Vec3>
@@ -427,6 +437,28 @@ vertex_attribute<Vec3> vertex_normals_by_area(Mesh const& m, vertex_attribute<Ve
     }
 
     return normals;
+}
+
+template <class Vec3, class Scalar>
+face_attribute<Vec3> face_normals(Mesh const& m, vertex_attribute<Vec3> const& position)
+{
+    return m.faces().map([&](face_handle f) { return face_normal(f, position); });
+}
+
+template <class Vec3>
+halfedge_attribute<Vec3> barycentric_coordinates(Mesh const& m)
+{
+    halfedge_attribute<Vec3> coords(m);
+    for (auto f : m.faces())
+    {
+        auto idx = 0;
+        for (auto h : f.halfedges())
+        {
+            coords[h] = field_3d<Vec3>::make(idx == 0, idx == 1, idx == 2);
+            ++idx;
+        }
+    }
+    return coords;
 }
 
 template <class Vec3>
