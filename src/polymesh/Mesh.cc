@@ -113,6 +113,16 @@ void Mesh::assert_consistency() const
         polyassert(edge_cnt * 2 == halfedge_cnt);
     }
 
+	// check validity
+    for (auto f : faces())
+    {
+        polyassert(f.any_halfedge().is_valid());
+    }
+    for (auto f : halfedges())
+    {
+        polyassert(f.vertex_to().is_valid());
+    }
+
     // check only non-removed can be accessed topologically
     for (auto f : faces())
     {
