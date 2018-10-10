@@ -335,6 +335,19 @@ auto primitive_attribute<tag, AttrT>::map(FuncT &&f) const -> attribute<tmp::dec
 }
 
 template <class tag, class AttrT>
+template <class T>
+auto primitive_attribute<tag, AttrT>::to() const -> attribute<T>
+{
+    auto attr = primitive<tag>::all_collection_of(*this->mMesh).template make_attribute<T>();
+    auto s = size();
+    auto d_in = data();
+    auto d_out = attr.data();
+    for (auto i = 0; i < s; ++i)
+        d_out[i] = static_cast<T>(d_in[i]);
+    return attr; // copy elison
+}
+
+template <class tag, class AttrT>
 template <class FuncT>
 void primitive_attribute<tag, AttrT>::apply(FuncT &&f)
 {
