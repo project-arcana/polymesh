@@ -18,7 +18,7 @@ using namespace polymesh;
 void Mesh::assert_consistency() const
 {
     // check sizes
-    assert(mHalfedgeToNextHalfedge.size() % 2 == 0); ///< even number of halfedges
+    polyassert(mHalfedgeToNextHalfedge.size() % 2 == 0); ///< even number of halfedges
 
     // check correct counts
     {

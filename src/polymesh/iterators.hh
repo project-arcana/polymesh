@@ -217,31 +217,31 @@ struct vertex_halfedge_out_circulator : primitive_circulator<vertex_halfedge_out
 {
     using primitive_circulator<vertex_halfedge_out_circulator>::primitive_circulator;
     halfedge_handle operator*() const { return handle; }
-    void advance() { handle = handle.opposite().next(); }
+    void advance() { handle = handle.prev().opposite(); }
 };
 struct vertex_halfedge_in_circulator : primitive_circulator<vertex_halfedge_in_circulator>
 {
     using primitive_circulator<vertex_halfedge_in_circulator>::primitive_circulator;
     halfedge_handle operator*() const { return handle.opposite(); }
-    void advance() { handle = handle.opposite().next(); }
+    void advance() { handle = handle.prev().opposite(); }
 };
 struct vertex_face_circulator : primitive_circulator<vertex_face_circulator>
 {
     using primitive_circulator<vertex_face_circulator>::primitive_circulator;
     face_handle operator*() const { return handle.face(); }
-    void advance() { handle = handle.opposite().next(); }
+    void advance() { handle = handle.prev().opposite(); }
 };
 struct vertex_vertex_circulator : primitive_circulator<vertex_vertex_circulator>
 {
     using primitive_circulator<vertex_vertex_circulator>::primitive_circulator;
     vertex_handle operator*() const { return handle.vertex_to(); }
-    void advance() { handle = handle.opposite().next(); }
+    void advance() { handle = handle.prev().opposite(); }
 };
 struct vertex_edge_circulator : primitive_circulator<vertex_edge_circulator>
 {
     using primitive_circulator<vertex_edge_circulator>::primitive_circulator;
     edge_handle operator*() const { return handle.edge(); }
-    void advance() { handle = handle.opposite().next(); }
+    void advance() { handle = handle.prev().opposite(); }
 };
 
 struct halfedge_ring_circulator : primitive_circulator<halfedge_ring_circulator>
