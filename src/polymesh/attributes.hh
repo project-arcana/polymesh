@@ -43,13 +43,29 @@ struct primitive_attribute : primitive_attribute_base<tag>, smart_range<primitiv
 public:
     AttrT& operator[](handle_t h);
     AttrT const& operator[](handle_t h) const;
-    AttrT& operator[](index_t h) { return mData[h.value]; }
-    AttrT const& operator[](index_t h) const { return mData[h.value]; }
+    AttrT& operator[](index_t h)
+    {
+        assert(h.is_valid());
+        return mData[h.value];
+    }
+    AttrT const& operator[](index_t h) const
+    {
+        assert(h.is_valid());
+        return mData[h.value];
+    }
 
     AttrT& operator()(handle_t h);
     AttrT const& operator()(handle_t h) const;
-    AttrT& operator()(index_t h) { return mData[h.value]; }
-    AttrT const& operator()(index_t h) const { return mData[h.value]; }
+    AttrT& operator()(index_t h)
+    {
+        assert(h.is_valid());
+        return mData[h.value];
+    }
+    AttrT const& operator()(index_t h) const
+    {
+        assert(h.is_valid());
+        return mData[h.value];
+    }
 
     AttrT* data() { return mData.data; }
     AttrT const* data() const { return mData.data; }
@@ -156,13 +172,29 @@ struct edge_attribute : primitive_attribute<edge_tag, AttrT>
 
     AttrT& operator[](halfedge_handle h);
     AttrT const& operator[](halfedge_handle h) const;
-    AttrT& operator[](halfedge_index h) { return this->mData[h.value >> 1]; }
-    AttrT const& operator[](halfedge_index h) const { return this->mData[h.value >> 1]; }
+    AttrT& operator[](halfedge_index h)
+    {
+        assert(h.is_valid());
+        return this->mData[h.value >> 1];
+    }
+    AttrT const& operator[](halfedge_index h) const
+    {
+        assert(h.is_valid());
+        return this->mData[h.value >> 1];
+    }
 
     AttrT& operator()(halfedge_handle h);
     AttrT const& operator()(halfedge_handle h) const;
-    AttrT& operator()(halfedge_index h) { return this->mData[h.value >> 1]; }
-    AttrT const& operator()(halfedge_index h) const { return this->mData[h.value >> 1]; }
+    AttrT& operator()(halfedge_index h)
+    {
+        assert(h.is_valid());
+        return this->mData[h.value >> 1];
+    }
+    AttrT const& operator()(halfedge_index h) const
+    {
+        assert(h.is_valid());
+        return this->mData[h.value >> 1];
+    }
 
     using primitive_attribute<edge_tag, AttrT>::operator[];
     using primitive_attribute<edge_tag, AttrT>::operator();
