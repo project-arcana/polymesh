@@ -361,7 +361,6 @@ template <class tag, class AttrT>
 template <class FuncT>
 void primitive_attribute<tag, AttrT>::compute(FuncT &&f)
 {
-    auto s = size();
     auto d = data();
     for (auto h : primitive<tag>::valid_collection_of(*this->mMesh))
         d[(int)h] = f(h);
