@@ -9,6 +9,7 @@ if(${CMAKE_VERSION} VERSION_GREATER "3.8.0")
 endif()
 add_library(polymesh STATIC ${SOURCE_FILES} ${HEADER_FILES})
 target_include_directories(polymesh PUBLIC src/)
+target_link_libraries(polymesh PUBLIC glm)
 
 if (MSVC)
     target_compile_options(polymesh PUBLIC /MP)

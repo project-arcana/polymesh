@@ -46,7 +46,7 @@ template <class tag>
 template <class AttrT>
 AttrT const& primitive_handle<tag>::operator[](attribute<AttrT> const* attr) const
 {
-    static AttrT const def_attr;
+    static AttrT const def_attr{};
     return attr ? (*attr)[*static_cast<typename primitive<tag>::handle const*>(this)] : def_attr;
 }
 
@@ -149,4 +149,4 @@ std::ostream& operator<<(std::ostream& out, primitive_handle<tag> const& v)
     out << v.idx;
     return out;
 }
-}
+} // namespace polymesh
