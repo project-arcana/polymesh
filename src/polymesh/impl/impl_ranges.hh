@@ -399,7 +399,7 @@ template <class this_t, class ElementT>
 template <size_t N, class FuncT>
 void smart_range<this_t, ElementT>::into_array(std::array<tmp::decayed_result_type_of<FuncT, ElementT>, N> &container, FuncT &&f) const
 {
-    auto idx = 0;
+    auto idx = 0u;
     for (auto h : *static_cast<this_t const *>(this))
     {
         if (idx >= N)
@@ -795,7 +795,7 @@ template <size_t N>
 face_handle face_collection<iterator>::add(const vertex_handle (&v_handles)[N]) const
 {
     halfedge_index hs[N];
-    for (auto i = 0; i < N; ++i)
+    for (auto i = 0u; i < N; ++i)
         hs[i] = low_level_api(this->m).add_or_get_halfedge(v_handles[(i + N - 1) % N].idx, v_handles[i].idx);
     return this->m->handle_of(low_level_api(this->m).add_face(hs, N));
 }
@@ -805,7 +805,7 @@ template <size_t N>
 face_handle face_collection<iterator>::add(const halfedge_handle (&half_loop)[N]) const
 {
     halfedge_index hs[N];
-    for (auto i = 0; i < N; ++i)
+    for (auto i = 0u; i < N; ++i)
         hs[i] = half_loop[i].idx;
     return this->m->handle_of(low_level_api(this->m).add_face(hs, N));
 }
@@ -900,7 +900,7 @@ template <size_t N>
 bool face_collection<iterator>::can_add(const vertex_handle (&v_handles)[N]) const
 {
     halfedge_index hs[N];
-    for (auto i = 0; i < N; ++i)
+    for (auto i = 0u; i < N; ++i)
         hs[i] = low_level_api(this->m).find_halfedge(v_handles[i].idx, v_handles[(i + 1) % N].idx);
     return low_level_api(this->m).can_add_face(hs, N);
 }
@@ -910,7 +910,7 @@ template <size_t N>
 bool face_collection<iterator>::can_add(const halfedge_handle (&half_loop)[N]) const
 {
     halfedge_index hs[N];
-    for (auto i = 0; i < N; ++i)
+    for (auto i = 0u; i < N; ++i)
         hs[i] = half_loop[i].idx;
     return low_level_api(this->m).can_add_face(hs, N);
 }
