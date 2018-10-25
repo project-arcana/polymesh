@@ -25,7 +25,7 @@ inline vertex_index Mesh::alloc_vertex()
 {
     auto idx = vertex_index(size_all_vertices());
 
-    detail::alloc_back(mHalfedgesSize, mHalfedgesCapacity, mVertexToOutgoingHalfedge);
+    detail::alloc_back(mVerticesSize, mVerticesCapacity, mVertexToOutgoingHalfedge);
     mVertexToOutgoingHalfedge[mHalfedgesSize - 1] = halfedge_index::invalid();
 
     // notify attributes
