@@ -134,6 +134,24 @@ public:
     /// edges without faces are isolated
     bool is_isolated(edge_index idx) const;
 
+    // offsets in binary representation (useful for wrappers in other languages)
+public:
+    constexpr static int offset_mVerticesSize() { return offsetof(MeshT, mVerticesSize); }
+    constexpr static int offset_mVerticesCapacity() { return offsetof(MeshT, mVerticesCapacity); }
+    constexpr static int offset_mVertexToOutgoingHalfedge() { return offsetof(MeshT, mVertexToOutgoingHalfedge); }
+
+    constexpr static int offset_mFacesSize() { return offsetof(MeshT, mFacesSize); }
+    constexpr static int offset_mFacesCapacity() { return offsetof(MeshT, mFacesCapacity); }
+    constexpr static int offset_mFaceToHalfedge() { return offsetof(MeshT, mFaceToHalfedge); }
+
+    constexpr static int offset_mHalfedgesSize() { return offsetof(MeshT, mHalfedgesSize); }
+    constexpr static int offset_mHalfedgesCapacity() { return offsetof(MeshT, mHalfedgesCapacity); }
+
+    constexpr static int offset_mHalfedgeToVertex() { return offsetof(MeshT, mHalfedgeToVertex); }
+    constexpr static int offset_mHalfedgeToFace() { return offsetof(MeshT, mHalfedgeToFace); }
+    constexpr static int offset_mHalfedgeToPrevHalfedge() { return offsetof(MeshT, mHalfedgeToPrevHalfedge); }
+    constexpr static int offset_mHalfedgeToNextHalfedge() { return offsetof(MeshT, mHalfedgeToNextHalfedge); }
+
 protected:
     MeshT& m;
 
