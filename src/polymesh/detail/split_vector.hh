@@ -13,7 +13,7 @@ namespace detail
         using element_t = typename TFirst::element_type;
 
         auto new_ptr = std::unique_ptr<element_t[]>(new element_t[new_capacity]());
-        std::copy(ptr.get(), ptr.get() + size, new_ptr.get());
+        std::copy(ptr.get(), ptr.get() + std::min(size, new_capacity), new_ptr.get());
 
         ptr = move(new_ptr);
 
