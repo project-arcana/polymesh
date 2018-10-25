@@ -116,25 +116,32 @@ public:
 
     // internal primitives
 private:
-    std::vector<halfedge_index> mFaceToHalfedge;
-    std::vector<halfedge_index> mVertexToOutgoingHalfedge;
+    std::unique_ptr<halfedge_index[]> mFaceToHalfedge;
+    int mFacesSize = 0;
+    int mFacesCapacity = 0;
 
-    std::vector<vertex_index> mHalfedgeToVertex;
-    std::vector<face_index> mHalfedgeToFace;
-    std::vector<halfedge_index> mHalfedgeToNextHalfedge;
-    std::vector<halfedge_index> mHalfedgeToPrevHalfedge;
+    std::unique_ptr<halfedge_index[]> mVertexToOutgoingHalfedge;
+    int mVerticesSize = 0;
+    int mVerticesCapacity = 0;
+
+    std::unique_ptr<vertex_index[]> mHalfedgeToVertex;
+    std::unique_ptr<face_index[]> mHalfedgeToFace;
+    std::unique_ptr<halfedge_index[]> mHalfedgeToNextHalfedge;
+    std::unique_ptr<halfedge_index[]> mHalfedgeToPrevHalfedge;
+    int mHalfedgesSize = 0;
+    int mHalfedgesCapacity = 0;
 
     // primitive size
 private:
-    int size_all_faces() const { return (int)mFaceToHalfedge.size(); }
-    int size_all_vertices() const { return (int)mVertexToOutgoingHalfedge.size(); }
-    int size_all_edges() const { return (int)mHalfedgeToNextHalfedge.size() >> 1; }
-    int size_all_halfedges() const { return (int)mHalfedgeToNextHalfedge.size(); }
+    int size_all_faces() const { return (int)mFacesSize; }
+    int size_all_vertices() const { return (int)mVerticesSize; }
+    int size_all_edges() const { return (int)mHalfedgesSize >> 1; }
+    int size_all_halfedges() const { return (int)mHalfedgesSize; }
 
-    int size_valid_faces() const { return (int)mFaceToHalfedge.size() - mRemovedFaces; }
-    int size_valid_vertices() const { return (int)mVertexToOutgoingHalfedge.size() - mRemovedVertices; }
-    int size_valid_edges() const { return ((int)mHalfedgeToNextHalfedge.size() - mRemovedHalfedges) >> 1; }
-    int size_valid_halfedges() const { return (int)mHalfedgeToNextHalfedge.size() - mRemovedHalfedges; }
+    int size_valid_faces() const { return (int)mFacesSize - mRemovedFaces; }
+    int size_valid_vertices() const { return (int)mVerticesSize - mRemovedVertices; }
+    int size_valid_edges() const { return ((int)mHalfedgesSize- mRemovedHalfedges) >> 1; }
+    int size_valid_halfedges() const { return (int)mHalfedgesSize - mRemovedHalfedges; }
 
     // primitive access
 private:
