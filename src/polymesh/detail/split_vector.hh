@@ -30,24 +30,29 @@ namespace detail
     }
 
     template<class ...TS>
-    void resize(int& size, int& capacity, int new_size, TS& ... ptrs)
+    bool resize(int& size, int& capacity, int new_size, TS& ... ptrs)
     {
         if (new_size > capacity) {
             capacity = std::max(2 * capacity, 16);
             reserve(size, capacity, ptrs...);
+            size = new_size;
+            return true;
         }
         size = new_size;
+        return false;
     }
 
     /// Like push_back, but doesn't initialize the added element
     template<class ...TS>
-    void alloc_back(int& size, int& capacity, TS& ...ptrs)
+    bool alloc_back(int& size, int& capacity, TS& ...ptrs)
     {
-        if (size + 1 > capacity) {
-            capacity = std::max(2 * capacity, 16);
-            reserve(size, capacity, ptrs...);
-        }
         size++;
+        if (size > capacity) {
+            capacity = std::max(2 * capacity, 16);
+            reserve(size - 1, capacity, ptrs...);
+            return true;
+        }
+        return false;
     }
 
     inline void deallocate() {}
