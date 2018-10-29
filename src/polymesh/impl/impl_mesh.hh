@@ -31,9 +31,8 @@ inline vertex_index Mesh::alloc_vertex()
     if (capacity_changed)
     {
         // notify attributes
-        auto vCnt = size_all_vertices();
         for (auto p = mVertexAttrs; p; p = p->mNextAttribute)
-            p->resize(vCnt);
+            p->resize(mVerticesCapacity);
     }
 
     return idx;
@@ -49,9 +48,8 @@ inline face_index Mesh::alloc_face()
     if (capacity_changed)
     {
         // notify attributes
-        auto fCnt = size_all_faces();
         for (auto p = mFaceAttrs; p; p = p->mNextAttribute)
-            p->resize(fCnt);
+            p->resize(mFacesCapacity);
     }
 
     return idx;
@@ -75,12 +73,10 @@ inline edge_index Mesh::alloc_edge()
     if (capacity_changed)
     {
         // notify attributes
-        auto hCnt = size_all_halfedges();
-        auto eCnt = size_all_edges();
         for (auto p = mEdgeAttrs; p; p = p->mNextAttribute)
-            p->resize(eCnt);
+            p->resize(mHalfedgesCapacity / 2);
         for (auto p = mHalfedgeAttrs; p; p = p->mNextAttribute)
-            p->resize(hCnt);
+            p->resize(mHalfedgesCapacity);
     }
 
     return idx;
@@ -90,7 +86,6 @@ inline void Mesh::alloc_primitives(int vertices, int faces, int halfedges)
 {
     auto vCnt = size_all_vertices() + vertices;
     auto fCnt = size_all_faces() + faces;
-    auto eCnt = size_all_edges() + (halfedges << 1);
     auto hCnt = size_all_halfedges() + halfedges;
 
     // alloc space
@@ -102,16 +97,16 @@ inline void Mesh::alloc_primitives(int vertices, int faces, int halfedges)
     // notify attributes
     if (v_capacity_changed)
         for (auto p = mVertexAttrs; p; p = p->mNextAttribute)
-            p->resize(vCnt);
+            p->resize(mVerticesCapacity);
     if (f_capacity_changed)
         for (auto p = mFaceAttrs; p; p = p->mNextAttribute)
-            p->resize(fCnt);
+            p->resize(mFacesCapacity);
     if (h_capacity_changed)
     {
         for (auto p = mEdgeAttrs; p; p = p->mNextAttribute)
-            p->resize(eCnt);
+            p->resize(mHalfedgesCapacity / 2);
         for (auto p = mHalfedgeAttrs; p; p = p->mNextAttribute)
-            p->resize(hCnt);
+            p->resize(mHalfedgesCapacity);
     }
 }
 
@@ -316,13 +311,13 @@ inline void Mesh::compactify()
     detail::shrink_to_fit(mHalfedgesSize, mHalfedgesCapacity, mHalfedgeToFace, mHalfedgeToVertex, mHalfedgeToNextHalfedge, mHalfedgeToPrevHalfedge);
 
     for (auto a = mVertexAttrs; a; a = a->mNextAttribute)
-        a->resize(size_all_vertices());
+        a->resize(mVerticesCapacity);
     for (auto a = mFaceAttrs; a; a = a->mNextAttribute)
-        a->resize(size_all_faces());
+        a->resize(mFacesCapacity);
     for (auto a = mEdgeAttrs; a; a = a->mNextAttribute)
-        a->resize(size_all_edges());
+        a->resize(mHalfedgesCapacity / 2);
     for (auto a = mHalfedgeAttrs; a; a = a->mNextAttribute)
-        a->resize(size_all_halfedges());
+        a->resize(mHalfedgesCapacity);
 
     mRemovedFaces = 0;
     mRemovedHalfedges = 0;
@@ -366,13 +361,13 @@ inline void Mesh::copy_from(const Mesh &m)
 
     // resize attributes
     for (auto a = mVertexAttrs; a; a = a->mNextAttribute)
-        a->resize(size_all_vertices());
+        a->resize(mVerticesCapacity);
     for (auto a = mFaceAttrs; a; a = a->mNextAttribute)
-        a->resize(size_all_faces());
+        a->resize(mFacesCapacity);
     for (auto a = mEdgeAttrs; a; a = a->mNextAttribute)
-        a->resize(size_all_edges());
+        a->resize(mHalfedgesCapacity / 2);
     for (auto a = mHalfedgeAttrs; a; a = a->mNextAttribute)
-        a->resize(size_all_halfedges());
+        a->resize(mHalfedgesCapacity);
 }
 
 inline SharedMesh Mesh::copy() const
