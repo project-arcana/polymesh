@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <vector>
+#include <cassert>
 
 // Helper for mesh-based attribute bookkeeping
 
@@ -99,20 +100,11 @@ private:
     primitive_attribute_base* mNextAttribute = nullptr;
     primitive_attribute_base* mPrevAttribute = nullptr;
 
-    void resize(int new_size, bool force)
+    void resize(int new_size)
     {
-        if (force)
-        {
-            mDataSize = new_size;
-            on_resize(mDataSize);
-            return;
-        }
-
-        if (mDataSize < new_size)
-        {
-            mDataSize = std::max(new_size, 1 + mDataSize + (mDataSize >> 1)); // 1 + s * 1.5
-            on_resize(mDataSize);
-        }
+        mDataSize = new_size;
+        on_resize(mDataSize);
+        return;
     }
 
 protected:
