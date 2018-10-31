@@ -4,6 +4,7 @@
 #include <vector>
 #include "cursors.hh"
 #include "tmp.hh"
+#include "attributes.hh"
 
 namespace polymesh
 {
@@ -156,6 +157,20 @@ protected:
     MeshT& m;
 
     low_level_api_base(MeshT& m) : m(m) {}
+};
+
+template<class MeshT>
+struct low_level_attribute_api {
+    static int offset_attribute_dataptr() {
+        MeshT mesh;
+        auto attr = mesh.vertices().make_attribute_with_default(0.f);
+        auto attr_check = mesh.vertices().make_attribute_with_default(std::array<float,32>());
+
+        auto offset = int(size_t(&(attr.mData.data)) - size_t(&attr));
+        assert(offset == int(size_t(&(attr_check.mData.data)) - size_t(&attr_check)));
+
+        return offset;
+    }
 };
 
 struct low_level_api_mutable : low_level_api_base<Mesh>

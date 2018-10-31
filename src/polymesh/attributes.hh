@@ -135,6 +135,9 @@ protected:
     void apply_remapping(std::vector<int> const& map) override;
     void apply_transpositions(std::vector<std::pair<int, int>> const& ts) override;
 
+    template<class MeshT>
+    friend class low_level_attribute_api;
+
     // ctor
 protected:
     primitive_attribute(Mesh const* mesh, AttrT const& def_value);
