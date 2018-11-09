@@ -354,6 +354,9 @@ struct edge_collection : smart_collection<Mesh*, edge_tag, iterator>
     /// Returns the edge handle between two vertices (invalid if not found)
     /// O(valence) computation
     edge_handle find(vertex_handle v_from, vertex_handle v_to) const;
+    /// Returns true iff an edge exists between the vertices
+    /// O(valence) computation
+    bool exists(vertex_handle v_from, vertex_handle v_to) const;
 
     /// Splits this edge in half by inserting a vertex (which is returned)
     /// Preserves face attributes
@@ -398,6 +401,9 @@ struct halfedge_collection : smart_collection<Mesh*, halfedge_tag, iterator>
     /// Returns the half-edge handle between two vertices (invalid if not found)
     /// O(valence) computation
     halfedge_handle find(vertex_handle v_from, vertex_handle v_to) const;
+    /// Returns true iff an edge exists between the vertices
+    /// O(valence) computation
+    bool exists(vertex_handle v_from, vertex_handle v_to) const;
 
     /// Collapsed the given half-edge by removing it, keeping the to_vertex, and creating new triangles
     /// Preserves half-edge properties but not face or vertex ones

@@ -946,9 +946,21 @@ edge_handle edge_collection<iterator>::find(vertex_handle v_from, vertex_handle 
 }
 
 template <class iterator>
+bool edge_collection<iterator>::exists(vertex_handle v_from, vertex_handle v_to) const
+{
+    return low_level_api(this->m).find_halfedge(v_from.idx, v_to.idx).is_valid();
+}
+
+template <class iterator>
 halfedge_handle halfedge_collection<iterator>::find(vertex_handle v_from, vertex_handle v_to) const
 {
     return this->m->handle_of(low_level_api(this->m).find_halfedge(v_from.idx, v_to.idx));
+}
+
+template <class iterator>
+bool halfedge_collection<iterator>::exists(vertex_handle v_from, vertex_handle v_to) const
+{
+    return low_level_api(this->m).find_halfedge(v_from.idx, v_to.idx).is_valid();
 }
 
 template <class iterator>
