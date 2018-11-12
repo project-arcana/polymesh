@@ -140,7 +140,7 @@ private:
 
     int size_valid_faces() const { return (int)mFacesSize - mRemovedFaces; }
     int size_valid_vertices() const { return (int)mVerticesSize - mRemovedVertices; }
-    int size_valid_edges() const { return ((int)mHalfedgesSize- mRemovedHalfedges) >> 1; }
+    int size_valid_edges() const { return ((int)mHalfedgesSize - mRemovedHalfedges) >> 1; }
     int size_valid_halfedges() const { return (int)mHalfedgesSize - mRemovedHalfedges; }
 
     // primitive access
@@ -271,7 +271,7 @@ private:
     friend struct low_level_api_const;
     friend struct low_level_api_mutable;
 };
-}
+} // namespace polymesh
 
 /// ======== IMPLEMENTATIONS ========
 

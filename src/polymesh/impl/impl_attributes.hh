@@ -229,7 +229,7 @@ inline void Mesh::register_attr(primitive_attribute_base<edge_tag> *attr) const
         nextAttrs->mPrevAttribute = attr;
 
     // resize attr
-    attr->resize(mHalfedgesCapacity << 1);
+    attr->resize(mHalfedgesCapacity >> 1);
 }
 
 inline void Mesh::deregister_attr(primitive_attribute_base<edge_tag> *attr) const
@@ -372,4 +372,4 @@ auto primitive_attribute<tag, AttrT>::view(FuncT &&f) const -> readonly_property
 {
     return readonly_property<primitive_attribute<tag, AttrT> const &, FuncT>(*this, f);
 }
-}
+} // namespace polymesh
