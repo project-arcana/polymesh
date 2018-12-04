@@ -15,7 +15,5 @@ if (MSVC)
     target_compile_options(polymesh PUBLIC /MP)
 else()
     target_compile_options(polymesh PRIVATE -Wall -Werror -fPIC)
-    target_compile_options(polymesh PRIVATE
-        $<$<COMPILE_LANGUAGE:CXX>:-std=c++11>)
     target_link_libraries(polymesh PUBLIC -fuse-ld=gold)
 endif()
