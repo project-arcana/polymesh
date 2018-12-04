@@ -4,6 +4,12 @@
 
 namespace polymesh
 {
+// primitive::capacity
+inline int primitive<vertex_tag>::capacity(Mesh const &m) { return low_level_api(m).capacity_vertices(); }
+inline int primitive<face_tag>::capacity(Mesh const &m) { return low_level_api(m).capacity_faces(); }
+inline int primitive<edge_tag>::capacity(Mesh const &m) { return low_level_api(m).capacity_halfedges() >> 2; }
+inline int primitive<halfedge_tag>::capacity(Mesh const &m) { return low_level_api(m).capacity_halfedges(); }
+
 // primitive::all_size
 inline int primitive<vertex_tag>::all_size(Mesh const &m) { return low_level_api(m).size_all_vertices(); }
 inline int primitive<face_tag>::all_size(Mesh const &m) { return low_level_api(m).size_all_faces(); }

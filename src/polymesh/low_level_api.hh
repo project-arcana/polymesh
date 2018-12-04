@@ -41,6 +41,10 @@ public:
 
     // number of primitives
 public:
+    int capacity_faces() const;
+    int capacity_vertices() const;
+    int capacity_halfedges() const;
+
     int size_all_faces() const;
     int size_all_vertices() const;
     int size_all_edges() const;
@@ -166,8 +170,8 @@ struct low_level_attribute_api {
         auto attr = mesh.vertices().make_attribute_with_default(0.f);
         auto attr_check = mesh.vertices().make_attribute_with_default(std::array<float,32>());
 
-        auto offset = int(size_t(&(attr.mData.data)) - size_t(&attr));
-        assert(offset == int(size_t(&(attr_check.mData.data)) - size_t(&attr_check)));
+        auto offset = int(size_t(&(attr.mData)) - size_t(&attr));
+        assert(offset == int(size_t(&(attr_check.mData)) - size_t(&attr_check)));
 
         return offset;
     }

@@ -42,6 +42,24 @@ tmp::ref_if_mut<halfedge_index, MeshT> low_level_api_base<MeshT>::outgoing_halfe
 
 
 template <class MeshT>
+int low_level_api_base<MeshT>::capacity_faces() const
+{
+    return m.mFacesCapacity;
+}
+
+template <class MeshT>
+int low_level_api_base<MeshT>::capacity_vertices() const
+{
+    return m.mVerticesCapacity;
+}
+
+template <class MeshT>
+int low_level_api_base<MeshT>::capacity_halfedges() const
+{
+    return m.mHalfedgesCapacity;
+}
+
+template <class MeshT>
 int low_level_api_base<MeshT>::size_all_faces() const
 {
     return m.size_all_faces();
