@@ -145,12 +145,12 @@ private:
     halfedge_index &halfedge_of(face_index idx);
     halfedge_index &outgoing_halfedge_of(vertex_index idx);
 
-    vertex_index to_vertex_of(halfedge_index idx) const;
-    face_index face_of(halfedge_index idx) const;
-    halfedge_index next_halfedge_of(halfedge_index idx) const;
-    halfedge_index prev_halfedge_of(halfedge_index idx) const;
-    halfedge_index halfedge_of(face_index idx) const;
-    halfedge_index outgoing_halfedge_of(vertex_index idx) const;
+    vertex_index const &to_vertex_of(halfedge_index idx) const;
+    face_index const &face_of(halfedge_index idx) const;
+    halfedge_index const &next_halfedge_of(halfedge_index idx) const;
+    halfedge_index const &prev_halfedge_of(halfedge_index idx) const;
+    halfedge_index const &halfedge_of(face_index idx) const;
+    halfedge_index const &outgoing_halfedge_of(vertex_index idx) const;
 
     // primitive allocation
 private:
@@ -264,7 +264,7 @@ private:
     friend struct low_level_api_const;
     friend struct low_level_api_mutable;
 };
-}
+} // namespace polymesh
 
 /// ======== IMPLEMENTATIONS ========
 

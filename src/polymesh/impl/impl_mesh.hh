@@ -13,12 +13,12 @@ inline halfedge_index &Mesh::prev_halfedge_of(halfedge_index idx) { return mHalf
 inline halfedge_index &Mesh::halfedge_of(face_index idx) { return mFaceToHalfedge[(int)idx]; }
 inline halfedge_index &Mesh::outgoing_halfedge_of(vertex_index idx) { return mVertexToOutgoingHalfedge[(int)idx]; }
 
-inline face_index Mesh::face_of(halfedge_index idx) const { return mHalfedgeToFace[(int)idx]; }
-inline vertex_index Mesh::to_vertex_of(halfedge_index idx) const { return mHalfedgeToVertex[(int)idx]; }
-inline halfedge_index Mesh::next_halfedge_of(halfedge_index idx) const { return mHalfedgeToNextHalfedge[(int)idx]; }
-inline halfedge_index Mesh::prev_halfedge_of(halfedge_index idx) const { return mHalfedgeToPrevHalfedge[(int)idx]; }
-inline halfedge_index Mesh::halfedge_of(face_index idx) const { return mFaceToHalfedge[(int)idx]; }
-inline halfedge_index Mesh::outgoing_halfedge_of(vertex_index idx) const { return mVertexToOutgoingHalfedge[(int)idx]; }
+inline face_index const &Mesh::face_of(halfedge_index idx) const { return mHalfedgeToFace[(int)idx]; }
+inline vertex_index const &Mesh::to_vertex_of(halfedge_index idx) const { return mHalfedgeToVertex[(int)idx]; }
+inline halfedge_index const &Mesh::next_halfedge_of(halfedge_index idx) const { return mHalfedgeToNextHalfedge[(int)idx]; }
+inline halfedge_index const &Mesh::prev_halfedge_of(halfedge_index idx) const { return mHalfedgeToPrevHalfedge[(int)idx]; }
+inline halfedge_index const &Mesh::halfedge_of(face_index idx) const { return mFaceToHalfedge[(int)idx]; }
+inline halfedge_index const &Mesh::outgoing_halfedge_of(vertex_index idx) const { return mVertexToOutgoingHalfedge[(int)idx]; }
 
 inline vertex_index Mesh::alloc_vertex()
 {
@@ -405,4 +405,4 @@ inline void Mesh::reserve_halfedges(int capacity)
     mHalfedgeToNextHalfedge.reserve(capacity);
     mHalfedgeToPrevHalfedge.reserve(capacity);
 }
-}
+} // namespace polymesh

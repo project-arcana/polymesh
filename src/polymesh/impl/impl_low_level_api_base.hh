@@ -5,37 +5,37 @@
 namespace polymesh
 {
 template <class MeshT>
-tmp::ref_if_mut<vertex_index, MeshT> low_level_api_base<MeshT>::to_vertex_of(halfedge_index idx) const
+tmp::cond_const_ref<vertex_index, MeshT> low_level_api_base<MeshT>::to_vertex_of(halfedge_index idx) const
 {
     return m.to_vertex_of(idx);
 }
 
 template <class MeshT>
-tmp::ref_if_mut<face_index, MeshT> low_level_api_base<MeshT>::face_of(halfedge_index idx) const
+tmp::cond_const_ref<face_index, MeshT> low_level_api_base<MeshT>::face_of(halfedge_index idx) const
 {
     return m.face_of(idx);
 }
 
 template <class MeshT>
-tmp::ref_if_mut<halfedge_index, MeshT> low_level_api_base<MeshT>::next_halfedge_of(halfedge_index idx) const
+tmp::cond_const_ref<halfedge_index, MeshT> low_level_api_base<MeshT>::next_halfedge_of(halfedge_index idx) const
 {
     return m.next_halfedge_of(idx);
 }
 
 template <class MeshT>
-tmp::ref_if_mut<halfedge_index, MeshT> low_level_api_base<MeshT>::prev_halfedge_of(halfedge_index idx) const
+tmp::cond_const_ref<halfedge_index, MeshT> low_level_api_base<MeshT>::prev_halfedge_of(halfedge_index idx) const
 {
     return m.prev_halfedge_of(idx);
 }
 
 template <class MeshT>
-tmp::ref_if_mut<halfedge_index, MeshT> low_level_api_base<MeshT>::halfedge_of(face_index idx) const
+tmp::cond_const_ref<halfedge_index, MeshT> low_level_api_base<MeshT>::halfedge_of(face_index idx) const
 {
     return m.halfedge_of(idx);
 }
 
 template <class MeshT>
-tmp::ref_if_mut<halfedge_index, MeshT> low_level_api_base<MeshT>::outgoing_halfedge_of(vertex_index idx) const
+tmp::cond_const_ref<halfedge_index, MeshT> low_level_api_base<MeshT>::outgoing_halfedge_of(vertex_index idx) const
 {
     return m.outgoing_halfedge_of(idx);
 }

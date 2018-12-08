@@ -7,14 +7,16 @@ namespace polymesh
 {
 /// Given a triangular mesh, performs edge flips until all flippable edges are delaunay
 /// (extrinsic delaunay triangulation)
+/// returns the number of flips
 template <class Vec3>
-void make_delaunay(Mesh& m, vertex_attribute<Vec3> const& position);
+int make_delaunay(Mesh& m, vertex_attribute<Vec3> const& position);
 
 /// ======== IMPLEMENTATION ========
 
 template <class Vec3>
-void make_delaunay(Mesh& m, vertex_attribute<Vec3> const& position)
+int make_delaunay(Mesh& m, vertex_attribute<Vec3> const& position)
 {
+    auto flips = 0;
     std::vector<edge_index> queue;
 
     for (auto e : m.edges())
@@ -40,6 +42,9 @@ void make_delaunay(Mesh& m, vertex_attribute<Vec3> const& position)
         queue.push_back(e.halfedgeB().prev().edge());
 
         m.edges().rotate_next(e);
+        ++flips;
     }
+
+    return flips;
 }
-}
+} // namespace polymesh

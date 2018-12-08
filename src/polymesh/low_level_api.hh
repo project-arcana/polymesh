@@ -31,12 +31,12 @@ struct low_level_api_base
 {
     // primitive access
 public:
-    tmp::ref_if_mut<vertex_index, MeshT> to_vertex_of(halfedge_index idx) const;
-    tmp::ref_if_mut<face_index, MeshT> face_of(halfedge_index idx) const;
-    tmp::ref_if_mut<halfedge_index, MeshT> next_halfedge_of(halfedge_index idx) const;
-    tmp::ref_if_mut<halfedge_index, MeshT> prev_halfedge_of(halfedge_index idx) const;
-    tmp::ref_if_mut<halfedge_index, MeshT> halfedge_of(face_index idx) const;
-    tmp::ref_if_mut<halfedge_index, MeshT> outgoing_halfedge_of(vertex_index idx) const;
+    tmp::cond_const_ref<vertex_index, MeshT> to_vertex_of(halfedge_index idx) const;
+    tmp::cond_const_ref<face_index, MeshT> face_of(halfedge_index idx) const;
+    tmp::cond_const_ref<halfedge_index, MeshT> next_halfedge_of(halfedge_index idx) const;
+    tmp::cond_const_ref<halfedge_index, MeshT> prev_halfedge_of(halfedge_index idx) const;
+    tmp::cond_const_ref<halfedge_index, MeshT> halfedge_of(face_index idx) const;
+    tmp::cond_const_ref<halfedge_index, MeshT> outgoing_halfedge_of(vertex_index idx) const;
 
     // number of primitives
 public:
