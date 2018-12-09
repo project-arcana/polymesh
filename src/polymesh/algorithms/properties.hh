@@ -135,6 +135,10 @@ vertex_attribute<Vec3> vertex_normals_by_area(Mesh const& m, vertex_attribute<Ve
 template <class Vec3, class Scalar = typename field_3d<Vec3>::Scalar>
 face_attribute<Vec3> face_normals(Mesh const& m, vertex_attribute<Vec3> const& position);
 
+/// efficiently computes face normal attribute (assuming triangles)
+template <class Vec3, class Scalar = typename field_3d<Vec3>::Scalar>
+face_attribute<Vec3> triangle_normals(Mesh const& m, vertex_attribute<Vec3> const& position);
+
 /// creates a vec3 halfedge attribute with barycentric coordinates per to-vertex (i.e. 100, 010, 001)
 /// assumes triangle mesh
 /// useful for creating renderable meshes with barycoords
@@ -443,6 +447,12 @@ template <class Vec3, class Scalar>
 face_attribute<Vec3> face_normals(Mesh const& m, vertex_attribute<Vec3> const& position)
 {
     return m.faces().map([&](face_handle f) { return face_normal(f, position); });
+}
+
+template <class Vec3, class Scalar>
+face_attribute<Vec3> triangle_normals(Mesh const& m, vertex_attribute<Vec3> const& position)
+{
+    return m.faces().map([&](face_handle f) { return triangle_normal(f, position); });
 }
 
 template <class Vec3>
