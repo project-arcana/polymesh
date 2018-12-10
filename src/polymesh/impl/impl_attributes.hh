@@ -328,7 +328,7 @@ int primitive_attribute<tag, AttrT>::capacity() const
 template <class tag, class AttrT>
 void primitive_attribute<tag, AttrT>::clear(AttrT const &value)
 {
-    this->mData.clear(value);
+    std::fill_n(mData, size(), value);
 }
 
 template <class tag, class AttrT>
