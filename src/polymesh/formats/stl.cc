@@ -76,9 +76,9 @@ bool read_stl_binary(std::istream &input, Mesh &mesh, vertex_attribute<glm::vec3
 {
     mesh.clear();
 
-    auto savp = input.tellg();
+    size_t savp = input.tellg();
     input.seekg(0, std::ios_base::end);
-    auto fs_real = input.tellg();
+    size_t fs_real = input.tellg();
     input.seekg(savp, std::ios_base::beg);
 
     char header[80];
@@ -93,7 +93,7 @@ bool read_stl_binary(std::istream &input, Mesh &mesh, vertex_attribute<glm::vec3
     uint32_t n_triangles;
     input.read((char *)&n_triangles, sizeof(n_triangles));
 
-    auto fs_expect = 80 + sizeof(n_triangles) + n_triangles * (sizeof(glm::vec3) * 4 + sizeof(uint16_t));
+    size_t fs_expect = 80 + sizeof(n_triangles) + n_triangles * (sizeof(glm::vec3) * 4 + sizeof(uint16_t));
     if (fs_expect != fs_real)
     {
         std::cerr << "Expected file size mismatch: " << fs_expect << " vs " << fs_real << " bytes (file corrupt or wrong format?)" << std::endl;
@@ -104,7 +104,7 @@ bool read_stl_binary(std::istream &input, Mesh &mesh, vertex_attribute<glm::vec3
     mesh.vertices().reserve(n_triangles * 3);
     mesh.halfedges().reserve(n_triangles * 3);
 
-    for (auto i = 0; i < n_triangles; ++i)
+    for (auto i = 0u; i < n_triangles; ++i)
     {
         if (!input.good())
         {

@@ -49,22 +49,31 @@ struct if_then_else<false, TrueType, FalseType>
 
 template <class TargetT, class TestT>
 using ref_if_mut = typename if_then_else<std::is_const<TestT>::value, TargetT, typename std::add_lvalue_reference<TargetT>::type>::result;
+template <class TargetT, class TestT>
+using cond_const_ref =
+    typename if_then_else<std::is_const<TestT>::value, typename std::add_lvalue_reference<TargetT const>::type, typename std::add_lvalue_reference<TargetT>::type>::result;
 
 struct identity
 {
-    template<typename T>
-    T operator()(T x) const { return x; }
+    template <typename T>
+    T operator()(T x) const
+    {
+        return x;
+    }
 };
 
-template<class T, class DivisorT>
+template <class T, class DivisorT>
 struct can_divide_by
 {
-    template<class C>
+    template <class C>
     static bool test(decltype(std::declval<C>() / std::declval<DivisorT>())*);
-    template<class C>
+    template <class C>
     static int test(...);
 
-    enum { value = sizeof(test<T>(0)) == sizeof(bool) };
+    enum
+    {
+        value = sizeof(test<T>(0)) == sizeof(bool)
+    };
 };
 
 // std::add_lvalue_reference
@@ -76,5 +85,5 @@ std::unique_ptr<T> make_unique(Args&&... args)
 {
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
-}
-}
+} // namespace tmp
+} // namespace polymesh

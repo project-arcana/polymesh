@@ -57,12 +57,12 @@ public:
     {
         // methods
     public:
-        bool is_set(enum_t value = NONE) { return (p.entries[i] & value) != 0; }
+        bool is_set(enum_t value = ALL) { return (p.entries[i] & value) != 0; }
         void set(enum_t value = ALL) { p.entries[i] |= value; }
         void unset(enum_t value = NONE) { p.entries[i] &= ~value; }
 
-        bool operator==(flag const& f) { return (enum_t)f == *this; }
-        bool operator!=(flag const& f) { return (enum_t)f != *this; }
+        bool operator==(enum_t const& f) { return f == *this; }
+        bool operator!=(enum_t const& f) { return f != *this; }
 
         /// conversion
         operator enum_t() const { return p.entries[i]; }
@@ -75,11 +75,32 @@ public:
         flag(flags& p, index_t i) : p(p), i(i) {}
     };
 
+    struct const_flag
+    {
+        // methods
+    public:
+        bool is_set(enum_t value = ALL) { return (p.entries[i] & value) != 0; }
+
+        bool operator==(enum_t const& f) { return f == *this; }
+        bool operator!=(enum_t const& f) { return f != *this; }
+
+        /// conversion
+        operator enum_t() const { return p.entries[i]; }
+
+    private:
+        flags const& p;
+        index_t i;
+
+    public:
+        const_flag(flags const& p, index_t i) : p(p), i(i) {}
+    };
+
     flag operator[](index_t i) { return {*this, i}; }
+    const_flag operator[](index_t i) const { return {*this, i}; }
 
     // ctor
 public:
-    flags(Mesh const& m, enum_t initial_value) : entries(m) { clear(initial_value); }
+    flags(Mesh const& m, enum_t initial_value) : entries(m, initial_value) {}
 
 private:
     attribute<enum_t> entries;
@@ -90,7 +111,7 @@ private:
 template <class enum_t, class mesh_ptr, class tag, class iterator>
 flags<enum_t, tag> make_flags(smart_collection<mesh_ptr, tag, iterator> const& c, enum_t initial_value)
 {
-    return {c.mesh()};
+    return {c.mesh(), initial_value};
 }
 
 template <class enum_t, class tag>
@@ -98,4 +119,4 @@ void flags<enum_t, tag>::clear(enum_t value)
 {
     entries.clear(value);
 }
-}
+} // namespace polymesh

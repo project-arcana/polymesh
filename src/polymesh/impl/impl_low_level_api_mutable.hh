@@ -770,10 +770,75 @@ inline void low_level_api_mutable::vertex_collapse(vertex_index v) const
 
 inline void low_level_api_mutable::halfedge_collapse(halfedge_index h) const
 {
-    // TODO: collapse half-edge
-    // preserve adjacent non-triangles
+    auto h0 = h;
+    auto h1 = opposite(h);
 
-    assert(0 && "not implemented");
+    assert(!is_boundary(h0) && "boundaries are not supported yet");
+    assert(!is_boundary(h1) && "boundaries are not supported yet");
+
+    auto v_to = to_vertex_of(h);
+    auto v_from = from_vertex_of(h);
+
+    auto f0 = face_of(h0);
+    auto f1 = face_of(h1);
+
+    auto h0_prev = prev_halfedge_of(h0);
+    auto h0_next = next_halfedge_of(h0);
+    auto h1_prev = prev_halfedge_of(h1);
+    auto h1_next = next_halfedge_of(h1);
+
+    // TODO: preserve adjacent non-triangles
+    assert(prev_halfedge_of(h0_prev) == h0_next && "non-triangle adjacent faces not supported yet");
+    assert(prev_halfedge_of(h1_prev) == h1_next && "non-triangle adjacent faces not supported yet");
+
+    // fix faces
+    auto h0_prev_opp = opposite(h0_prev);
+    auto h1_next_opp = opposite(h1_next);
+    auto fA = face_of(h0_prev_opp);
+    auto fB = face_of(h1_next_opp);
+    face_of(h0_next) = fA;
+    face_of(h1_prev) = fB;
+    if (halfedge_of(fA) == h0_prev_opp)
+        halfedge_of(fA) = h0_next;
+    if (halfedge_of(fB) == h1_next_opp)
+        halfedge_of(fB) = h1_prev;
+
+    // fix vertices
+    auto hv = h1;
+    do
+    {
+        // point to collapsed vertex
+        assert(to_vertex_of(hv) == v_from);
+        to_vertex_of(hv) = v_to;
+
+        // advance
+        hv = opposite(next_halfedge_of(hv));
+    } while (hv != h1);
+
+    if (outgoing_halfedge_of(v_to) == h1)
+        outgoing_halfedge_of(v_to) = h0_next;
+
+    auto vA = to_vertex_of(h0_next);
+    auto vB = to_vertex_of(h1_next);
+    if (outgoing_halfedge_of(vA) == h0_prev)
+        outgoing_halfedge_of(vA) = next_halfedge_of(h0_prev_opp);
+    if (outgoing_halfedge_of(vB) == h1_next_opp)
+        outgoing_halfedge_of(vB) = h1_prev;
+
+    // fix next-prev
+    connect_prev_next(h1_prev, next_halfedge_of(h1_next_opp));
+    connect_prev_next(prev_halfedge_of(h1_next_opp), h1_prev);
+
+    connect_prev_next(h0_next, next_halfedge_of(h0_prev_opp));
+    connect_prev_next(prev_halfedge_of(h0_prev_opp), h0_next);
+
+    // mark for deletion
+    set_removed(v_from);
+    set_removed(f0);
+    set_removed(f1);
+    set_removed(edge_of(h));
+    set_removed(edge_of(h0_prev));
+    set_removed(edge_of(h1_next));
 }
 
 inline void low_level_api_mutable::edge_rotate_next(edge_index e) const
@@ -947,4 +1012,4 @@ inline void low_level_api_mutable::halfedge_rotate_prev(halfedge_index h) const
     fix_boundary_state_of(face_of(h0));
     fix_boundary_state_of(face_of(h1));
 }
-}
+} // namespace polymesh
