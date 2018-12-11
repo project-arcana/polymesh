@@ -139,11 +139,12 @@ primitive_attribute<tag, AttrT> &primitive_attribute<tag, AttrT>::operator=(prim
 {
     this->deregister_attr();
 
-    if (this->capacity() < rhs.capacity())
-        this->resize(rhs.capacity());
+    auto old_size = this->size();
 
     this->mMesh = rhs.mMesh;
     this->mDefaultValue = rhs.mDefaultValue;
+
+    this->resizeFrom(old_size);
     this->copy_from(rhs);
 
     this->register_attr();
