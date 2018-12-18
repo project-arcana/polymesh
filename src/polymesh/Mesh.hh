@@ -12,6 +12,9 @@
 #include "attribute_collection.hh"
 #include "low_level_api.hh"
 
+// alias pm
+namespace pm = polymesh;
+
 namespace polymesh
 {
 using SharedMesh = std::shared_ptr<Mesh>;
