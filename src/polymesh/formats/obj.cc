@@ -3,34 +3,53 @@
 #include <fstream>
 #include <sstream>
 
-using namespace polymesh;
-
-void polymesh::write_obj(const std::string &filename,
-                         const Mesh &mesh,
-                         const vertex_attribute<glm::vec3> &position,
-                         const vertex_attribute<glm::vec2> *tex_coord,
-                         const vertex_attribute<glm::vec3> *normal)
+namespace polymesh
 {
-    obj_writer obj(filename);
-    obj.write_mesh(mesh, position, tex_coord, normal);
+template <class ScalarT>
+void write_obj(std::string const &filename, Mesh const &mesh, vertex_attribute<std::array<ScalarT, 3>> const &position)
+{
+    obj_writer<ScalarT> obj(filename);
+    obj.write_mesh(mesh, position);
 }
 
-obj_writer::obj_writer(const std::string &filename)
+template <class ScalarT>
+bool read_obj(const std::string &filename, Mesh &mesh, vertex_attribute<std::array<ScalarT, 3>> &position)
+{
+    obj_reader<ScalarT> reader(filename, mesh);
+    position = reader.get_positions().map([](std::array<ScalarT, 4> const &p) { return std::array<ScalarT, 3>{p[0], p[1], p[2]}; });
+    return reader.error_faces() == 0;
+}
+
+template <class ScalarT>
+obj_writer<ScalarT>::obj_writer(const std::string &filename)
 {
     tmp_out = new std::ofstream(filename);
     out = tmp_out;
 }
 
-obj_writer::obj_writer(std::ostream &out) { this->out = &out; }
+template <class ScalarT>
+obj_writer<ScalarT>::obj_writer(std::ostream &out)
+{
+    this->out = &out;
+}
 
-obj_writer::~obj_writer() { delete tmp_out; }
+template <class ScalarT>
+obj_writer<ScalarT>::~obj_writer()
+{
+    delete tmp_out;
+}
 
-void obj_writer::write_object_name(std::string object_name) { *out << "o " << object_name << "\n"; }
+template <class ScalarT>
+void obj_writer<ScalarT>::write_object_name(std::string object_name)
+{
+    *out << "o " << object_name << "\n";
+}
 
-void obj_writer::write_mesh(const Mesh &mesh,
-                            vertex_attribute<glm::vec3> const &position,
-                            vertex_attribute<glm::vec2> const *tex_coord,
-                            vertex_attribute<glm::vec3> const *normal)
+template <class ScalarT>
+void obj_writer<ScalarT>::write_mesh(const Mesh &mesh,
+                                     vertex_attribute<std::array<ScalarT, 3>> const &position,
+                                     vertex_attribute<std::array<ScalarT, 2>> const *tex_coord,
+                                     vertex_attribute<std::array<ScalarT, 3>> const *normal)
 {
     auto base_v = vertex_idx;
     auto base_t = texture_idx;
@@ -39,7 +58,7 @@ void obj_writer::write_mesh(const Mesh &mesh,
     for (auto v : mesh.all_vertices())
     {
         auto pos = v[position];
-        *out << "v " << pos.x << " " << pos.y << " " << pos.z << "\n";
+        *out << "v " << pos[0] << " " << pos[1] << " " << pos[2] << "\n";
         ++vertex_idx;
     }
 
@@ -47,7 +66,7 @@ void obj_writer::write_mesh(const Mesh &mesh,
         for (auto v : mesh.all_vertices())
         {
             auto t = v[*tex_coord];
-            *out << "vt " << t.x << " " << t.y << "\n";
+            *out << "vt " << t[0] << " " << t[1] << "\n";
             ++texture_idx;
         }
 
@@ -55,7 +74,7 @@ void obj_writer::write_mesh(const Mesh &mesh,
         for (auto v : mesh.all_vertices())
         {
             auto n = v[*normal];
-            *out << "vn " << n.x << " " << n.y << " " << n.z << "\n";
+            *out << "vn " << n[0] << " " << n[1] << " " << n[2] << "\n";
             ++normal_idx;
         }
 
@@ -81,10 +100,64 @@ void obj_writer::write_mesh(const Mesh &mesh,
     }
 }
 
-obj_reader::obj_reader(const std::string &filename, Mesh &mesh)
-  : positions(mesh.vertices().make_attribute<glm::vec4>()),
-    tex_coords(mesh.halfedges().make_attribute<glm::vec3>()),
-    normals(mesh.halfedges().make_attribute<glm::vec3>())
+template <class ScalarT>
+void obj_writer<ScalarT>::write_mesh(const Mesh &mesh,
+                                     vertex_attribute<std::array<ScalarT, 4>> const &position,
+                                     halfedge_attribute<std::array<ScalarT, 3>> const *tex_coord,
+                                     halfedge_attribute<std::array<ScalarT, 3>> const *normal)
+{
+    auto base_v = vertex_idx;
+    auto base_t = texture_idx;
+    auto base_n = normal_idx;
+
+    for (auto v : mesh.all_vertices())
+    {
+        auto pos = v[position];
+        *out << "v " << pos[0] << " " << pos[1] << " " << pos[2] << " " << pos[3] << "\n";
+        ++vertex_idx;
+    }
+
+    if (tex_coord)
+        for (auto h : mesh.all_halfedges())
+        {
+            auto t = h[*tex_coord];
+            *out << "vt " << t[0] << " " << t[1] << " " << t[2] << "\n";
+            ++texture_idx;
+        }
+
+    if (normal)
+        for (auto h : mesh.all_halfedges())
+        {
+            auto n = h[*normal];
+            *out << "vn " << n[0] << " " << n[1] << " " << n[2] << "\n";
+            ++normal_idx;
+        }
+
+    for (auto f : mesh.faces())
+    {
+        *out << "f";
+        for (auto h : f.halfedges())
+        {
+            auto vi = int(h.vertex_to());
+            auto hi = int(h);
+            *out << " ";
+            *out << base_v + vi;
+            if (tex_coord || normal)
+                *out << "/";
+            if (tex_coord)
+                *out << base_t + hi;
+            if (normal)
+            {
+                *out << base_n + hi;
+                *out << "/";
+            }
+        }
+        *out << "\n";
+    }
+}
+
+template <class ScalarT>
+obj_reader<ScalarT>::obj_reader(const std::string &filename, Mesh &mesh) : positions(mesh), tex_coords(mesh), normals(mesh)
 {
     std::ifstream file(filename);
     if (!file.good())
@@ -93,36 +166,19 @@ obj_reader::obj_reader(const std::string &filename, Mesh &mesh)
         parse(file, mesh);
 }
 
-obj_reader::obj_reader(std::istream &in, Mesh &mesh)
-  : positions(mesh.vertices().make_attribute<glm::vec4>()),
-    tex_coords(mesh.halfedges().make_attribute<glm::vec3>()),
-    normals(mesh.halfedges().make_attribute<glm::vec3>())
+template <class ScalarT>
+obj_reader<ScalarT>::obj_reader(std::istream &in, Mesh &mesh) : positions(mesh), tex_coords(mesh), normals(mesh)
 {
     parse(in, mesh);
 }
 
-vertex_attribute<glm::vec4> obj_reader::positions_vec4() const { return positions; }
-
-vertex_attribute<glm::vec3> obj_reader::positions_vec3() const
-{
-    return positions.map([](glm::vec4 const &v) { return glm::vec3(v); });
-}
-
-halfedge_attribute<glm::vec3> obj_reader::tex_coords_vec3() const { return tex_coords; }
-
-halfedge_attribute<glm::vec2> obj_reader::tex_coords_vec2() const
-{
-    return tex_coords.map([](glm::vec3 const &v) { return glm::vec2(v); });
-}
-
-halfedge_attribute<glm::vec3> obj_reader::normals_vec3() const { return tex_coords; }
-
-void obj_reader::parse(std::istream &in, Mesh &mesh)
+template <class ScalarT>
+void obj_reader<ScalarT>::parse(std::istream &in, Mesh &mesh)
 {
     mesh.clear();
 
-    std::vector<glm::vec3> raw_tex_coords;
-    std::vector<glm::vec3> raw_normals;
+    std::vector<std::array<ScalarT, 3>> raw_tex_coords;
+    std::vector<std::array<ScalarT, 3>> raw_normals;
 
     struct face
     {
@@ -162,16 +218,16 @@ void obj_reader::parse(std::istream &in, Mesh &mesh)
         {
             auto v = mesh.vertices().add();
 
-            glm::vec4 p;
-            p.w = 1.0f;
+            std::array<ScalarT, 4> p;
+            p[3] = 1.0f;
 
-            line >> p.x;
-            line >> p.y;
-            line >> p.z;
-            float w;
+            line >> p[0];
+            line >> p[1];
+            line >> p[2];
+            ScalarT w;
             line >> w;
             if (line.good())
-                p.w = w;
+                p[3] = w;
 
             positions[v] = p;
         }
@@ -179,15 +235,15 @@ void obj_reader::parse(std::istream &in, Mesh &mesh)
         // textures
         else if (type == "vt")
         {
-            glm::vec3 t;
-            t.z = 1.0f;
+            std::array<ScalarT, 3> t;
+            t[2] = 1.0f;
 
-            line >> t.x;
-            line >> t.y;
-            float z;
+            line >> t[0];
+            line >> t[1];
+            ScalarT z;
             line >> z;
             if (line.good())
-                t.z = z;
+                t[2] = z;
 
             raw_tex_coords.push_back(t);
         }
@@ -195,10 +251,10 @@ void obj_reader::parse(std::istream &in, Mesh &mesh)
         // normals
         else if (type == "vn")
         {
-            glm::vec3 n;
-            line >> n.x;
-            line >> n.y;
-            line >> n.z;
+            std::array<ScalarT, 3> n;
+            line >> n[0];
+            line >> n[1];
+            line >> n[2];
             raw_normals.push_back(n);
         }
 
@@ -318,9 +374,14 @@ void obj_reader::parse(std::istream &in, Mesh &mesh)
     }
 }
 
-bool polymesh::read_obj(const std::string &filename, Mesh &mesh, vertex_attribute<glm::vec3> &position)
-{
-    obj_reader reader(filename, mesh);
-    position = reader.positions_vec3();
-    return reader.error_faces() == 0;
-}
+template void write_obj<float>(std::string const &filename, Mesh const &mesh, vertex_attribute<std::array<float, 3>> const &position);
+template bool read_obj<float>(std::string const &filename, Mesh &mesh, vertex_attribute<std::array<float, 3>> &position);
+template struct obj_reader<float>;
+template struct obj_writer<float>;
+
+template void write_obj<double>(std::string const &filename, Mesh const &mesh, vertex_attribute<std::array<double, 3>> const &position);
+template bool read_obj<double>(std::string const &filename, Mesh &mesh, vertex_attribute<std::array<double, 3>> &position);
+template struct obj_reader<double>;
+template struct obj_writer<double>;
+
+} // namespace polymesh

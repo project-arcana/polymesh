@@ -10,12 +10,19 @@ namespace polymesh
 {
 /// Type trait for 3D vector types
 template <class Vec3>
-struct field_3d
+struct field3
 {
     using Point = Vec3;
     using Scalar = typename std::decay<decltype(std::declval<Vec3>()[0])>::type;
 
-    constexpr static Point make(Scalar x, Scalar y, Scalar z) { return Point(x, y, z); }
+    constexpr static Point make(Scalar x, Scalar y, Scalar z)
+    {
+        Point p;
+        p[0] = x;
+        p[1] = y;
+        p[2] = z;
+        return p;
+    }
     constexpr static Point zero() { return make(0, 0, 0); }
 
     constexpr static Scalar dot(Vec3 const& a, Vec3 const& b)
@@ -47,4 +54,4 @@ struct field_3d
         return ss.str();
     }
 };
-}
+} // namespace polymesh

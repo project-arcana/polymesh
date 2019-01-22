@@ -1,7 +1,5 @@
 #pragma once
 
-#include <glm/glm.hpp>
-
 #include <iostream>
 #include <string>
 
@@ -9,13 +7,12 @@
 
 namespace polymesh
 {
-void write_obj(std::string const& filename,
-               Mesh const& mesh,
-               vertex_attribute<glm::vec3> const& position,
-               vertex_attribute<glm::vec2> const* tex_coord = nullptr,
-               vertex_attribute<glm::vec3> const* normal = nullptr);
-bool read_obj(std::string const& filename, Mesh& mesh, vertex_attribute<glm::vec3>& position);
+template <class ScalarT>
+void write_obj(std::string const& filename, Mesh const& mesh, vertex_attribute<std::array<ScalarT, 3>> const& position);
+template <class ScalarT>
+bool read_obj(std::string const& filename, Mesh& mesh, vertex_attribute<std::array<ScalarT, 3>>& position);
 
+template <class ScalarT>
 struct obj_writer
 {
     obj_writer(std::string const& filename);
@@ -24,9 +21,13 @@ struct obj_writer
 
     void write_object_name(std::string object_name);
     void write_mesh(Mesh const& mesh,
-                    vertex_attribute<glm::vec3> const& position,
-                    vertex_attribute<glm::vec2> const* tex_coord = nullptr,
-                    vertex_attribute<glm::vec3> const* normal = nullptr);
+                    vertex_attribute<std::array<ScalarT, 4>> const& position,
+                    halfedge_attribute<std::array<ScalarT, 3>> const* tex_coord = nullptr,
+                    halfedge_attribute<std::array<ScalarT, 3>> const* normal = nullptr);
+    void write_mesh(Mesh const& mesh,
+                    vertex_attribute<std::array<ScalarT, 3>> const& position,
+                    vertex_attribute<std::array<ScalarT, 2>> const* tex_coord = nullptr,
+                    vertex_attribute<std::array<ScalarT, 3>> const* normal = nullptr);
 
     // TODO: tex coords and normals as half-edge attributes
 
@@ -42,19 +43,17 @@ private:
 // clears the given mesh before adding data
 // obj must be manifold
 // no negative indices
+template <class ScalarT>
 struct obj_reader
 {
     obj_reader(std::string const& filename, Mesh& mesh);
     obj_reader(std::istream& in, Mesh& mesh);
 
     // get properties of the obj
-    // NOTE: these always return fresh copies of the attribute!
 public:
-    vertex_attribute<glm::vec4> positions_vec4() const;
-    vertex_attribute<glm::vec3> positions_vec3() const;
-    halfedge_attribute<glm::vec3> tex_coords_vec3() const;
-    halfedge_attribute<glm::vec2> tex_coords_vec2() const;
-    halfedge_attribute<glm::vec3> normals_vec3() const;
+    vertex_attribute<std::array<ScalarT, 4>> const& get_positions() const { return positions; }
+    halfedge_attribute<std::array<ScalarT, 3>> const& get_tex_coords() const { return tex_coords; }
+    halfedge_attribute<std::array<ScalarT, 3>> const& get_normals() const { return normals; }
 
     /// Number of faces that could not be added
     int error_faces() const { return n_error_faces; }
@@ -62,10 +61,10 @@ public:
 private:
     void parse(std::istream& in, Mesh& mesh);
 
-    vertex_attribute<glm::vec4> positions;
-    halfedge_attribute<glm::vec3> tex_coords;
-    halfedge_attribute<glm::vec3> normals;
+    vertex_attribute<std::array<ScalarT, 4>> positions;
+    halfedge_attribute<std::array<ScalarT, 3>> tex_coords;
+    halfedge_attribute<std::array<ScalarT, 3>> normals;
 
     int n_error_faces = 0;
 };
-}
+} // namespace polymesh

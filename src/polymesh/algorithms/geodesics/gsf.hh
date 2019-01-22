@@ -12,7 +12,7 @@ namespace polymesh
  *
  *   auto nnf = make_geodesic_nnf(mesh, positions);
  */
-template <class Vec3, class Scalar = typename field_3d<Vec3>::Scalar>
+template <class Vec3, class Scalar = typename field3<Vec3>::Scalar>
 struct GeodesicNNF
 {
 public:
@@ -23,7 +23,7 @@ private:
     vertex_attribute<Vec3> const& position;
 };
 
-template <class Vec3, class Scalar = typename field_3d<Vec3>::Scalar>
+template <class Vec3, class Scalar = typename field3<Vec3>::Scalar>
 GeodesicNNF<Vec3, Scalar> make_geodesic_nnf(Mesh const& m, vertex_attribute<Vec3> const& position);
 }
 

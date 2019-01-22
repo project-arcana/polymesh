@@ -20,12 +20,18 @@
 
 namespace polymesh
 {
-void write_stl_binary(const std::string &filename, const Mesh &mesh, const vertex_attribute<glm::vec3> &position, face_attribute<glm::vec3> const *normals)
+template <class ScalarT>
+void write_stl_binary(const std::string &filename,
+                      const Mesh &mesh,
+                      const vertex_attribute<std::array<ScalarT, 3>> &position,
+                      face_attribute<std::array<ScalarT, 3>> const *normals)
 {
     std::ofstream file(filename, std::ios_base::binary);
     write_stl_binary(file, mesh, position, normals);
 }
-void write_stl_binary(std::ostream &out, const Mesh &mesh, const vertex_attribute<glm::vec3> &position, face_attribute<glm::vec3> const *normals)
+
+template <class ScalarT>
+void write_stl_binary(std::ostream &out, const Mesh &mesh, const vertex_attribute<std::array<ScalarT, 3>> &position, face_attribute<std::array<ScalarT, 3>> const *normals)
 {
     char header[80] = {};
     uint32_t n_triangles = mesh.faces().size();
@@ -58,7 +64,8 @@ void write_stl_binary(std::ostream &out, const Mesh &mesh, const vertex_attribut
     }
 }
 
-bool read_stl(const std::string &filename, Mesh &mesh, vertex_attribute<glm::vec3> &position, face_attribute<glm::vec3> *normals)
+template <class ScalarT>
+bool read_stl(const std::string &filename, Mesh &mesh, vertex_attribute<std::array<ScalarT, 3>> &position, face_attribute<std::array<ScalarT, 3>> *normals)
 {
     std::ifstream file(filename);
     if (!file.good())
@@ -67,12 +74,14 @@ bool read_stl(const std::string &filename, Mesh &mesh, vertex_attribute<glm::vec
     return read_stl(file, mesh, position, normals);
 }
 
-bool read_stl(std::istream &input, Mesh &mesh, vertex_attribute<glm::vec3> &position, face_attribute<glm::vec3> *normals)
+template <class ScalarT>
+bool read_stl(std::istream &input, Mesh &mesh, vertex_attribute<std::array<ScalarT, 3>> &position, face_attribute<std::array<ScalarT, 3>> *normals)
 {
     return is_ascii_stl(input) ? read_stl_ascii(input, mesh, position, normals) : read_stl_binary(input, mesh, position, normals);
 }
 
-bool read_stl_binary(std::istream &input, Mesh &mesh, vertex_attribute<glm::vec3> &position, face_attribute<glm::vec3> *normals)
+template <class ScalarT>
+bool read_stl_binary(std::istream &input, Mesh &mesh, vertex_attribute<std::array<ScalarT, 3>> &position, face_attribute<std::array<ScalarT, 3>> *normals)
 {
     mesh.clear();
 
@@ -93,7 +102,7 @@ bool read_stl_binary(std::istream &input, Mesh &mesh, vertex_attribute<glm::vec3
     uint32_t n_triangles;
     input.read((char *)&n_triangles, sizeof(n_triangles));
 
-    size_t fs_expect = 80 + sizeof(n_triangles) + n_triangles * (sizeof(glm::vec3) * 4 + sizeof(uint16_t));
+    size_t fs_expect = 80 + sizeof(n_triangles) + n_triangles * (sizeof(std::array<ScalarT, 3>) * 4 + sizeof(uint16_t));
     if (fs_expect != fs_real)
     {
         std::cerr << "Expected file size mismatch: " << fs_expect << " vs " << fs_real << " bytes (file corrupt or wrong format?)" << std::endl;
@@ -117,10 +126,10 @@ bool read_stl_binary(std::istream &input, Mesh &mesh, vertex_attribute<glm::vec3
         auto v2 = mesh.vertices().add();
         auto f = mesh.faces().add(v0, v1, v2);
 
-        input.read((char *)&f[normals], sizeof(glm::vec3));
-        input.read((char *)&position[v0], sizeof(glm::vec3));
-        input.read((char *)&position[v1], sizeof(glm::vec3));
-        input.read((char *)&position[v2], sizeof(glm::vec3));
+        input.read((char *)&f[normals], sizeof(std::array<ScalarT, 3>));
+        input.read((char *)&position[v0], sizeof(std::array<ScalarT, 3>));
+        input.read((char *)&position[v1], sizeof(std::array<ScalarT, 3>));
+        input.read((char *)&position[v2], sizeof(std::array<ScalarT, 3>));
         uint16_t attr_cnt;
         input.read((char *)&attr_cnt, sizeof(attr_cnt));
     }
@@ -128,20 +137,22 @@ bool read_stl_binary(std::istream &input, Mesh &mesh, vertex_attribute<glm::vec3
     return true;
 }
 
-static float read_float_with_nan(std::istream &input)
+template <class ScalarT>
+static float read_real_with_nan(std::istream &input)
 {
     std::string s;
     input >> s;
     if (s == "NaN" || s == "nan" || s == "NAN")
-        return std::numeric_limits<float>::quiet_NaN();
+        return std::numeric_limits<ScalarT>::quiet_NaN();
 
     std::istringstream ss(s);
-    float f;
+    ScalarT f;
     ss >> f;
     return f;
 }
 
-bool read_stl_ascii(std::istream &input, Mesh &mesh, vertex_attribute<glm::vec3> &position, face_attribute<glm::vec3> *normals)
+template <class ScalarT>
+bool read_stl_ascii(std::istream &input, Mesh &mesh, vertex_attribute<std::array<ScalarT, 3>> &position, face_attribute<std::array<ScalarT, 3>> *normals)
 {
     mesh.clear();
 
@@ -172,10 +183,10 @@ bool read_stl_ascii(std::istream &input, Mesh &mesh, vertex_attribute<glm::vec3>
 
         input >> s;
         assert(s == "normal");
-        glm::vec3 n;
-        n.x = read_float_with_nan(input);
-        n.y = read_float_with_nan(input);
-        n.z = read_float_with_nan(input);
+        std::array<ScalarT, 3> n;
+        n[0] = read_real_with_nan<ScalarT>(input);
+        n[1] = read_real_with_nan<ScalarT>(input);
+        n[2] = read_real_with_nan<ScalarT>(input);
         f[normals] = n;
 
         input >> s;
@@ -187,10 +198,10 @@ bool read_stl_ascii(std::istream &input, Mesh &mesh, vertex_attribute<glm::vec3>
         {
             input >> s;
             assert(s == "vertex");
-            glm::vec3 p;
-            p.x = read_float_with_nan(input);
-            p.y = read_float_with_nan(input);
-            p.z = read_float_with_nan(input);
+            std::array<ScalarT, 3> p;
+            p[0] = read_real_with_nan<ScalarT>(input);
+            p[1] = read_real_with_nan<ScalarT>(input);
+            p[2] = read_real_with_nan<ScalarT>(input);
             position[v[i]] = p;
         }
 
@@ -248,4 +259,30 @@ bool is_ascii_stl(std::istream &input)
     input.seekg(savp, std::ios_base::beg);
     return false;
 }
-}
+
+template void write_stl_binary<float>(std::string const &filename,
+                                      Mesh const &mesh,
+                                      vertex_attribute<std::array<float, 3>> const &position,
+                                      face_attribute<std::array<float, 3>> const *normals);
+template void write_stl_binary<float>(std::ostream &out,
+                                      Mesh const &mesh,
+                                      vertex_attribute<std::array<float, 3>> const &position,
+                                      face_attribute<std::array<float, 3>> const *normals);
+template bool read_stl<float>(std::string const &filename, Mesh &mesh, vertex_attribute<std::array<float, 3>> &position, face_attribute<std::array<float, 3>> *normals);
+template bool read_stl<float>(std::istream &input, Mesh &mesh, vertex_attribute<std::array<float, 3>> &position, face_attribute<std::array<float, 3>> *normals);
+template bool read_stl_binary<float>(std::istream &input, Mesh &mesh, vertex_attribute<std::array<float, 3>> &position, face_attribute<std::array<float, 3>> *normals);
+template bool read_stl_ascii<float>(std::istream &input, Mesh &mesh, vertex_attribute<std::array<float, 3>> &position, face_attribute<std::array<float, 3>> *normals);
+
+template void write_stl_binary<double>(std::string const &filename,
+                                       Mesh const &mesh,
+                                       vertex_attribute<std::array<double, 3>> const &position,
+                                       face_attribute<std::array<double, 3>> const *normals);
+template void write_stl_binary<double>(std::ostream &out,
+                                       Mesh const &mesh,
+                                       vertex_attribute<std::array<double, 3>> const &position,
+                                       face_attribute<std::array<double, 3>> const *normals);
+template bool read_stl<double>(std::string const &filename, Mesh &mesh, vertex_attribute<std::array<double, 3>> &position, face_attribute<std::array<double, 3>> *normals);
+template bool read_stl<double>(std::istream &input, Mesh &mesh, vertex_attribute<std::array<double, 3>> &position, face_attribute<std::array<double, 3>> *normals);
+template bool read_stl_binary<double>(std::istream &input, Mesh &mesh, vertex_attribute<std::array<double, 3>> &position, face_attribute<std::array<double, 3>> *normals);
+template bool read_stl_ascii<double>(std::istream &input, Mesh &mesh, vertex_attribute<std::array<double, 3>> &position, face_attribute<std::array<double, 3>> *normals);
+} // namespace polymesh

@@ -5,12 +5,15 @@
 
 namespace polymesh
 {
-void write_off(const std::string &filename, const Mesh &mesh, const vertex_attribute<glm::vec3> &position)
+template <class ScalarT>
+void write_off(const std::string& filename, const Mesh& mesh, const vertex_attribute<std::array<ScalarT, 3>>& position)
 {
     std::ofstream file(filename);
     write_off(file, mesh, position);
 }
-void write_off(std::ostream &out, const Mesh &mesh, const vertex_attribute<glm::vec3> &position)
+
+template <class ScalarT>
+void write_off(std::ostream& out, const Mesh& mesh, const vertex_attribute<std::array<ScalarT, 3>>& position)
 {
     out << "OFF\n";
     out << mesh.vertices().size() << " " << mesh.faces().size() << " " << mesh.edges().size() << "\n";
@@ -18,7 +21,7 @@ void write_off(std::ostream &out, const Mesh &mesh, const vertex_attribute<glm::
     for (auto v : mesh.all_vertices())
     {
         auto pos = v[position];
-        out << pos.x << " " << pos.y << " " << pos.z << "\n";
+        out << pos[0] << " " << pos[1] << " " << pos[2] << "\n";
     }
 
     for (auto f : mesh.faces())
@@ -30,7 +33,8 @@ void write_off(std::ostream &out, const Mesh &mesh, const vertex_attribute<glm::
     }
 }
 
-bool read_off(const std::string &filename, Mesh &mesh, vertex_attribute<glm::vec3> &position)
+template <class ScalarT>
+bool read_off(const std::string& filename, Mesh& mesh, vertex_attribute<std::array<ScalarT, 3>>& position)
 {
     std::ifstream file(filename);
     if (!file.good())
@@ -39,7 +43,8 @@ bool read_off(const std::string &filename, Mesh &mesh, vertex_attribute<glm::vec
     return read_off(file, mesh, position);
 }
 
-bool read_off(std::istream &input, Mesh &mesh, vertex_attribute<glm::vec3> &position)
+template <class ScalarT>
+bool read_off(std::istream& input, Mesh& mesh, vertex_attribute<std::array<ScalarT, 3>>& position)
 {
     std::string str;
     input >> str;
@@ -55,8 +60,8 @@ bool read_off(std::istream &input, Mesh &mesh, vertex_attribute<glm::vec3> &posi
     for (auto i = 0; i < v_cnt; ++i)
     {
         auto v = mesh.vertices().add();
-        auto &pos = v[position];
-        input >> pos.x >> pos.y >> pos.z;
+        auto& pos = v[position];
+        input >> pos[0] >> pos[1] >> pos[2];
     }
 
     // read faces
@@ -88,4 +93,14 @@ bool read_off(std::istream &input, Mesh &mesh, vertex_attribute<glm::vec3> &posi
 
     return non_manifold == 0;
 }
-}
+
+template void write_off<float>(std::string const& filename, Mesh const& mesh, vertex_attribute<std::array<float, 3>> const& position);
+template void write_off<float>(std::ostream& out, Mesh const& mesh, vertex_attribute<std::array<float, 3>> const& position);
+template bool read_off<float>(std::string const& filename, Mesh& mesh, vertex_attribute<std::array<float, 3>>& position);
+template bool read_off<float>(std::istream& input, Mesh& mesh, vertex_attribute<std::array<float, 3>>& position);
+
+template void write_off<double>(std::string const& filename, Mesh const& mesh, vertex_attribute<std::array<double, 3>> const& position);
+template void write_off<double>(std::ostream& out, Mesh const& mesh, vertex_attribute<std::array<double, 3>> const& position);
+template bool read_off<double>(std::string const& filename, Mesh& mesh, vertex_attribute<std::array<double, 3>>& position);
+template bool read_off<double>(std::istream& input, Mesh& mesh, vertex_attribute<std::array<double, 3>>& position);
+} // namespace polymesh

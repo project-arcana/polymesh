@@ -53,7 +53,7 @@ bool is_triangle_mesh(Mesh const& m);
 bool is_quad_mesh(Mesh const& m);
 
 /// returns the area of the (flat) polygonal face
-template <class Vec3, class Scalar = typename field_3d<Vec3>::Scalar>
+template <class Vec3, class Scalar = typename field3<Vec3>::Scalar>
 Scalar face_area(face_handle f, vertex_attribute<Vec3> const& position);
 
 /// returns the center of gravity for a given (flat) polygonal face
@@ -65,7 +65,7 @@ template <class Vec3>
 Vec3 face_normal(face_handle f, vertex_attribute<Vec3> const& position);
 
 /// returns the area of a given triangle
-template <class Vec3, class Scalar = typename field_3d<Vec3>::Scalar>
+template <class Vec3, class Scalar = typename field3<Vec3>::Scalar>
 Scalar triangle_area(face_handle f, vertex_attribute<Vec3> const& position);
 
 /// returns the center of gravity for a given triangle
@@ -85,11 +85,11 @@ template <class Vec3>
 Vec3 bary_interpolate(face_handle f, Vec3 bary, vertex_attribute<Vec3> const& position);
 
 /// returns the length of an edge
-template <class Vec3, class Scalar = typename field_3d<Vec3>::Scalar>
+template <class Vec3, class Scalar = typename field3<Vec3>::Scalar>
 Scalar edge_length(edge_handle e, vertex_attribute<Vec3> const& position);
 
 /// returns the length of an edge
-template <class Vec3, class Scalar = typename field_3d<Vec3>::Scalar>
+template <class Vec3, class Scalar = typename field3<Vec3>::Scalar>
 Scalar edge_length(halfedge_handle h, vertex_attribute<Vec3> const& position);
 
 /// returns the (non-normalized) vector from -> to
@@ -101,42 +101,42 @@ template <class Vec3>
 Vec3 edge_dir(halfedge_handle h, vertex_attribute<Vec3> const& position);
 
 /// calculates the angle between this half-edge and the next one
-template <class Vec3, class Scalar = typename field_3d<Vec3>::Scalar>
+template <class Vec3, class Scalar = typename field3<Vec3>::Scalar>
 Scalar angle_to_next(halfedge_handle h, vertex_attribute<Vec3> const& position);
 
 /// calculates the angle between this half-edge and the previous one
-template <class Vec3, class Scalar = typename field_3d<Vec3>::Scalar>
+template <class Vec3, class Scalar = typename field3<Vec3>::Scalar>
 Scalar angle_to_prev(halfedge_handle h, vertex_attribute<Vec3> const& position);
 
 /// sum of face angles at this vertex
-template <class Vec3, class Scalar = typename field_3d<Vec3>::Scalar>
+template <class Vec3, class Scalar = typename field3<Vec3>::Scalar>
 Scalar angle_sum(vertex_handle v, vertex_attribute<Vec3> const& position);
 
 /// difference between 2pi and the angle sum (positive means less than 2pi)
-template <class Vec3, class Scalar = typename field_3d<Vec3>::Scalar>
+template <class Vec3, class Scalar = typename field3<Vec3>::Scalar>
 Scalar angle_defect(vertex_handle v, vertex_attribute<Vec3> const& position);
 
 /// efficiently computes the voronoi areas of all vertices
 /// assumes triangle meshes for now
-template <class Vec3, class Scalar = typename field_3d<Vec3>::Scalar>
+template <class Vec3, class Scalar = typename field3<Vec3>::Scalar>
 vertex_attribute<Scalar> vertex_voronoi_areas(Mesh const& m, vertex_attribute<Vec3> const& position);
 
 /// efficiently computes vertex normals by uniformly weighting face normals
 /// assumes triangle meshes for now
-template <class Vec3, class Scalar = typename field_3d<Vec3>::Scalar>
+template <class Vec3, class Scalar = typename field3<Vec3>::Scalar>
 vertex_attribute<Vec3> vertex_normals_uniform(Mesh const& m, vertex_attribute<Vec3> const& position);
 
 /// efficiently computes vertex normals by area weighting face normals
 /// assumes triangle meshes for now
-template <class Vec3, class Scalar = typename field_3d<Vec3>::Scalar>
+template <class Vec3, class Scalar = typename field3<Vec3>::Scalar>
 vertex_attribute<Vec3> vertex_normals_by_area(Mesh const& m, vertex_attribute<Vec3> const& position);
 
 /// efficiently computes face normal attribute
-template <class Vec3, class Scalar = typename field_3d<Vec3>::Scalar>
+template <class Vec3, class Scalar = typename field3<Vec3>::Scalar>
 face_attribute<Vec3> face_normals(Mesh const& m, vertex_attribute<Vec3> const& position);
 
 /// efficiently computes face normal attribute (assuming triangles)
-template <class Vec3, class Scalar = typename field_3d<Vec3>::Scalar>
+template <class Vec3, class Scalar = typename field3<Vec3>::Scalar>
 face_attribute<Vec3> triangle_normals(Mesh const& m, vertex_attribute<Vec3> const& position);
 
 /// creates a vec3 halfedge attribute with barycentric coordinates per to-vertex (i.e. 100, 010, 001)
@@ -186,7 +186,7 @@ Scalar triangle_area(face_handle f, vertex_attribute<Vec3> const& position)
     auto p1 = position[h.vertex_to()];
     auto p2 = position[h.next().vertex_to()];
 
-    return field_3d<Vec3>::length(field_3d<Vec3>::cross(p0 - p1, p0 - p2)) * field_3d<Vec3>::scalar(0.5f);
+    return field3<Vec3>::length(field3<Vec3>::cross(p0 - p1, p0 - p2)) * field3<Vec3>::scalar(0.5f);
 }
 
 template <class Vec3>
@@ -197,7 +197,7 @@ Vec3 triangle_centroid(face_handle f, vertex_attribute<Vec3> const& position)
     auto p1 = position[h.vertex_to()];
     auto p2 = position[h.next().vertex_to()];
 
-    return (p0 + p1 + p2) / field_3d<Vec3>::scalar(3);
+    return (p0 + p1 + p2) / field3<Vec3>::scalar(3);
 }
 
 template <class Vec3>
@@ -207,9 +207,9 @@ Vec3 face_normal(face_handle f, vertex_attribute<Vec3> const& position)
     auto e = f.any_halfedge();
     auto v0 = e.vertex_from()[position];
     auto v1 = e.vertex_to()[position];
-    auto n = field_3d<Vec3>::cross(v0 - c, v1 - c);
-    auto l = field_3d<Vec3>::length(n);
-    return l == 0 ? field_3d<Vec3>::zero() : n / l;
+    auto n = field3<Vec3>::cross(v0 - c, v1 - c);
+    auto l = field3<Vec3>::length(n);
+    return l == 0 ? field3<Vec3>::zero() : n / l;
 }
 
 template <class Vec3>
@@ -219,9 +219,9 @@ Vec3 triangle_normal(face_handle f, vertex_attribute<Vec3> const& position)
     auto v0 = e.vertex_from()[position];
     auto v1 = e.vertex_to()[position];
     auto v2 = e.next().vertex_to()[position];
-    auto n = field_3d<Vec3>::cross(v1 - v0, v2 - v0);
-    auto l = field_3d<Vec3>::length(n);
-    return l == 0 ? field_3d<Vec3>::zero() : n / l;
+    auto n = field3<Vec3>::cross(v1 - v0, v2 - v0);
+    auto l = field3<Vec3>::length(n);
+    return l == 0 ? field3<Vec3>::zero() : n / l;
 }
 
 template <class Vec3>
@@ -231,13 +231,13 @@ Vec3 triangle_normal_unorm(face_handle f, vertex_attribute<Vec3> const& position
     auto v0 = e.vertex_from()[position];
     auto v1 = e.vertex_to()[position];
     auto v2 = e.next().vertex_to()[position];
-    return field_3d<Vec3>::cross(v1 - v0, v2 - v0);
+    return field3<Vec3>::cross(v1 - v0, v2 - v0);
 }
 
 template <class Vec3, class Scalar>
 Scalar face_area(face_handle f, vertex_attribute<Vec3> const& position)
 {
-    auto varea = field_3d<Vec3>::zero();
+    auto varea = field3<Vec3>::zero();
 
     auto h = f.any_halfedge();
 
@@ -251,14 +251,14 @@ Scalar face_area(face_handle f, vertex_attribute<Vec3> const& position)
     {
         auto p_curr = h.vertex_to()[position];
 
-        varea += field_3d<Vec3>::cross(p_prev - p0, p_curr - p0);
+        varea += field3<Vec3>::cross(p_prev - p0, p_curr - p0);
 
         // circulate
         h = h.next();
         p_prev = p_curr;
     } while (h.vertex_to() != v0);
 
-    return field_3d<Vec3>::length(varea) * 0.5f;
+    return field3<Vec3>::length(varea) * 0.5f;
 }
 
 template <class Vec3>
@@ -266,8 +266,8 @@ Vec3 face_centroid(face_handle f, vertex_attribute<Vec3> const& position)
 {
     // TODO: make correct for non-convex polygons!
 
-    auto area = field_3d<Vec3>::scalar(0);
-    auto centroid = field_3d<Vec3>::zero();
+    auto area = field3<Vec3>::scalar(0);
+    auto centroid = field3<Vec3>::zero();
 
     auto h = f.any_halfedge();
 
@@ -281,7 +281,7 @@ Vec3 face_centroid(face_handle f, vertex_attribute<Vec3> const& position)
     {
         auto p_curr = h.vertex_to()[position];
 
-        auto a = field_3d<Vec3>::length(field_3d<Vec3>::cross(p_prev - p0, p_curr - p0));
+        auto a = field3<Vec3>::length(field3<Vec3>::cross(p_prev - p0, p_curr - p0));
         area += a;
         centroid += (p_prev + p_curr + p0) * a;
 
@@ -296,13 +296,13 @@ Vec3 face_centroid(face_handle f, vertex_attribute<Vec3> const& position)
 template <class Vec3, class Scalar>
 Scalar edge_length(edge_handle e, vertex_attribute<Vec3> const& position)
 {
-    return field_3d<Vec3>::length(position[e.vertexA()] - position[e.vertexB()]);
+    return field3<Vec3>::length(position[e.vertexA()] - position[e.vertexB()]);
 }
 
 template <class Vec3, class Scalar>
 Scalar edge_length(halfedge_handle h, vertex_attribute<Vec3> const& position)
 {
-    return field_3d<Vec3>::length(position[h.vertex_from()] - position[h.vertex_to()]);
+    return field3<Vec3>::length(position[h.vertex_from()] - position[h.vertex_to()]);
 }
 
 template <class Vec3>
@@ -315,9 +315,9 @@ template <class Vec3>
 Vec3 edge_dir(halfedge_handle h, vertex_attribute<Vec3> const& position)
 {
     auto d = position[h.vertex_to()] - position[h.vertex_from()];
-    auto l = field_3d<Vec3>::length(d);
+    auto l = field3<Vec3>::length(d);
     if (l == 0)
-        return field_3d<Vec3>::zero();
+        return field3<Vec3>::zero();
     return d / l;
 }
 
@@ -331,13 +331,13 @@ Scalar angle_to_next(halfedge_handle h, vertex_attribute<Vec3> const& position)
     auto v01 = v0 - v1;
     auto v21 = v2 - v1;
 
-    auto l01 = field_3d<Vec3>::length(v01);
-    auto l21 = field_3d<Vec3>::length(v21);
+    auto l01 = field3<Vec3>::length(v01);
+    auto l21 = field3<Vec3>::length(v21);
 
     if (l01 == 0 || l21 == 0)
         return 0;
 
-    auto ca = field_3d<Vec3>::dot(v01, v21) / (l01 * l21);
+    auto ca = field3<Vec3>::dot(v01, v21) / (l01 * l21);
     return std::acos(ca);
 }
 
@@ -351,13 +351,13 @@ Scalar angle_to_prev(halfedge_handle h, vertex_attribute<Vec3> const& position)
     auto v01 = v0 - v1;
     auto v21 = v2 - v1;
 
-    auto l01 = field_3d<Vec3>::length(v01);
-    auto l21 = field_3d<Vec3>::length(v21);
+    auto l01 = field3<Vec3>::length(v01);
+    auto l21 = field3<Vec3>::length(v21);
 
     if (l01 == 0 || l21 == 0)
         return 0;
 
-    auto ca = field_3d<Vec3>::dot(v01, v21) / (l01 * l21);
+    auto ca = field3<Vec3>::dot(v01, v21) / (l01 * l21);
     return std::acos(ca);
 }
 
@@ -407,7 +407,7 @@ template <class Vec3, class Scalar>
 vertex_attribute<Vec3> vertex_normals_uniform(Mesh const& m, vertex_attribute<Vec3> const& position)
 {
     face_attribute<Vec3> fnormals = m.faces().map([&](face_handle f) { return triangle_normal(f, position); });
-    vertex_attribute<Vec3> normals = m.vertices().make_attribute_with_default(field_3d<Vec3>::make(0, 0, 0));
+    vertex_attribute<Vec3> normals = m.vertices().make_attribute_with_default(field3<Vec3>::make(0, 0, 0));
 
     for (auto f : m.faces())
         for (auto v : f.vertices())
@@ -415,7 +415,7 @@ vertex_attribute<Vec3> vertex_normals_uniform(Mesh const& m, vertex_attribute<Ve
 
     for (auto& n : normals)
     {
-        auto l = field_3d<Vec3>::length(n);
+        auto l = field3<Vec3>::length(n);
         if (l > 0)
             n /= l;
     }
@@ -427,7 +427,7 @@ template <class Vec3, class Scalar>
 vertex_attribute<Vec3> vertex_normals_by_area(Mesh const& m, vertex_attribute<Vec3> const& position)
 {
     face_attribute<Vec3> fnormals = m.faces().map([&](face_handle f) { return triangle_normal_unorm(f, position); });
-    vertex_attribute<Vec3> normals = m.vertices().make_attribute_with_default(field_3d<Vec3>::make(0, 0, 0));
+    vertex_attribute<Vec3> normals = m.vertices().make_attribute_with_default(field3<Vec3>::make(0, 0, 0));
 
     for (auto f : m.faces())
         for (auto v : f.vertices())
@@ -435,7 +435,7 @@ vertex_attribute<Vec3> vertex_normals_by_area(Mesh const& m, vertex_attribute<Ve
 
     for (auto& n : normals)
     {
-        auto l = field_3d<Vec3>::length(n);
+        auto l = field3<Vec3>::length(n);
         if (l > 0)
             n /= l;
     }
@@ -464,7 +464,7 @@ halfedge_attribute<Vec3> barycentric_coordinates(Mesh const& m)
         auto idx = 0;
         for (auto h : f.halfedges())
         {
-            coords[h] = field_3d<Vec3>::make(idx == 0, idx == 1, idx == 2);
+            coords[h] = field3<Vec3>::make(idx == 0, idx == 1, idx == 2);
             ++idx;
         }
     }
@@ -488,8 +488,8 @@ bool is_delaunay(edge_handle e, vertex_attribute<Vec3> const& position)
     auto e_ib = pi - pb;
     auto e_jb = pj - pb;
 
-    auto cot_a = field_3d<Vec3>::dot(e_ia, e_ja) / field_3d<Vec3>::length(field_3d<Vec3>::cross(e_ia, e_ja));
-    auto cot_b = field_3d<Vec3>::dot(e_ib, e_jb) / field_3d<Vec3>::length(field_3d<Vec3>::cross(e_ib, e_jb));
+    auto cot_a = field3<Vec3>::dot(e_ia, e_ja) / field3<Vec3>::length(field3<Vec3>::cross(e_ia, e_ja));
+    auto cot_b = field3<Vec3>::dot(e_ib, e_jb) / field3<Vec3>::length(field3<Vec3>::cross(e_ib, e_jb));
 
     return cot_a + cot_b >= 0;
 }
