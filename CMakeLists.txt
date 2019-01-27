@@ -16,3 +16,16 @@ else()
     target_compile_options(polymesh PRIVATE -Wall -fPIC)
     target_link_libraries(polymesh PUBLIC -fuse-ld=gold)
 endif()
+
+# optional libs:
+if (TARGET glm)
+    target_link_libraries(polymesh PUBLIC glm)
+    target_compile_definitions(polymesh PUBLIC POLYMESH_SUPPORT_GLM)
+    message(STATUS "enabled polymesh support for glm")
+endif()
+
+if (TARGET typed-geometry)
+    target_link_libraries(polymesh PUBLIC typed-geometry)
+    target_compile_definitions(polymesh PUBLIC POLYMESH_SUPPORT_TYPED_GEOMETRY)
+    message(STATUS "enabled polymesh support for typed geometry")
+endif()

@@ -6,8 +6,10 @@
 #include <typeindex>
 #include <unordered_map>
 
+#ifdef POLYMESH_SUPPORT_GLM
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
+#endif
 
 #include "../low_level_api.hh"
 
@@ -17,7 +19,7 @@ namespace
 {
 std::unordered_map<std::string, std::unique_ptr<detail::GenericAttributeSerializer>> sSerializers;
 const std::string unregistered_type_name = "UNREGISTERED_TYPE";
-}
+} // namespace
 
 void detail::register_attribute_serializer(const std::string &identifier, std::unique_ptr<detail::GenericAttributeSerializer> ptr)
 {
@@ -219,6 +221,7 @@ static bool registered_default_types = []() {
     REGISTER_TYPE(uint32_t);
     REGISTER_TYPE(uint64_t);
 
+#ifdef POLYMESH_SUPPORT_GLM
     REGISTER_TYPE(glm::vec2);
     REGISTER_TYPE(glm::vec3);
     REGISTER_TYPE(glm::vec4);
@@ -256,9 +259,10 @@ static bool registered_default_types = []() {
     REGISTER_TYPE(glm::dmat4x4);
 
     REGISTER_TYPE(glm::quat);
+#endif
 
     register_type<std::string>("std::string", detail::string_serdes{});
 
     return true;
 }();
-}
+} // namespace polymesh
