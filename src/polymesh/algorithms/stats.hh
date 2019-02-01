@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <sstream>
 
 #include "../Mesh.hh"
 #include "../fields.hh"
@@ -22,6 +23,12 @@ template <class Vec3>
 void print_stats(std::ostream& out, Mesh const& m, vertex_attribute<Vec3> const* position)
 {
     auto ln = "\n";
+
+    auto to_string = [&](Vec3 const& v) {
+        std::stringstream ss;
+        ss << "(" << v[0] << ", " << v[1] << ", " << v[2] << ")";
+        return ss.str();
+    };
 
     out << "[Mesh]:" << ln;
 
@@ -69,16 +76,16 @@ void print_stats(std::ostream& out, Mesh const& m, vertex_attribute<Vec3> const*
         auto aabb = m.vertices().aabb(pos);
         auto min = aabb.min;
         auto max = aabb.max;
-        out << "  AABB Min:  " << field3<Vec3>::to_string(min) << ln;
-        out << "  AABB Max:  " << field3<Vec3>::to_string(max) << ln;
-        out << "  AABB Size: " << field3<Vec3>::to_string(max - min) << ln;
+        out << "  AABB Min:  " << to_string(min) << ln;
+        out << "  AABB Max:  " << to_string(max) << ln;
+        out << "  AABB Size: " << to_string(max - min) << ln;
 
         auto avg = m.vertices().avg(pos);
-        out << "  Vertex Centroid: " << field3<Vec3>::to_string(avg) << ln;
+        out << "  Vertex Centroid: " << to_string(avg) << ln;
 
         auto el_minmax = m.edges().minmax([&](edge_handle e) { return edge_length(e, pos); });
         auto el_avg = m.edges().avg([&](edge_handle e) { return edge_length(e, pos); });
         out << "  Edge Lengths: " << el_minmax.min << " .. " << el_minmax.max << " (avg " << el_avg << ")" << ln;
     }
 }
-}
+} // namespace polymesh

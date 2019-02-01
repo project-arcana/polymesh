@@ -7,16 +7,24 @@ namespace polymesh
 namespace detail
 {
 template <class T>
-T helper_min(T const &a, T const &b)
+auto helper_min(T const &a, T const &b) -> decltype(min(a, b))
 {
-    using namespace std;
     return min(a, b);
 }
 template <class T>
-T helper_max(T const &a, T const &b)
+auto helper_max(T const &a, T const &b) -> decltype(max(a, b))
 {
-    using namespace std;
     return max(a, b);
+}
+template <class A, class B, class = void>
+auto helper_min(A const &a, B const &b) -> decltype(a < b)
+{
+    return a < b ? a : b;
+}
+template <class A, class B, class = void>
+auto helper_max(A const &a, B const &b) -> decltype(a > b)
+{
+    return a > b ? a : b;
 }
 }
 
