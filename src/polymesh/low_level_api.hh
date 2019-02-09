@@ -2,9 +2,9 @@
 
 #include <type_traits>
 #include <vector>
+#include "attributes.hh"
 #include "cursors.hh"
 #include "tmp.hh"
-#include "attributes.hh"
 
 namespace polymesh
 {
@@ -139,6 +139,17 @@ public:
     /// edges without faces are isolated
     bool is_isolated(edge_index idx) const;
 
+    // attribute related properties
+public:
+    // number of attached vertex attributes
+    int vertex_attribute_count() const;
+    // number of attached face attributes
+    int face_attribute_count() const;
+    // number of attached edge attributes
+    int edge_attribute_count() const;
+    // number of attached halfedge attributes
+    int halfedge_attribute_count() const;
+
     // offsets in binary representation (useful for wrappers in other languages)
 public:
     constexpr static int offset_mVerticesSize() { return offsetof(MeshT, mVerticesSize); }
@@ -163,12 +174,14 @@ protected:
     low_level_api_base(MeshT& m) : m(m) {}
 };
 
-template<class MeshT>
-struct low_level_attribute_api {
-    static int offset_attribute_dataptr() {
+template <class MeshT>
+struct low_level_attribute_api
+{
+    static int offset_attribute_dataptr()
+    {
         MeshT mesh;
         auto attr = mesh.vertices().make_attribute_with_default(0.f);
-        auto attr_check = mesh.vertices().make_attribute_with_default(std::array<float,32>());
+        auto attr_check = mesh.vertices().make_attribute_with_default(std::array<float, 32>());
 
         auto offset = int(size_t(&(attr.mData)) - size_t(&attr));
         assert(offset == int(size_t(&(attr_check.mData)) - size_t(&attr_check)));
@@ -352,4 +365,4 @@ inline low_level_api_const low_level_api(Mesh const& m) { return {m}; }
 inline low_level_api_const low_level_api(Mesh const* m) { return {*m}; }
 inline low_level_api_mutable low_level_api(Mesh& m) { return {m}; }
 inline low_level_api_mutable low_level_api(Mesh* m) { return {*m}; }
-}
+} // namespace polymesh

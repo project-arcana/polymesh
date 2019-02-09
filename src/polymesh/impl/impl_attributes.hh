@@ -55,27 +55,21 @@ AttrT const &edge_attribute<AttrT>::operator()(halfedge_handle h) const
 }
 
 template <class tag, class AttrT>
-void primitive_attribute<tag, AttrT>::copy_from(const std::vector<AttrT> &data)
+void primitive_attribute<tag, AttrT>::copy_from(std::vector<AttrT> const &data)
 {
-    auto s = std::min((int)data.size(), this->size());
-    for (auto i = 0; i < s; ++i)
-        this->mData[i] = data[i];
+    std::copy_n(data.data(), std::min(int(data.size()), this->size()), this->data());
 }
 
 template <class tag, class AttrT>
 void primitive_attribute<tag, AttrT>::copy_from(const AttrT *data, int cnt)
 {
-    auto s = std::min(cnt, this->size());
-    for (auto i = 0; i < s; ++i)
-        this->mData[i] = data[i];
+    std::copy_n(data, std::min(cnt, this->size()), this->data());
 }
 
 template <class tag, class AttrT>
 void primitive_attribute<tag, AttrT>::copy_from(attribute<AttrT> const &data)
 {
-    auto s = std::min(data.size(), this->size());
-    for (auto i = 0; i < s; ++i)
-        this->mData[i] = data.mData[i];
+    std::copy_n(data.data(), std::min(data.size(), this->size()), this->data());
 }
 
 template <class tag, class AttrT>
@@ -91,8 +85,7 @@ std::vector<AttrT> primitive_attribute<tag, AttrT>::to_vector() const
 {
     auto s = this->size();
     std::vector<AttrT> r(s);
-    for (auto i = 0; i < s; ++i)
-        r[i] = this->mData[i];
+    std::copy_n(this->data(), s, r.data());
     return r;
 }
 
@@ -111,61 +104,132 @@ void primitive_attribute<tag, AttrT>::apply_transpositions(std::vector<std::pair
         swap(this->mData[t.first], this->mData[t.second]);
 }
 
+// ==== User ctor: delegates to internal standard ctor
+template <class tag, class AttrT>
+primitive_attribute<tag, AttrT>::primitive_attribute(Mesh const &mesh, const AttrT &def_value) : primitive_attribute(&mesh, def_value)
+{
+}
+
+// ==== Internal standard ctor: registers and allocates default data
+template <class tag, class AttrT>
+primitive_attribute<tag, AttrT>::primitive_attribute(const Mesh *mesh, const AttrT &def_value)
+  : primitive_attribute_base<tag>(mesh), mDefaultValue(def_value)
+{
+    // register
+    this->register_attr();
+
+    // alloc data
+    this->mData.reset(new AttrT[this->capacity()]);
+
+    // fill everything with default
+    std::fill_n(this->mData.get(), this->capacity(), this->mDefaultValue);
+}
+
+// ==== Copy ctor: register, copy rhs data, fill default data
 template <class tag, class AttrT>
 primitive_attribute<tag, AttrT>::primitive_attribute(primitive_attribute const &rhs) noexcept : primitive_attribute_base<tag>(rhs.mMesh) // copy
 {
+    // get default value
     this->mDefaultValue = rhs.mDefaultValue;
 
-    auto s = std::min(rhs.size(), this->size());
-    for (auto i = 0; i < s; ++i)
-        this->mData[i] = rhs.mData[i];
-
+    // register attr
     this->register_attr();
+
+    // alloc data
+    this->mData.reset(new AttrT[this->capacity()]);
+
+    // copy ALL data (valid and defaulted)
+    std::copy_n(rhs.mData.get(), this->capacity(), this->mData.get());
 }
 
+// ==== Move ctor: take rhs data, deregister rhs
 template <class tag, class AttrT>
 primitive_attribute<tag, AttrT>::primitive_attribute(primitive_attribute &&rhs) noexcept : primitive_attribute_base<tag>(rhs.mMesh) // move
 {
+    // take default value and data from rhs
     this->mDefaultValue = std::move(rhs.mDefaultValue);
-    this->mData = rhs.mData;
-    rhs.mData = nullptr;
+    this->mData = std::move(rhs.mData);
 
+    // deregister rhs
     rhs.deregister_attr();
+
+    // register lhs
     this->register_attr();
 }
 
+// ==== Copy assignment: register onto new mesh, copy data and default value from rhs
 template <class tag, class AttrT>
 primitive_attribute<tag, AttrT> &primitive_attribute<tag, AttrT>::operator=(primitive_attribute const &rhs) noexcept // copy
 {
+    // save old capacity for no-realloc path
+    auto old_capacity = is_valid() ? this->capacity() : 0;
+
+    // deregister from old mesh
     this->deregister_attr();
 
-    auto old_size = this->size();
-
+    // register into new mesh
     this->mMesh = rhs.mMesh;
-    this->mDefaultValue = rhs.mDefaultValue;
-
-    this->resizeFrom(old_size);
-    this->copy_from(rhs);
-
     this->register_attr();
+
+    // realloc if new capacity
+    auto new_capacity = this->capacity();
+    if (old_capacity != new_capacity)
+    {
+        if (new_capacity == 0)
+            this->mData.reset();
+        else
+            this->mData.reset(new AttrT[new_capacity]);
+    }
+
+    // copy ALL data (valid and defaulted)
+    this->mDefaultValue = rhs.mDefaultValue;
+    std::copy_n(rhs.mData.get(), this->capacity(), this->mData.get());
+
+    return *this;
+}
+
+// ==== Move assignment: register onto new mesh, take rhs data, invalidate rhs
+template <class tag, class AttrT>
+primitive_attribute<tag, AttrT> &primitive_attribute<tag, AttrT>::operator=(primitive_attribute &&rhs) noexcept // move
+{
+    // deregister from old mesh
+    this->deregister_attr();
+
+    // register into new mesh
+    this->mMesh = rhs.mMesh;
+    this->register_attr();
+
+    // take data of rhs
+    this->mDefaultValue = std::move(rhs.mDefaultValue);
+    this->mData = std::move(rhs.mData);
+
+    // deregister rhs
+    rhs.deregister_attr();
 
     return *this;
 }
 
 template <class tag, class AttrT>
-primitive_attribute<tag, AttrT> &primitive_attribute<tag, AttrT>::operator=(primitive_attribute &&rhs) noexcept // move
+void primitive_attribute<tag, AttrT>::resize_from(int old_size)
 {
-    this->deregister_attr();
+    // mesh is already resized, thus capacity() and size() return new values
+    // old_size is size before resize
 
-    this->mMesh = rhs.mMesh;
-    this->mDefaultValue = std::move(rhs.mDefaultValue);
-    this->mData = rhs.mData;
-    rhs.mData = nullptr;
+    auto new_capacity = this->capacity();
+    auto shared_size = std::min(this->size(), old_size);
+    assert(shared_size <= new_capacity && "size cannot exceed capacity");
 
-    rhs.deregister_attr();
-    this->register_attr();
+    // alloc new data
+    auto new_data = new_capacity > 0 ? new AttrT[new_capacity] : nullptr;
 
-    return *this;
+    // copy shared region to new data
+    std::copy_n(this->mData.get(), shared_size, new_data);
+
+    // fill rest with default value
+    std::fill(new_data + shared_size, new_data + new_capacity, mDefaultValue);
+
+    // replace old data
+    this->mData.reset(new_data);
 }
 
 inline void Mesh::register_attr(primitive_attribute_base<vertex_tag> *attr) const
@@ -176,9 +240,6 @@ inline void Mesh::register_attr(primitive_attribute_base<vertex_tag> *attr) cons
     attr->mNextAttribute = nextAttrs;
     if (nextAttrs)
         nextAttrs->mPrevAttribute = attr;
-
-    // resize attr
-    attr->resizeFrom(0);
 }
 
 inline void Mesh::deregister_attr(primitive_attribute_base<vertex_tag> *attr) const
@@ -204,9 +265,6 @@ inline void Mesh::register_attr(primitive_attribute_base<face_tag> *attr) const
     attr->mNextAttribute = nextAttrs;
     if (nextAttrs)
         nextAttrs->mPrevAttribute = attr;
-
-    // resize attr
-    attr->resizeFrom(0);
 }
 
 inline void Mesh::deregister_attr(primitive_attribute_base<face_tag> *attr) const
@@ -232,9 +290,6 @@ inline void Mesh::register_attr(primitive_attribute_base<edge_tag> *attr) const
     attr->mNextAttribute = nextAttrs;
     if (nextAttrs)
         nextAttrs->mPrevAttribute = attr;
-
-    // resize attr
-    attr->resizeFrom(0);
 }
 
 inline void Mesh::deregister_attr(primitive_attribute_base<edge_tag> *attr) const
@@ -260,9 +315,6 @@ inline void Mesh::register_attr(primitive_attribute_base<halfedge_tag> *attr) co
     attr->mNextAttribute = nextAttrs;
     if (nextAttrs)
         nextAttrs->mPrevAttribute = attr;
-
-    // resize attr
-    attr->resizeFrom(0);
 }
 
 inline void Mesh::deregister_attr(primitive_attribute_base<halfedge_tag> *attr) const
@@ -297,27 +349,9 @@ void primitive_attribute_base<tag>::deregister_attr()
 }
 
 template <class tag, class AttrT>
-primitive_attribute<tag, AttrT>::primitive_attribute(Mesh const &mesh, const AttrT &def_value) : primitive_attribute(&mesh, def_value)
-{
-}
-
-template <class tag, class AttrT>
-primitive_attribute<tag, AttrT>::~primitive_attribute()
-{
-    delete[] mData;
-}
-
-template <class tag, class AttrT>
-primitive_attribute<tag, AttrT>::primitive_attribute(const Mesh *mesh, const AttrT &def_value)
-  : primitive_attribute_base<tag>(mesh), mDefaultValue(def_value)
-{
-    this->register_attr();
-}
-
-template <class tag, class AttrT>
 int primitive_attribute<tag, AttrT>::size() const
 {
-    return primitive<tag>::all_collection_of(*this->mMesh).size();
+    return primitive<tag>::all_size(*this->mMesh);
 }
 
 template <class tag, class AttrT>
@@ -388,23 +422,6 @@ template <class FuncT>
 auto primitive_attribute<tag, AttrT>::view(FuncT &&f) const -> readonly_property<primitive_attribute<tag, AttrT> const &, FuncT>
 {
     return readonly_property<primitive_attribute<tag, AttrT> const &, FuncT>(*this, f);
-}
-
-template <class tag, class AttrT>
-void primitive_attribute<tag, AttrT>::on_resize_from(int oldSize)
-{
-    auto newSize = capacity();
-    auto sharedSize = std::min(size(), oldSize);
-
-    auto *newData = newSize > 0 ? new AttrT[newSize] : nullptr;
-    std::copy_n(mData, sharedSize, newData);
-    delete[] mData;
-    mData = newData;
-
-    if (newSize > sharedSize)
-    {
-        std::fill(mData + sharedSize, mData + newSize, mDefaultValue);
-    }
 }
 
 } // namespace polymesh

@@ -378,6 +378,55 @@ bool low_level_api_base<MeshT>::is_isolated(edge_index idx) const
 }
 
 template <class MeshT>
+int low_level_api_base<MeshT>::vertex_attribute_count() const
+{
+    auto cnt = 0;
+    auto attr = m.mVertexAttrs;
+    while (attr)
+    {
+        ++cnt;
+        attr = attr->mNextAttribute;
+    }
+    return cnt;
+}
+template <class MeshT>
+int low_level_api_base<MeshT>::face_attribute_count() const
+{
+    auto cnt = 0;
+    auto attr = m.mFaceAttrs;
+    while (attr)
+    {
+        ++cnt;
+        attr = attr->mNextAttribute;
+    }
+    return cnt;
+}
+template <class MeshT>
+int low_level_api_base<MeshT>::edge_attribute_count() const
+{
+    auto cnt = 0;
+    auto attr = m.mEdgeAttrs;
+    while (attr)
+    {
+        ++cnt;
+        attr = attr->mNextAttribute;
+    }
+    return cnt;
+}
+template <class MeshT>
+int low_level_api_base<MeshT>::halfedge_attribute_count() const
+{
+    auto cnt = 0;
+    auto attr = m.mHalfedgeAttrs;
+    while (attr)
+    {
+        ++cnt;
+        attr = attr->mNextAttribute;
+    }
+    return cnt;
+}
+
+template <class MeshT>
 bool low_level_api_base<MeshT>::is_removed(vertex_index idx) const
 {
     return outgoing_halfedge_of(idx).value == -2;
@@ -490,4 +539,4 @@ halfedge_index low_level_api_base<MeshT>::prev_valid_idx_from(halfedge_index idx
         i.value--;
     return i;
 }
-}
+} // namespace polymesh

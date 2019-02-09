@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <memory>
 #include <vector>
 
 #include "attribute_base.hh"
@@ -68,8 +69,8 @@ public:
         return mData[h.value];
     }
 
-    AttrT* data() { return mData; }
-    AttrT const* data() const { return mData; }
+    AttrT* data() { return mData.get(); }
+    AttrT const* data() const { return mData.get(); }
 
     int size() const;
     int capacity() const;
@@ -78,6 +79,13 @@ public:
     attribute_iterator<primitive_attribute const&> begin() const { return {0, *this}; }
     attribute_iterator<primitive_attribute&> end() { return {size(), *this}; }
     attribute_iterator<primitive_attribute const&> end() const { return {size(), *this}; }
+
+    AttrT const& get_default_value() const { return mDefaultValue; }
+    // cannot be set because this is more expensive than just setting
+
+    /// true iff this attribute is still attached to a mesh
+    /// do not use the attribute if not valid
+    bool is_valid() const { return this->mMesh != nullptr; }
 
     // methods
 public:
@@ -131,21 +139,20 @@ public:
 
     // data
 protected:
-    AttrT* mData = nullptr;
+    std::unique_ptr<AttrT[]> mData;
     AttrT mDefaultValue;
 
-    void on_resize_from(int oldSize) override;
+    void resize_from(int old_size) override;
 
     void apply_remapping(std::vector<int> const& map) override;
     void apply_transpositions(std::vector<std::pair<int, int>> const& ts) override;
 
-    template<class MeshT>
+    template <class MeshT>
     friend class low_level_attribute_api;
 
     // ctor
 protected:
     primitive_attribute(Mesh const* mesh, AttrT const& def_value);
-    ~primitive_attribute() override;
 
     // move & copy
 public:
@@ -156,7 +163,7 @@ public:
 };
 
 template <class AttrT>
-struct vertex_attribute : primitive_attribute<vertex_tag, AttrT>
+struct vertex_attribute final : primitive_attribute<vertex_tag, AttrT>
 {
     using primitive_attribute<vertex_tag, AttrT>::primitive_attribute;
 
@@ -164,7 +171,7 @@ struct vertex_attribute : primitive_attribute<vertex_tag, AttrT>
     friend struct smart_collection;
 };
 template <class AttrT>
-struct face_attribute : primitive_attribute<face_tag, AttrT>
+struct face_attribute final : primitive_attribute<face_tag, AttrT>
 {
     using primitive_attribute<face_tag, AttrT>::primitive_attribute;
 
@@ -172,7 +179,7 @@ struct face_attribute : primitive_attribute<face_tag, AttrT>
     friend struct smart_collection;
 };
 template <class AttrT>
-struct edge_attribute : primitive_attribute<edge_tag, AttrT>
+struct edge_attribute final : primitive_attribute<edge_tag, AttrT>
 {
     using primitive_attribute<edge_tag, AttrT>::primitive_attribute;
 
@@ -211,11 +218,11 @@ struct edge_attribute : primitive_attribute<edge_tag, AttrT>
     friend struct smart_collection;
 };
 template <class AttrT>
-struct halfedge_attribute : primitive_attribute<halfedge_tag, AttrT>
+struct halfedge_attribute final : primitive_attribute<halfedge_tag, AttrT>
 {
     using primitive_attribute<halfedge_tag, AttrT>::primitive_attribute;
 
     template <class mesh_ptr, class tag, class iterator>
     friend struct smart_collection;
 };
-}
+} // namespace polymesh

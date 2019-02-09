@@ -86,6 +86,7 @@ public:
     halfedge_handle operator[](halfedge_index idx) const { return handle_of(idx); }
 
     /// deletes all faces, vertices, edges, and halfedges
+    /// NOTE: contrary to std::vector, this actually frees the memory
     void clear();
 
     // helper
@@ -115,6 +116,7 @@ public:
     /// Clears this mesh and copies mesh topology, NOT attributes!
     void copy_from(Mesh const &m);
     /// Creates a new mesh and calls copy_from(*this);
+    /// Note: does NOT copy attributes!
     SharedMesh copy() const;
 
     // internal primitives
@@ -217,53 +219,6 @@ private:
 
     // friends
 private:
-    /*friend struct vertex_handle;
-    friend struct all_vertex_iterator;
-    friend struct valid_vertex_iterator;
-    friend struct vertex_attribute_base;
-
-    friend struct face_handle;
-    friend struct face_iterator;
-    friend struct valid_face_iterator;
-    friend struct face_attribute_base;
-
-    friend struct edge_handle;
-    friend struct edge_iterator;
-    friend struct valid_edge_iterator;
-    friend struct edge_attribute_base;
-
-    friend struct halfedge_handle;
-    friend struct halfedge_iterator;
-    friend struct valid_halfedge_iterator;
-    friend struct halfedge_attribute_base;
-
-    template <class tag>
-    friend struct primitive;
-    template <class tag>
-    friend struct primitive_handle;
-    template <class tag>
-    friend struct primitive_collection;
-    template <class tag>
-    friend struct all_primitive_iterator;
-    template <class tag>
-    friend struct valid_primitive_iterator;
-    template <class tag>
-    friend struct valid_primitive_collection;
-    template <class tag>
-    friend struct const_primitive_collection;
-    template <class tag>
-    friend struct primitive_attribute_base;
-    template <class mesh_ptr, class tag, class iterator>
-    friend struct smart_collection;
-    template <class iterator>
-    friend struct vertex_collection;
-    template <class iterator>
-    friend struct face_collection;
-    template <class iterator>
-    friend struct edge_collection;
-    template <class iterator>
-    friend struct halfedge_collection;*/
-
     // for attribute registration
     template <class tag>
     friend struct primitive_attribute_base;

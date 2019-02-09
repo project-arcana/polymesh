@@ -1,4 +1,7 @@
 #pragma once
+
+#include <cassert>
+#include <limits>
 #include <memory>
 
 namespace polymesh
@@ -8,16 +11,18 @@ namespace detail
 inline void reserve(int, int) {}
 
 template <class TFirst, class... TRest>
-void reserve(int size, int new_capacity, TFirst& ptr, TRest&... rest_ptrs)
+void reserve(int old_size, int new_capacity, TFirst& ptr, TRest&... rest_ptrs)
 {
+    assert(new_capacity >= old_size && "cannot reserve less than the current number of elements");
+
     using element_t = typename TFirst::element_type;
 
-    auto new_ptr = std::unique_ptr<element_t[]>(new element_t[new_capacity]());
-    std::copy(ptr.get(), ptr.get() + std::min(size, new_capacity), new_ptr.get());
+    auto new_ptr = new element_t[new_capacity];
+    std::copy(ptr.get(), ptr.get() + old_size, new_ptr);
 
-    ptr = move(new_ptr);
+    ptr.reset(new_ptr);
 
-    reserve(size, new_capacity, rest_ptrs...);
+    reserve(old_size, new_capacity, rest_ptrs...);
 }
 
 template <class... TS>
@@ -40,6 +45,7 @@ bool resize(int& size, int& capacity, int new_size, TS&... ptrs)
         size = new_size;
         return true;
     }
+
     size = new_size;
     return false;
 }
@@ -48,13 +54,16 @@ bool resize(int& size, int& capacity, int new_size, TS&... ptrs)
 template <class... TS>
 bool alloc_back(int& size, int& capacity, TS&... ptrs)
 {
+    assert(size < std::numeric_limits<int>::max() && "polymesh only supports 2^31 primitives");
     size++;
+
     if (size > capacity)
     {
         capacity = std::max(2 * capacity, 16);
         reserve(size - 1, capacity, ptrs...);
         return true;
     }
+
     return false;
 }
 
