@@ -39,6 +39,8 @@ using SharedMesh = std::shared_ptr<Mesh>;
  * For more concept documents see:
  *  * http://kaba.hilvi.org/homepage/blog/halfedge/halfedge.htm
  *  * https://www.openmesh.org/media/Documentations/OpenMesh-Doc-Latest/a03930.html
+ *
+ * Currently a mesh consumes 120 bytes without any data
  */
 class Mesh
 {
@@ -197,8 +199,6 @@ private:
     int mRemovedFaces = 0;
     int mRemovedVertices = 0;
     int mRemovedHalfedges = 0;
-
-    std::vector<halfedge_index> mFaceInsertCache;
 
     // attributes
 private:

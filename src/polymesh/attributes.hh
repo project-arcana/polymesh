@@ -23,10 +23,7 @@
  *   v[myAttr] = 7;
  *   myAttr[v] = 7;
  *
- * TODO:
- *   for (auto& a : myAttr) // NOTE: does include deleted primitives
- *     a += 1;
- *   // auto and auto const& also work of course
+ * Currently an attribute has 40 bytes + sizeof(AttrT) overhead
  */
 
 namespace polymesh

@@ -20,28 +20,39 @@ inline void low_level_api_mutable::permute_faces(const std::vector<int> &p) cons
 inline void low_level_api_mutable::permute_edges(const std::vector<int> &p) const { m.permute_edges(p); }
 inline void low_level_api_mutable::permute_vertices(const std::vector<int> &p) const { m.permute_vertices(p); }
 
+namespace detail
+{
+// NOTE: this is only ever used in the following three functions and there it is immediately consumed
+inline halfedge_index *face_insert_cache(int cnt)
+{
+    static thread_local std::vector<halfedge_index> mFaceInsertCache;
+    mFaceInsertCache.resize(cnt);
+    return mFaceInsertCache.data();
+}
+} // namespace detail
+
 inline face_index low_level_api_mutable::add_face(const vertex_handle *v_handles, int vcnt, face_index res_idx) const
 {
-    m.mFaceInsertCache.resize(vcnt);
+    auto cache = detail::face_insert_cache(vcnt);
     for (auto i = 0; i < vcnt; ++i)
-        m.mFaceInsertCache[i] = add_or_get_halfedge(v_handles[(i + vcnt - 1) % vcnt].idx, v_handles[i].idx);
-    return add_face(m.mFaceInsertCache.data(), vcnt, res_idx);
+        cache[i] = add_or_get_halfedge(v_handles[(i + vcnt - 1) % vcnt].idx, v_handles[i].idx);
+    return add_face(cache, vcnt, res_idx);
 }
 
 inline face_index low_level_api_mutable::add_face(const vertex_index *v_indices, int vcnt, face_index res_idx) const
 {
-    m.mFaceInsertCache.resize(vcnt);
+    auto cache = detail::face_insert_cache(vcnt);
     for (auto i = 0; i < vcnt; ++i)
-        m.mFaceInsertCache[i] = add_or_get_halfedge(v_indices[(i + vcnt - 1) % vcnt], v_indices[i]);
-    return add_face(m.mFaceInsertCache.data(), vcnt, res_idx);
+        cache[i] = add_or_get_halfedge(v_indices[(i + vcnt - 1) % vcnt], v_indices[i]);
+    return add_face(cache, vcnt, res_idx);
 }
 
 inline face_index low_level_api_mutable::add_face(const halfedge_handle *half_loop, int vcnt, face_index res_idx) const
 {
-    m.mFaceInsertCache.resize(vcnt);
+    auto cache = detail::face_insert_cache(vcnt);
     for (auto i = 0; i < vcnt; ++i)
-        m.mFaceInsertCache[i] = half_loop[i].idx;
-    return add_face(m.mFaceInsertCache.data(), vcnt, res_idx);
+        cache[i] = half_loop[i].idx;
+    return add_face(cache, vcnt, res_idx);
 }
 
 inline face_index low_level_api_mutable::add_face(const halfedge_index *half_loop, int vcnt, face_index res_idx) const
