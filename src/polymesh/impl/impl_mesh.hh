@@ -3,6 +3,7 @@
 #include "../Mesh.hh"
 
 #include "../detail/permutation.hh"
+#include "../detail/split_vector.hh"
 
 namespace polymesh
 {
@@ -23,12 +24,17 @@ inline halfedge_index const &Mesh::outgoing_halfedge_of(vertex_index idx) const 
 inline vertex_index Mesh::alloc_vertex()
 {
     auto idx = vertex_index(size_all_vertices());
-    mVertexToOutgoingHalfedge.push_back(halfedge_index::invalid());
 
-    // notify attributes
-    auto vCnt = size_all_vertices();
-    for (auto p = mVertexAttrs; p; p = p->mNextAttribute)
-        p->resize(vCnt, false);
+    auto old_capacity = mVerticesCapacity;
+    auto capacity_changed = detail::alloc_back(mVerticesSize, mVerticesCapacity, mVertexToOutgoingHalfedge);
+    mVertexToOutgoingHalfedge[mVerticesSize - 1] = halfedge_index::invalid();
+
+    if (capacity_changed)
+    {
+        // notify attributes
+        for (auto p = mVertexAttrs; p; p = p->mNextAttribute)
+            p->resizeFrom(old_capacity);
+    }
 
     return idx;
 }
@@ -36,12 +42,17 @@ inline vertex_index Mesh::alloc_vertex()
 inline face_index Mesh::alloc_face()
 {
     auto idx = face_index(size_all_faces());
-    mFaceToHalfedge.push_back(halfedge_index::invalid());
 
-    // notify attributes
-    auto fCnt = size_all_faces();
-    for (auto p = mFaceAttrs; p; p = p->mNextAttribute)
-        p->resize(fCnt, false);
+    auto old_capacity = mFacesCapacity;
+    auto capacity_changed = detail::alloc_back(mFacesSize, mFacesCapacity, mFaceToHalfedge);
+    mFaceToHalfedge[mFacesSize - 1] = halfedge_index::invalid();
+
+    if (capacity_changed)
+    {
+        // notify attributes
+        for (auto p = mFaceAttrs; p; p = p->mNextAttribute)
+            p->resizeFrom(old_capacity);
+    }
 
     return idx;
 }
@@ -50,22 +61,26 @@ inline edge_index Mesh::alloc_edge()
 {
     auto idx = edge_index(size_all_edges());
 
-    mHalfedgeToFace.push_back(face_index::invalid());
-    mHalfedgeToFace.push_back(face_index::invalid());
-    mHalfedgeToVertex.push_back(vertex_index::invalid());
-    mHalfedgeToVertex.push_back(vertex_index::invalid());
-    mHalfedgeToNextHalfedge.push_back(halfedge_index::invalid());
-    mHalfedgeToNextHalfedge.push_back(halfedge_index::invalid());
-    mHalfedgeToPrevHalfedge.push_back(halfedge_index::invalid());
-    mHalfedgeToPrevHalfedge.push_back(halfedge_index::invalid());
+    auto capacity_changed = false;
+    auto old_capacity = mHalfedgesCapacity;
+    for (auto i = 0; i < 2; i++)
+    {
+        capacity_changed |= detail::alloc_back(mHalfedgesSize, mHalfedgesCapacity, //
+                                               mHalfedgeToFace, mHalfedgeToVertex, mHalfedgeToNextHalfedge, mHalfedgeToPrevHalfedge);
+        mHalfedgeToFace[mHalfedgesSize - 1] = face_index::invalid();
+        mHalfedgeToVertex[mHalfedgesSize - 1] = vertex_index::invalid();
+        mHalfedgeToNextHalfedge[mHalfedgesSize - 1] = halfedge_index::invalid();
+        mHalfedgeToPrevHalfedge[mHalfedgesSize - 1] = halfedge_index::invalid();
+    }
 
-    // notify attributes
-    auto hCnt = size_all_halfedges();
-    auto eCnt = size_all_edges();
-    for (auto p = mEdgeAttrs; p; p = p->mNextAttribute)
-        p->resize(eCnt, false);
-    for (auto p = mHalfedgeAttrs; p; p = p->mNextAttribute)
-        p->resize(hCnt, false);
+    if (capacity_changed)
+    {
+        // notify attributes
+        for (auto p = mEdgeAttrs; p; p = p->mNextAttribute)
+            p->resizeFrom(old_capacity / 2);
+        for (auto p = mHalfedgeAttrs; p; p = p->mNextAttribute)
+            p->resizeFrom(old_capacity);
+    }
 
     return idx;
 }
@@ -74,26 +89,31 @@ inline void Mesh::alloc_primitives(int vertices, int faces, int halfedges)
 {
     auto vCnt = size_all_vertices() + vertices;
     auto fCnt = size_all_faces() + faces;
-    auto eCnt = size_all_edges() + (halfedges << 1);
     auto hCnt = size_all_halfedges() + halfedges;
 
     // alloc space
-    mVertexToOutgoingHalfedge.resize(vCnt);
-    mFaceToHalfedge.resize(fCnt);
-    mHalfedgeToFace.resize(hCnt);
-    mHalfedgeToVertex.resize(hCnt);
-    mHalfedgeToNextHalfedge.resize(hCnt);
-    mHalfedgeToPrevHalfedge.resize(hCnt);
+    auto old_v_capacity = mVerticesCapacity;
+    auto v_capacity_changed = detail::resize(mVerticesSize, mVerticesCapacity, vCnt, mVertexToOutgoingHalfedge);
+    auto old_f_capacity = mFacesCapacity;
+    auto f_capacity_changed = detail::resize(mFacesSize, mFacesCapacity, fCnt, mFaceToHalfedge);
+    auto old_h_capacity = mHalfedgesCapacity;
+    auto h_capacity_changed = detail::resize(mHalfedgesSize, mHalfedgesCapacity, hCnt, //
+                                             mHalfedgeToFace, mHalfedgeToVertex, mHalfedgeToNextHalfedge, mHalfedgeToPrevHalfedge);
 
     // notify attributes
-    for (auto p = mVertexAttrs; p; p = p->mNextAttribute)
-        p->resize(vCnt, false);
-    for (auto p = mFaceAttrs; p; p = p->mNextAttribute)
-        p->resize(fCnt, false);
-    for (auto p = mEdgeAttrs; p; p = p->mNextAttribute)
-        p->resize(eCnt, false);
-    for (auto p = mHalfedgeAttrs; p; p = p->mNextAttribute)
-        p->resize(hCnt, false);
+    if (v_capacity_changed)
+        for (auto p = mVertexAttrs; p; p = p->mNextAttribute)
+            p->resizeFrom(old_v_capacity);
+    if (f_capacity_changed)
+        for (auto p = mFaceAttrs; p; p = p->mNextAttribute)
+            p->resizeFrom(old_f_capacity);
+    if (h_capacity_changed)
+    {
+        for (auto p = mEdgeAttrs; p; p = p->mNextAttribute)
+            p->resizeFrom(old_h_capacity / 2);
+        for (auto p = mHalfedgeAttrs; p; p = p->mNextAttribute)
+            p->resizeFrom(old_h_capacity);
+    }
 }
 
 
@@ -109,7 +129,7 @@ inline void Mesh::permute_vertices(std::vector<int> const &p)
         std::swap(mVertexToOutgoingHalfedge[t.first], mVertexToOutgoingHalfedge[t.second]);
 
     // fix half-edges
-    for (auto &h_to : mHalfedgeToVertex)
+    for (auto &h_to : detail::range(mHalfedgesSize, mHalfedgeToVertex))
         if (h_to.is_valid())
             h_to.value = p[h_to.value];
 
@@ -130,7 +150,7 @@ inline void Mesh::permute_faces(std::vector<int> const &p)
         std::swap(mFaceToHalfedge[t.first], mFaceToHalfedge[t.second]);
 
     // fix half-edges
-    for (auto &h_f : mHalfedgeToFace)
+    for (auto &h_f : detail::range(mHalfedgesSize, mHalfedgeToFace))
         if (h_f.is_valid())
             h_f.value = p[h_f.value];
 
@@ -171,19 +191,19 @@ inline void Mesh::permute_edges(std::vector<int> const &p)
     }
 
     // fix half-edges
-    for (auto &v_out : mVertexToOutgoingHalfedge)
+    for (auto &v_out : detail::range(mVerticesSize, mVertexToOutgoingHalfedge))
         if (v_out.value >= 0)
             v_out.value = hp[v_out.value];
 
-    for (auto &f_h : mFaceToHalfedge)
+    for (auto &f_h : detail::range(mFacesSize, mFaceToHalfedge))
         if (f_h.value >= 0)
             f_h.value = hp[f_h.value];
 
-    for (auto &h_next : mHalfedgeToNextHalfedge)
+    for (auto &h_next : detail::range(mHalfedgesSize, mHalfedgeToNextHalfedge))
         if (h_next.value >= 0)
             h_next.value = hp[h_next.value];
 
-    for (auto &h_prev : mHalfedgeToPrevHalfedge)
+    for (auto &h_prev : detail::range(mHalfedgesSize, mHalfedgeToPrevHalfedge))
         if (h_prev.value >= 0)
             h_prev.value = hp[h_prev.value];
 
@@ -257,31 +277,28 @@ inline void Mesh::compactify()
         mHalfedgeToPrevHalfedge[i] = mHalfedgeToPrevHalfedge[h_new_to_old[i]];
     }
 
-    mVertexToOutgoingHalfedge.resize(v_new_to_old.size());
-    mFaceToHalfedge.resize(f_new_to_old.size());
-    mHalfedgeToFace.resize(h_new_to_old.size());
-    mHalfedgeToVertex.resize(h_new_to_old.size());
-    mHalfedgeToNextHalfedge.resize(h_new_to_old.size());
-    mHalfedgeToPrevHalfedge.resize(h_new_to_old.size());
+    detail::resize(mVerticesSize, mVerticesCapacity, v_new_to_old.size(), mVertexToOutgoingHalfedge);
+    detail::resize(mFacesSize, mFacesCapacity, f_new_to_old.size(), mFaceToHalfedge);
+    detail::resize(mHalfedgesSize, mHalfedgesCapacity, h_new_to_old.size(), mHalfedgeToFace, mHalfedgeToVertex, mHalfedgeToNextHalfedge, mHalfedgeToPrevHalfedge);
 
-    for (auto &v_out : mVertexToOutgoingHalfedge)
+    for (auto &v_out : detail::range(mVerticesSize, mVertexToOutgoingHalfedge))
         if (v_out.value >= 0)
             v_out.value = h_old_to_new[v_out.value];
 
-    for (auto &f_h : mFaceToHalfedge)
+    for (auto &f_h : detail::range(mFacesSize, mFaceToHalfedge))
         if (f_h.value >= 0)
             f_h.value = h_old_to_new[f_h.value];
 
-    for (auto &h_next : mHalfedgeToNextHalfedge)
+    for (auto &h_next : detail::range(mHalfedgesSize, mHalfedgeToNextHalfedge))
         if (h_next.value >= 0)
             h_next.value = h_old_to_new[h_next.value];
-    for (auto &h_prev : mHalfedgeToPrevHalfedge)
+    for (auto &h_prev : detail::range(mHalfedgesSize, mHalfedgeToPrevHalfedge))
         if (h_prev.value >= 0)
             h_prev.value = h_old_to_new[h_prev.value];
-    for (auto &h_f : mHalfedgeToFace)
+    for (auto &h_f : detail::range(mHalfedgesSize, mHalfedgeToFace))
         if (h_f.value >= 0)
             h_f.value = f_old_to_new[h_f.value];
-    for (auto &h_v : mHalfedgeToVertex)
+    for (auto &h_v : detail::range(mHalfedgesSize, mHalfedgeToVertex))
         if (h_v.value >= 0)
             h_v.value = v_old_to_new[h_v.value];
 
@@ -295,21 +312,22 @@ inline void Mesh::compactify()
         a->apply_remapping(h_new_to_old);
 
     // shrink to fit
-    mVertexToOutgoingHalfedge.shrink_to_fit();
-    mFaceToHalfedge.shrink_to_fit();
-    mHalfedgeToFace.shrink_to_fit();
-    mHalfedgeToVertex.shrink_to_fit();
-    mHalfedgeToNextHalfedge.shrink_to_fit();
-    mHalfedgeToPrevHalfedge.shrink_to_fit();
+    auto old_v_capacity = mVerticesCapacity;
+    auto old_f_capacity = mFacesCapacity;
+    auto old_h_capacity = mHalfedgesCapacity;
+
+    detail::shrink_to_fit(mVerticesSize, mVerticesCapacity, mVertexToOutgoingHalfedge);
+    detail::shrink_to_fit(mFacesSize, mFacesCapacity, mFaceToHalfedge);
+    detail::shrink_to_fit(mHalfedgesSize, mHalfedgesCapacity, mHalfedgeToFace, mHalfedgeToVertex, mHalfedgeToNextHalfedge, mHalfedgeToPrevHalfedge);
 
     for (auto a = mVertexAttrs; a; a = a->mNextAttribute)
-        a->resize(size_all_vertices(), true);
+        a->resizeFrom(old_v_capacity);
     for (auto a = mFaceAttrs; a; a = a->mNextAttribute)
-        a->resize(size_all_faces(), true);
+        a->resizeFrom(old_f_capacity);
     for (auto a = mEdgeAttrs; a; a = a->mNextAttribute)
-        a->resize(size_all_edges(), true);
+        a->resizeFrom(old_h_capacity / 2);
     for (auto a = mHalfedgeAttrs; a; a = a->mNextAttribute)
-        a->resize(size_all_halfedges(), true);
+        a->resizeFrom(old_h_capacity);
 
     mRemovedFaces = 0;
     mRemovedHalfedges = 0;
@@ -319,11 +337,11 @@ inline void Mesh::compactify()
 
 inline void Mesh::clear()
 {
-    for (auto &v_h : mVertexToOutgoingHalfedge)
+    for (auto &v_h : detail::range(mVerticesSize, mVertexToOutgoingHalfedge))
         v_h.value = -2;
-    for (auto &f_h : mFaceToHalfedge)
+    for (auto &f_h : detail::range(mFacesSize, mFaceToHalfedge))
         f_h = halfedge_index::invalid();
-    for (auto &h_v : mHalfedgeToVertex)
+    for (auto &h_v : detail::range(mHalfedgesSize, mHalfedgeToVertex))
         h_v = vertex_index::invalid();
 
     mCompact = false;
@@ -332,13 +350,22 @@ inline void Mesh::clear()
 
 inline void Mesh::copy_from(const Mesh &m)
 {
+    auto old_v_capacity = mVerticesCapacity;
+    auto old_f_capacity = mFacesCapacity;
+    auto old_h_capacity = mHalfedgesCapacity;
+
     // copy topo
-    mVertexToOutgoingHalfedge = m.mVertexToOutgoingHalfedge;
-    mFaceToHalfedge = m.mFaceToHalfedge;
-    mHalfedgeToFace = m.mHalfedgeToFace;
-    mHalfedgeToVertex = m.mHalfedgeToVertex;
-    mHalfedgeToNextHalfedge = m.mHalfedgeToNextHalfedge;
-    mHalfedgeToPrevHalfedge = m.mHalfedgeToPrevHalfedge;
+    detail::resize(mVerticesSize, mVerticesCapacity, m.mVerticesSize);
+    std::copy(m.mVertexToOutgoingHalfedge.get(), m.mVertexToOutgoingHalfedge.get() + m.mVerticesSize, mVertexToOutgoingHalfedge.get());
+
+    detail::resize(mFacesSize, mFacesCapacity, m.mFacesSize);
+    std::copy(m.mFaceToHalfedge.get(), m.mFaceToHalfedge.get() + m.mFacesSize, mFaceToHalfedge.get());
+
+    detail::resize(mHalfedgesSize, mHalfedgesCapacity, m.mHalfedgesSize);
+    std::copy(m.mHalfedgeToFace.get(), m.mHalfedgeToFace.get() + m.mHalfedgesSize, mHalfedgeToFace.get());
+    std::copy(m.mHalfedgeToVertex.get(), m.mHalfedgeToVertex.get() + m.mHalfedgesSize, mHalfedgeToVertex.get());
+    std::copy(m.mHalfedgeToNextHalfedge.get(), m.mHalfedgeToNextHalfedge.get() + m.mHalfedgesSize, mHalfedgeToNextHalfedge.get());
+    std::copy(m.mHalfedgeToPrevHalfedge.get(), m.mHalfedgeToPrevHalfedge.get() + m.mHalfedgesSize, mHalfedgeToPrevHalfedge.get());
 
     // copy helper data
     mRemovedFaces = m.mRemovedFaces;
@@ -348,13 +375,13 @@ inline void Mesh::copy_from(const Mesh &m)
 
     // resize attributes
     for (auto a = mVertexAttrs; a; a = a->mNextAttribute)
-        a->resize(size_all_vertices(), true);
+        a->resizeFrom(old_v_capacity);
     for (auto a = mFaceAttrs; a; a = a->mNextAttribute)
-        a->resize(size_all_faces(), true);
+        a->resizeFrom(old_f_capacity);
     for (auto a = mEdgeAttrs; a; a = a->mNextAttribute)
-        a->resize(size_all_edges(), true);
+        a->resizeFrom(old_h_capacity / 2);
     for (auto a = mHalfedgeAttrs; a; a = a->mNextAttribute)
-        a->resize(size_all_halfedges(), true);
+        a->resizeFrom(old_h_capacity);
 }
 
 inline SharedMesh Mesh::copy() const
@@ -366,43 +393,57 @@ inline SharedMesh Mesh::copy() const
 
 inline void Mesh::reserve_faces(int capacity)
 {
-    for (auto a = mFaceAttrs; a; a = a->mNextAttribute)
-        a->resize(capacity, false);
+    if (mFacesCapacity >= capacity)
+        return;
 
-    mFaceToHalfedge.reserve(capacity);
+    auto old_capacity = mFacesCapacity;
+    mFacesCapacity = capacity;
+    detail::reserve(mFacesSize, mFacesCapacity, mFaceToHalfedge);
+
+    for (auto a = mFaceAttrs; a; a = a->mNextAttribute)
+        a->resizeFrom(old_capacity);
 }
 
 inline void Mesh::reserve_vertices(int capacity)
 {
-    for (auto a = mVertexAttrs; a; a = a->mNextAttribute)
-        a->resize(capacity, false);
+    if (mVerticesCapacity >= capacity)
+        return;
 
-    mVertexToOutgoingHalfedge.reserve(capacity);
+    auto old_capacity = mVerticesCapacity;
+    mVerticesCapacity = capacity;
+    detail::reserve(mVerticesSize, mVerticesCapacity, mVertexToOutgoingHalfedge);
+
+    for (auto a = mVertexAttrs; a; a = a->mNextAttribute)
+        a->resizeFrom(old_capacity);
 }
 
 inline void Mesh::reserve_edges(int capacity)
 {
-    for (auto a = mEdgeAttrs; a; a = a->mNextAttribute)
-        a->resize(capacity, false);
-    for (auto a = mHalfedgeAttrs; a; a = a->mNextAttribute)
-        a->resize(capacity << 1, false);
+    if (mHalfedgesCapacity >= 2 * capacity)
+        return;
 
-    mHalfedgeToFace.reserve(capacity * 2);
-    mHalfedgeToVertex.reserve(capacity * 2);
-    mHalfedgeToNextHalfedge.reserve(capacity * 2);
-    mHalfedgeToPrevHalfedge.reserve(capacity * 2);
+    auto old_capacity = mHalfedgesCapacity;
+    mHalfedgesCapacity = capacity * 2;
+    detail::reserve(mHalfedgesSize, mHalfedgesCapacity, mHalfedgeToFace, mHalfedgeToVertex, mHalfedgeToNextHalfedge, mHalfedgeToPrevHalfedge);
+
+    for (auto a = mEdgeAttrs; a; a = a->mNextAttribute)
+        a->resizeFrom(old_capacity);
+    for (auto a = mHalfedgeAttrs; a; a = a->mNextAttribute)
+        a->resizeFrom(old_capacity << 1);
 }
 
 inline void Mesh::reserve_halfedges(int capacity)
 {
-    for (auto a = mHalfedgeAttrs; a; a = a->mNextAttribute)
-        a->resize(capacity, false);
-    for (auto a = mEdgeAttrs; a; a = a->mNextAttribute)
-        a->resize(capacity >> 1, false);
+    if (mHalfedgesCapacity >= capacity)
+        return;
 
-    mHalfedgeToFace.reserve(capacity);
-    mHalfedgeToVertex.reserve(capacity);
-    mHalfedgeToNextHalfedge.reserve(capacity);
-    mHalfedgeToPrevHalfedge.reserve(capacity);
+    auto old_capacity = mHalfedgesCapacity;
+    mHalfedgesCapacity = capacity;
+    detail::reserve(mHalfedgesSize, mHalfedgesCapacity, mHalfedgeToFace, mHalfedgeToVertex, mHalfedgeToNextHalfedge, mHalfedgeToPrevHalfedge);
+
+    for (auto a = mHalfedgeAttrs; a; a = a->mNextAttribute)
+        a->resizeFrom(old_capacity);
+    for (auto a = mEdgeAttrs; a; a = a->mNextAttribute)
+        a->resizeFrom(old_capacity >> 1);
 }
 } // namespace polymesh

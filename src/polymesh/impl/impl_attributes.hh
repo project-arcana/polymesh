@@ -57,7 +57,7 @@ AttrT const &edge_attribute<AttrT>::operator()(halfedge_handle h) const
 template <class tag, class AttrT>
 void primitive_attribute<tag, AttrT>::copy_from(const std::vector<AttrT> &data)
 {
-    auto s = std::min((int)data.size(), this->mDataSize);
+    auto s = std::min((int)data.size(), this->size());
     for (auto i = 0; i < s; ++i)
         this->mData[i] = data[i];
 }
@@ -65,7 +65,7 @@ void primitive_attribute<tag, AttrT>::copy_from(const std::vector<AttrT> &data)
 template <class tag, class AttrT>
 void primitive_attribute<tag, AttrT>::copy_from(const AttrT *data, int cnt)
 {
-    auto s = std::min(cnt, this->mDataSize);
+    auto s = std::min(cnt, this->size());
     for (auto i = 0; i < s; ++i)
         this->mData[i] = data[i];
 }
@@ -73,7 +73,7 @@ void primitive_attribute<tag, AttrT>::copy_from(const AttrT *data, int cnt)
 template <class tag, class AttrT>
 void primitive_attribute<tag, AttrT>::copy_from(attribute<AttrT> const &data)
 {
-    auto s = std::min(data.mDataSize, this->mDataSize);
+    auto s = std::min(data.size(), this->size());
     for (auto i = 0; i < s; ++i)
         this->mData[i] = data.mData[i];
 }
@@ -115,8 +115,10 @@ template <class tag, class AttrT>
 primitive_attribute<tag, AttrT>::primitive_attribute(primitive_attribute const &rhs) noexcept : primitive_attribute_base<tag>(rhs.mMesh) // copy
 {
     this->mDefaultValue = rhs.mDefaultValue;
-    this->mData = rhs.mData;
-    this->mDataSize = rhs.mDataSize;
+
+    auto s = std::min(rhs.size(), this->size());
+    for (auto i = 0; i < s; ++i)
+        this->mData[i] = rhs.mData[i];
 
     this->register_attr();
 }
@@ -125,8 +127,8 @@ template <class tag, class AttrT>
 primitive_attribute<tag, AttrT>::primitive_attribute(primitive_attribute &&rhs) noexcept : primitive_attribute_base<tag>(rhs.mMesh) // move
 {
     this->mDefaultValue = std::move(rhs.mDefaultValue);
-    this->mData = std::move(rhs.mData);
-    this->mDataSize = rhs.mDataSize;
+    this->mData = rhs.mData;
+    rhs.mData = nullptr;
 
     rhs.deregister_attr();
     this->register_attr();
@@ -137,10 +139,13 @@ primitive_attribute<tag, AttrT> &primitive_attribute<tag, AttrT>::operator=(prim
 {
     this->deregister_attr();
 
+    auto old_size = this->size();
+
     this->mMesh = rhs.mMesh;
     this->mDefaultValue = rhs.mDefaultValue;
-    this->mData = rhs.mData;
-    this->mDataSize = rhs.mDataSize;
+
+    this->resizeFrom(old_size);
+    this->copy_from(rhs);
 
     this->register_attr();
 
@@ -154,8 +159,8 @@ primitive_attribute<tag, AttrT> &primitive_attribute<tag, AttrT>::operator=(prim
 
     this->mMesh = rhs.mMesh;
     this->mDefaultValue = std::move(rhs.mDefaultValue);
-    this->mData = std::move(rhs.mData);
-    this->mDataSize = rhs.mDataSize;
+    this->mData = rhs.mData;
+    rhs.mData = nullptr;
 
     rhs.deregister_attr();
     this->register_attr();
@@ -173,7 +178,7 @@ inline void Mesh::register_attr(primitive_attribute_base<vertex_tag> *attr) cons
         nextAttrs->mPrevAttribute = attr;
 
     // resize attr
-    attr->resize(all_vertices().size(), false);
+    attr->resizeFrom(0);
 }
 
 inline void Mesh::deregister_attr(primitive_attribute_base<vertex_tag> *attr) const
@@ -201,7 +206,7 @@ inline void Mesh::register_attr(primitive_attribute_base<face_tag> *attr) const
         nextAttrs->mPrevAttribute = attr;
 
     // resize attr
-    attr->resize(all_faces().size(), false);
+    attr->resizeFrom(0);
 }
 
 inline void Mesh::deregister_attr(primitive_attribute_base<face_tag> *attr) const
@@ -229,7 +234,7 @@ inline void Mesh::register_attr(primitive_attribute_base<edge_tag> *attr) const
         nextAttrs->mPrevAttribute = attr;
 
     // resize attr
-    attr->resize(all_edges().size(), false);
+    attr->resizeFrom(0);
 }
 
 inline void Mesh::deregister_attr(primitive_attribute_base<edge_tag> *attr) const
@@ -257,7 +262,7 @@ inline void Mesh::register_attr(primitive_attribute_base<halfedge_tag> *attr) co
         nextAttrs->mPrevAttribute = attr;
 
     // resize attr
-    attr->resize(all_halfedges().size(), false);
+    attr->resizeFrom(0);
 }
 
 inline void Mesh::deregister_attr(primitive_attribute_base<halfedge_tag> *attr) const
@@ -297,6 +302,12 @@ primitive_attribute<tag, AttrT>::primitive_attribute(Mesh const &mesh, const Att
 }
 
 template <class tag, class AttrT>
+primitive_attribute<tag, AttrT>::~primitive_attribute()
+{
+    delete[] mData;
+}
+
+template <class tag, class AttrT>
 primitive_attribute<tag, AttrT>::primitive_attribute(const Mesh *mesh, const AttrT &def_value)
   : primitive_attribute_base<tag>(mesh), mDefaultValue(def_value)
 {
@@ -310,9 +321,15 @@ int primitive_attribute<tag, AttrT>::size() const
 }
 
 template <class tag, class AttrT>
+int primitive_attribute<tag, AttrT>::capacity() const
+{
+    return primitive<tag>::capacity(*this->mMesh);
+}
+
+template <class tag, class AttrT>
 void primitive_attribute<tag, AttrT>::clear(AttrT const &value)
 {
-    this->mData.clear(value);
+    std::fill_n(mData, size(), value);
 }
 
 template <class tag, class AttrT>
@@ -372,4 +389,22 @@ auto primitive_attribute<tag, AttrT>::view(FuncT &&f) const -> readonly_property
 {
     return readonly_property<primitive_attribute<tag, AttrT> const &, FuncT>(*this, f);
 }
+
+template <class tag, class AttrT>
+void primitive_attribute<tag, AttrT>::on_resize_from(int oldSize)
+{
+    auto newSize = capacity();
+    auto sharedSize = std::min(size(), oldSize);
+
+    auto *newData = newSize > 0 ? new AttrT[newSize] : nullptr;
+    std::copy_n(mData, sharedSize, newData);
+    delete[] mData;
+    mData = newData;
+
+    if (newSize > sharedSize)
+    {
+        std::fill(mData + sharedSize, mData + newSize, mDefaultValue);
+    }
 }
+
+} // namespace polymesh

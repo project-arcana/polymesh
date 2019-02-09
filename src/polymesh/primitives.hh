@@ -28,6 +28,7 @@ struct primitive<vertex_tag>
 
     static int all_size(Mesh const& m);
     static int valid_size(Mesh const& m);
+    static int capacity(Mesh const& m);
     static void reserve(Mesh& m, int capacity);
     static all_collection all_collection_of(Mesh& m);
     static all_const_collection all_collection_of(Mesh const& m);
@@ -56,6 +57,7 @@ struct primitive<face_tag>
 
     static int all_size(Mesh const& m);
     static int valid_size(Mesh const& m);
+    static int capacity(Mesh const& m);
     static void reserve(Mesh& m, int capacity);
     static all_collection all_collection_of(Mesh& m);
     static all_const_collection all_collection_of(Mesh const& m);
@@ -84,6 +86,7 @@ struct primitive<edge_tag>
 
     static int all_size(Mesh const& m);
     static int valid_size(Mesh const& m);
+    static int capacity(Mesh const& m);
     static void reserve(Mesh& m, int capacity);
     static all_collection all_collection_of(Mesh& m);
     static all_const_collection all_collection_of(Mesh const& m);
@@ -112,6 +115,7 @@ struct primitive<halfedge_tag>
 
     static int all_size(Mesh const& m);
     static int valid_size(Mesh const& m);
+    static int capacity(Mesh const& m);
     static void reserve(Mesh& m, int capacity);
     static all_collection all_collection_of(Mesh& m);
     static all_const_collection all_collection_of(Mesh const& m);

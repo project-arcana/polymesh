@@ -4,6 +4,7 @@
 #include <vector>
 #include "cursors.hh"
 #include "tmp.hh"
+#include "attributes.hh"
 
 namespace polymesh
 {
@@ -40,6 +41,10 @@ public:
 
     // number of primitives
 public:
+    int capacity_faces() const;
+    int capacity_vertices() const;
+    int capacity_halfedges() const;
+
     int size_all_faces() const;
     int size_all_vertices() const;
     int size_all_edges() const;
@@ -134,10 +139,42 @@ public:
     /// edges without faces are isolated
     bool is_isolated(edge_index idx) const;
 
+    // offsets in binary representation (useful for wrappers in other languages)
+public:
+    constexpr static int offset_mVerticesSize() { return offsetof(MeshT, mVerticesSize); }
+    constexpr static int offset_mVerticesCapacity() { return offsetof(MeshT, mVerticesCapacity); }
+    constexpr static int offset_mVertexToOutgoingHalfedge() { return offsetof(MeshT, mVertexToOutgoingHalfedge); }
+
+    constexpr static int offset_mFacesSize() { return offsetof(MeshT, mFacesSize); }
+    constexpr static int offset_mFacesCapacity() { return offsetof(MeshT, mFacesCapacity); }
+    constexpr static int offset_mFaceToHalfedge() { return offsetof(MeshT, mFaceToHalfedge); }
+
+    constexpr static int offset_mHalfedgesSize() { return offsetof(MeshT, mHalfedgesSize); }
+    constexpr static int offset_mHalfedgesCapacity() { return offsetof(MeshT, mHalfedgesCapacity); }
+
+    constexpr static int offset_mHalfedgeToVertex() { return offsetof(MeshT, mHalfedgeToVertex); }
+    constexpr static int offset_mHalfedgeToFace() { return offsetof(MeshT, mHalfedgeToFace); }
+    constexpr static int offset_mHalfedgeToPrevHalfedge() { return offsetof(MeshT, mHalfedgeToPrevHalfedge); }
+    constexpr static int offset_mHalfedgeToNextHalfedge() { return offsetof(MeshT, mHalfedgeToNextHalfedge); }
+
 protected:
     MeshT& m;
 
     low_level_api_base(MeshT& m) : m(m) {}
+};
+
+template<class MeshT>
+struct low_level_attribute_api {
+    static int offset_attribute_dataptr() {
+        MeshT mesh;
+        auto attr = mesh.vertices().make_attribute_with_default(0.f);
+        auto attr_check = mesh.vertices().make_attribute_with_default(std::array<float,32>());
+
+        auto offset = int(size_t(&(attr.mData)) - size_t(&attr));
+        assert(offset == int(size_t(&(attr_check.mData)) - size_t(&attr_check)));
+
+        return offset;
+    }
 };
 
 struct low_level_api_mutable : low_level_api_base<Mesh>

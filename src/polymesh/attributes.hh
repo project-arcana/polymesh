@@ -61,15 +61,18 @@ public:
         assert(h.is_valid());
         return mData[h.value];
     }
+
     AttrT const& operator()(index_t h) const
     {
         assert(h.is_valid());
         return mData[h.value];
     }
 
-    AttrT* data() { return mData.data; }
-    AttrT const* data() const { return mData.data; }
-    int size() const; ///< INCLUDES flagged-for-removal entries!
+    AttrT* data() { return mData; }
+    AttrT const* data() const { return mData; }
+
+    int size() const;
+    int capacity() const;
 
     attribute_iterator<primitive_attribute&> begin() { return {0, *this}; }
     attribute_iterator<primitive_attribute const&> begin() const { return {0, *this}; }
@@ -128,16 +131,21 @@ public:
 
     // data
 protected:
-    attribute_data<AttrT> mData;
+    AttrT* mData = nullptr;
     AttrT mDefaultValue;
 
-    void on_resize(int newSize) override { mData.resize(newSize, mDefaultValue); }
+    void on_resize_from(int oldSize) override;
+
     void apply_remapping(std::vector<int> const& map) override;
     void apply_transpositions(std::vector<std::pair<int, int>> const& ts) override;
+
+    template<class MeshT>
+    friend class low_level_attribute_api;
 
     // ctor
 protected:
     primitive_attribute(Mesh const* mesh, AttrT const& def_value);
+    ~primitive_attribute() override;
 
     // move & copy
 public:

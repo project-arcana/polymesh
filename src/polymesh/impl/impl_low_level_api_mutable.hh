@@ -334,10 +334,8 @@ inline void low_level_api_mutable::clear_removed_edge_vector() const
 {
     assert(m.edges().empty() && "only works for no-edge meshes");
 
-    m.mHalfedgeToFace.clear();
-    m.mHalfedgeToNextHalfedge.clear();
-    m.mHalfedgeToPrevHalfedge.clear();
-    m.mHalfedgeToVertex.clear();
+    // this was using vector::clear before, which does not change the capacity either
+    m.mHalfedgesSize = 0;
 
     m.mRemovedHalfedges = 0;
     // no mCompact change!
