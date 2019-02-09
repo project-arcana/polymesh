@@ -386,17 +386,18 @@ inline void Mesh::copy_from(const Mesh &m)
     auto old_h_size = mHalfedgesSize;
 
     // copy topo
-    detail::resize(mVerticesSize, mVerticesCapacity, m.mVerticesSize);
-    std::copy(m.mVertexToOutgoingHalfedge.get(), m.mVertexToOutgoingHalfedge.get() + m.mVerticesSize, mVertexToOutgoingHalfedge.get());
+    detail::resize(mVerticesSize, mVerticesCapacity, m.mVerticesSize, mVertexToOutgoingHalfedge);
+    std::copy_n(m.mVertexToOutgoingHalfedge.get(), m.mVerticesSize, mVertexToOutgoingHalfedge.get());
 
-    detail::resize(mFacesSize, mFacesCapacity, m.mFacesSize);
-    std::copy(m.mFaceToHalfedge.get(), m.mFaceToHalfedge.get() + m.mFacesSize, mFaceToHalfedge.get());
+    detail::resize(mFacesSize, mFacesCapacity, m.mFacesSize, mFaceToHalfedge);
+    std::copy_n(m.mFaceToHalfedge.get(), m.mFacesSize, mFaceToHalfedge.get());
 
-    detail::resize(mHalfedgesSize, mHalfedgesCapacity, m.mHalfedgesSize);
-    std::copy(m.mHalfedgeToFace.get(), m.mHalfedgeToFace.get() + m.mHalfedgesSize, mHalfedgeToFace.get());
-    std::copy(m.mHalfedgeToVertex.get(), m.mHalfedgeToVertex.get() + m.mHalfedgesSize, mHalfedgeToVertex.get());
-    std::copy(m.mHalfedgeToNextHalfedge.get(), m.mHalfedgeToNextHalfedge.get() + m.mHalfedgesSize, mHalfedgeToNextHalfedge.get());
-    std::copy(m.mHalfedgeToPrevHalfedge.get(), m.mHalfedgeToPrevHalfedge.get() + m.mHalfedgesSize, mHalfedgeToPrevHalfedge.get());
+    detail::resize(mHalfedgesSize, mHalfedgesCapacity, m.mHalfedgesSize, //
+                   mHalfedgeToFace, mHalfedgeToVertex, mHalfedgeToNextHalfedge, mHalfedgeToPrevHalfedge);
+    std::copy_n(m.mHalfedgeToFace.get(), m.mHalfedgesSize, mHalfedgeToFace.get());
+    std::copy_n(m.mHalfedgeToVertex.get(), m.mHalfedgesSize, mHalfedgeToVertex.get());
+    std::copy_n(m.mHalfedgeToNextHalfedge.get(), m.mHalfedgesSize, mHalfedgeToNextHalfedge.get());
+    std::copy_n(m.mHalfedgeToPrevHalfedge.get(), m.mHalfedgesSize, mHalfedgeToPrevHalfedge.get());
 
     // copy helper data
     mRemovedFaces = m.mRemovedFaces;

@@ -40,7 +40,7 @@ bool resize(int& size, int& capacity, int new_size, TS&... ptrs)
 {
     if (new_size > capacity)
     {
-        capacity = std::max(2 * capacity, 16);
+        capacity = std::max(new_size, std::max(2 * capacity, 16));
         reserve(size, capacity, ptrs...);
         size = new_size;
         return true;
