@@ -238,7 +238,7 @@ typename field3<Pos3>::vec_t triangle_normal_unorm(face_handle f, vertex_attribu
 template <class Pos3, class Scalar>
 Scalar face_area(face_handle f, vertex_attribute<Pos3> const& position)
 {
-    auto varea = field3<Pos3>::zero();
+    auto varea = field3<Pos3>::zero_vec();
 
     auto h = f.any_halfedge();
 
@@ -320,7 +320,7 @@ typename field3<Pos3>::vec_t edge_dir(halfedge_handle h, vertex_attribute<Pos3> 
     auto d = position[h.vertex_to()] - position[h.vertex_from()];
     auto l = field3<Pos3>::length(d);
     if (l == 0)
-        return field3<Pos3>::zero();
+        return field3<Pos3>::zero_vec();
     return d / l;
 }
 
