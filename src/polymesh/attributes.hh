@@ -137,11 +137,12 @@ public:
 public:
     primitive_attribute(Mesh const& mesh, AttrT const& def_value = AttrT());
 
-    // data
+    // members
 protected:
     std::unique_ptr<AttrT[]> mData;
     AttrT mDefaultValue;
 
+protected:
     void resize_from(int old_size) override;
 
     void apply_remapping(std::vector<int> const& map) override;

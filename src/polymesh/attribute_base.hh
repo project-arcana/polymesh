@@ -17,12 +17,15 @@ struct low_level_api_base;
 template <class tag>
 struct primitive_attribute_base
 {
+    // members
+protected:
+    Mesh const* mMesh;
+
 private:
     primitive_attribute_base* mNextAttribute = nullptr;
     primitive_attribute_base* mPrevAttribute = nullptr;
 
 protected:
-    Mesh const* mMesh;
     primitive_attribute_base(Mesh const* mesh) : mMesh(mesh) {} // no registration, it's too early!
     virtual void resize_from(int old_size) = 0;
     virtual void apply_remapping(std::vector<int> const& map) = 0;
