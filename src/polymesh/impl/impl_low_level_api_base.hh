@@ -132,6 +132,38 @@ int low_level_api_base<MeshT>::size_removed_halfedges() const
 }
 
 template <class MeshT>
+size_t low_level_api_base<MeshT>::byte_size_topology() const
+{
+    size_t s = 0;
+
+    s += size_all_vertices() * sizeof(halfedge_index);
+    s += size_all_faces() * sizeof(halfedge_index);
+    s += size_all_halfedges() * sizeof(vertex_index);
+    s += size_all_halfedges() * sizeof(face_index);
+    s += size_all_halfedges() * sizeof(halfedge_index);
+    s += size_all_halfedges() * sizeof(halfedge_index);
+
+    return s;
+}
+
+template <class MeshT>
+size_t low_level_api_base<MeshT>::byte_size_attributes() const
+{
+    size_t s = 0;
+
+    for (auto a = m.mVertexAttrs; a; a = a->mNextAttribute)
+        s += a->byte_size();
+    for (auto a = m.mFaceAttrs; a; a = a->mNextAttribute)
+        s += a->byte_size();
+    for (auto a = m.mEdgeAttrs; a; a = a->mNextAttribute)
+        s += a->byte_size();
+    for (auto a = m.mHalfedgeAttrs; a; a = a->mNextAttribute)
+        s += a->byte_size();
+
+    return s;
+}
+
+template <class MeshT>
 bool low_level_api_base<MeshT>::can_add_face(const vertex_handle *v_handles, int vcnt) const
 {
     if (vcnt < 3)

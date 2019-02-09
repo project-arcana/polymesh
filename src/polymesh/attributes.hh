@@ -141,6 +141,7 @@ protected:
 
 protected:
     void resize_from(int old_size) override;
+    size_t byte_size() const override { return capacity() * sizeof(AttrT); }
 
     void apply_remapping(std::vector<int> const& map) override;
     void apply_transpositions(std::vector<std::pair<int, int>> const& ts) override;

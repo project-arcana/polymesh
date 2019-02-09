@@ -30,6 +30,7 @@ protected:
     virtual void resize_from(int old_size) = 0;
     virtual void apply_remapping(std::vector<int> const& map) = 0;
     virtual void apply_transpositions(std::vector<std::pair<int, int>> const& ts) = 0;
+    virtual size_t byte_size() const = 0;
 
     // links and unlinks the attribute with the mesh
     // CAUTION: does not change data in any way.

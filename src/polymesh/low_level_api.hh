@@ -60,6 +60,11 @@ public:
     int size_removed_edges() const;
     int size_removed_halfedges() const;
 
+    // byte size information
+public:
+    size_t byte_size_topology() const;
+    size_t byte_size_attributes() const;
+
     // traversal helper
 public:
     // returns the next valid idx (returns the given one if valid)
