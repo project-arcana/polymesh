@@ -147,7 +147,7 @@ protected:
     void apply_transpositions(std::vector<std::pair<int, int>> const& ts) override;
 
     template <class MeshT>
-    friend class low_level_attribute_api;
+    friend struct low_level_attribute_api;
 
     // ctor
 protected:
