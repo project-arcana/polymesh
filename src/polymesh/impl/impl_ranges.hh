@@ -493,13 +493,13 @@ void smart_collection<mesh_ptr, tag, iterator>::reserve(int capacity) const
 template <class mesh_ptr, class tag, class iterator>
 typename smart_collection<mesh_ptr, tag, iterator>::handle smart_collection<mesh_ptr, tag, iterator>::operator[](int idx) const
 {
-    return m[index(idx)];
+    return (*m)[index(idx)];
 }
 
 template <class mesh_ptr, class tag, class iterator>
 typename smart_collection<mesh_ptr, tag, iterator>::handle smart_collection<mesh_ptr, tag, iterator>::operator[](index idx) const
 {
-    return m[idx];
+    return (*m)[idx];
 }
 
 template <class mesh_ptr, class tag, class iterator>

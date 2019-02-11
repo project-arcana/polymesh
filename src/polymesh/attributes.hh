@@ -17,6 +17,9 @@
  *
  * Create attributes:
  *   auto myAttr = mesh.vertices().make_attribute(0.0f);
+ *   auto myAttr = attribute(mesh.vertices(), 0.0f);
+ *   auto myAttr = attribute<float>(mesh.vertices());
+ *   auto myAttr = vertex_attribute<float>(mesh);
  *
  * Access attributes:
  *   vertex_handle v; // or _index
@@ -224,4 +227,11 @@ struct halfedge_attribute final : primitive_attribute<halfedge_tag, AttrT>
     template <class mesh_ptr, class tag, class iterator>
     friend struct smart_collection;
 };
+
+template <class AttrT, class Collection>
+auto attribute(Collection const& c, AttrT const& defaultValue = {}) -> decltype(c.make_attribute_with_default(defaultValue))
+{
+    return c.make_attribute_with_default(defaultValue);
+}
+
 } // namespace polymesh
