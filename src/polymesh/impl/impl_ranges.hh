@@ -26,7 +26,7 @@ auto helper_max(A const &a, B const &b) -> decltype(a > b)
 {
     return a > b ? a : b;
 }
-}
+} // namespace detail
 
 template <class this_t, class ElementT>
 ElementT smart_range<this_t, ElementT>::first() const
@@ -232,8 +232,8 @@ auto smart_range<this_t, ElementT>::avg(FuncT &&f) const -> tmp::decayed_result_
     assert(it_begin != it_end && "requires non-empty range");
     auto s = f(*it_begin);
     auto cnt = 1;
-    static_assert(tmp::can_divide_by<decltype(s), decltype(cnt)>::value,
-                  "Cannot divide sum by an integer. (if glm is used, including <glm/ext.hpp> might help)");
+    static_assert(tmp::can_divide_by<decltype(s), decltype(cnt)>::value, "Cannot divide sum by an integer. (if glm is used, including <glm/ext.hpp> "
+                                                                         "might help)");
     ++it_begin;
     while (it_begin != it_end)
     {
@@ -254,8 +254,8 @@ auto smart_range<this_t, ElementT>::weighted_avg(FuncT &&f, WeightT &&w) const -
     auto e = *it_begin;
     auto s = f(e);
     auto ws = w(e);
-    static_assert(tmp::can_divide_by<decltype(s), decltype(ws)>::value,
-                  "Cannot divide sum by weight. (if glm is used, including <glm/ext.hpp> might help)");
+    static_assert(tmp::can_divide_by<decltype(s), decltype(ws)>::value, "Cannot divide sum by weight. (if glm is used, including <glm/ext.hpp> might "
+                                                                        "help)");
     ++it_begin;
     while (it_begin != it_end)
     {
@@ -488,6 +488,18 @@ template <class mesh_ptr, class tag, class iterator>
 void smart_collection<mesh_ptr, tag, iterator>::reserve(int capacity) const
 {
     return primitive<tag>::reserve(*m, capacity);
+}
+
+template <class mesh_ptr, class tag, class iterator>
+smart_collection<mesh_ptr, tag, iterator>::handle smart_collection<mesh_ptr, tag, iterator>::operator[](int idx) const
+{
+    return m[index(idx)];
+}
+
+template <class mesh_ptr, class tag, class iterator>
+smart_collection<mesh_ptr, tag, iterator>::handle smart_collection<mesh_ptr, tag, iterator>::operator[](index idx) const
+{
+    return m[idx];
 }
 
 template <class mesh_ptr, class tag, class iterator>
@@ -1066,4 +1078,4 @@ filtered_range<ElementT, RangeT, PredT>::filtered_range(filtered_range::Iterator
   : obegin(begin), oend(end), pred(predicate)
 {
 }
-}
+} // namespace polymesh

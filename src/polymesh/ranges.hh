@@ -204,6 +204,7 @@ struct smart_collection : smart_range<smart_collection<mesh_ptr, tag, iterator>,
     template <class AttrT>
     using attribute = typename primitive<tag>::template attribute<AttrT>;
     using handle = typename primitive<tag>::handle;
+    using index = typename primitive<tag>::index;
 
     /// Number of primitives, INCLUDING those marked for deletion
     /// O(1) computation
@@ -240,6 +241,11 @@ struct smart_collection : smart_range<smart_collection<mesh_ptr, tag, iterator>,
     ///       and thus get very slow if a lot of data is invalid
     template <class Generator>
     handle random(Generator& g) const;
+
+    /// converts the given integer index into a handle
+    /// CAUTION: always includes primitives marked for deletion, this is the numerical value of the handle
+    handle operator[](int idx) const;
+    handle operator[](index idx) const;
 
 protected:
     /// Backreference to mesh
