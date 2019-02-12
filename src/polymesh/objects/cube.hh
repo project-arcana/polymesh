@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Mesh.hh"
+#include "../fields.hh"
 
 namespace polymesh
 {
@@ -11,12 +12,22 @@ namespace objects
 /// returns the one of the new vertices (usually the first)
 /// NOTE: the result is NOT triangulated!
 template <class CubeF>
-vertex_handle add_cube(Mesh& m, CubeF&& cf);
+auto add_cube(Mesh& m, CubeF&& cf) -> decltype(cf(vertex_handle{}, int{}, int{}, int{}), vertex_handle{});
+
+/// same as before but directly fills a position attribute
+template <class Pos3>
+auto add_cube(Mesh& m, vertex_attribute<Pos3>& pos) -> vertex_handle;
 
 /// ======== IMPLEMENTATION ========
 
+template <class Pos3>
+auto add_cube(Mesh& m, vertex_attribute<Pos3>& pos) -> vertex_handle
+{
+    add_cube(m, [&](vertex_handle v, int x, int y, int z) { pos[v] = field3<Pos3>::make_pos(x, y, z); });
+}
+
 template <class CubeF>
-vertex_handle add_cube(Mesh& m, CubeF&& cf)
+auto add_cube(Mesh& m, CubeF&& cf) -> decltype(cf(vertex_handle{}, int{}, int{}, int{}), vertex_handle{})
 {
     auto v000 = m.vertices().add();
     auto v001 = m.vertices().add();
@@ -46,5 +57,5 @@ vertex_handle add_cube(Mesh& m, CubeF&& cf)
 
     return v000;
 }
-}
-}
+} // namespace objects
+} // namespace polymesh

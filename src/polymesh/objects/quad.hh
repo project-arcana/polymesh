@@ -12,12 +12,12 @@ namespace objects
 /// returns the one of the new vertices (usually the first)
 /// NOTE: the result is NOT triangulated!
 template <class QuadF>
-vertex_handle add_quad(Mesh& m, QuadF&& qf, int w = 1, int h = 1);
+auto add_quad(Mesh& m, QuadF&& qf, int w = 1, int h = 1) -> decltype(qf(vertex_handle{}, float{}, float{}), vertex_handle{});
 
 /// ======== IMPLEMENTATION ========
 
 template <class QuadF>
-vertex_handle add_quad(Mesh& m, QuadF&& qf, int w, int h)
+auto add_quad(Mesh& m, QuadF&& qf, int w, int h) -> decltype(qf(vertex_handle{}, float{}, float{}), vertex_handle{})
 {
     assert(w > 0 && h > 0);
 
