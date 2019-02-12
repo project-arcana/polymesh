@@ -173,7 +173,7 @@ inline bool is_edge_isolated(edge_handle e) { return e.is_isolated(); }
 inline int valence(vertex_handle v) { return v.adjacent_vertices().size(); }
 
 inline bool is_triangle(face_handle f) { return f.halfedges().size() == 3; }
-inline bool is_quad(face_handle f) { return f.halfedges().size() == 5; }
+inline bool is_quad(face_handle f) { return f.halfedges().size() == 4; }
 
 inline bool is_triangle_mesh(Mesh const& m) { return m.faces().all(is_triangle); }
 inline bool is_quad_mesh(Mesh const& m) { return m.faces().all(is_quad); }
