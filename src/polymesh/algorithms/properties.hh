@@ -197,7 +197,7 @@ Scalar triangle_area(face_handle f, vertex_attribute<Pos3> const& position)
     auto p1 = position[h.vertex_to()];
     auto p2 = position[h.next().vertex_to()];
 
-    return field3<Pos3>::length(field3<Pos3>::cross(p0 - p1, p0 - p2)) * field3<Pos3>::scalar_t(0.5f);
+    return field3<Pos3>::length(field3<Pos3>::cross(p0 - p1, p0 - p2)) * field3<Pos3>::scalar(0.5f);
 }
 
 template <class Pos3>
