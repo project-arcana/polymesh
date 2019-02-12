@@ -17,14 +17,14 @@ auto helper_max(T const &a, T const &b) -> decltype(max(a, b))
     return max(a, b);
 }
 template <class A, class B, class = void>
-auto helper_min(A const &a, B const &b) -> decltype(a < b)
+auto helper_min(A const &a, B const &b) -> decltype(a < b ? a : b)
 {
     return a < b ? a : b;
 }
 template <class A, class B, class = void>
-auto helper_max(A const &a, B const &b) -> decltype(a > b)
+auto helper_max(A const &a, B const &b) -> decltype(!(a < b) ? a : b)
 {
-    return a > b ? a : b;
+    return !(a < b) ? a : b;
 }
 } // namespace detail
 
