@@ -232,6 +232,12 @@ void primitive_attribute<tag, AttrT>::resize_from(int old_size)
     this->mData.reset(new_data);
 }
 
+template <class tag, class AttrT>
+void primitive_attribute<tag, AttrT>::clear_with_default()
+{
+    std::fill_n(this->data(), this->size(), mDefaultValue);
+}
+
 inline void Mesh::register_attr(primitive_attribute_base<vertex_tag> *attr) const
 {
     // insert in front

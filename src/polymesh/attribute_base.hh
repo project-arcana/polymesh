@@ -28,6 +28,7 @@ private:
 protected:
     primitive_attribute_base(Mesh const* mesh) : mMesh(mesh) {} // no registration, it's too early!
     virtual void resize_from(int old_size) = 0;
+    virtual void clear_with_default() = 0;
     virtual void apply_remapping(std::vector<int> const& map) = 0;
     virtual void apply_transpositions(std::vector<std::pair<int, int>> const& ts) = 0;
     virtual size_t byte_size() const = 0;

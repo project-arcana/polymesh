@@ -88,8 +88,16 @@ public:
     halfedge_handle operator[](halfedge_index idx) const { return handle_of(idx); }
 
     /// deletes all faces, vertices, edges, and halfedges
-    /// NOTE: contrary to std::vector, this actually frees the memory
+    /// NOTE: similar to std::vector, this does NOT free the memory (use shrink_to_fit)
     void clear();
+
+    /// reallocate primitives and attributes such that the memory is a tight fit (capacity == size)
+    /// NOTE: An empty mesh has no allocated memory
+    void shrink_to_fit();
+
+    /// In behavior similar to clear() followed by shrink_to_fit()
+    /// Basically frees all associated memory immediately
+    void reset();
 
     // helper
 public:

@@ -349,6 +349,72 @@ inline void Mesh::clear()
 {
     if (mVerticesCapacity > 0)
     {
+        for (auto a = mVertexAttrs; a; a = a->mNextAttribute)
+            a->clear_with_default();
+
+        // AFTER clear_with_default
+        mVerticesSize = 0;
+    }
+
+    if (mFacesCapacity > 0)
+    {
+        for (auto a = mFaceAttrs; a; a = a->mNextAttribute)
+            a->clear_with_default();
+
+        // AFTER clear_with_default
+        mFacesSize = 0;
+    }
+
+    if (mHalfedgesCapacity > 0)
+    {
+        for (auto a = mEdgeAttrs; a; a = a->mNextAttribute)
+            a->clear_with_default();
+        for (auto a = mHalfedgeAttrs; a; a = a->mNextAttribute)
+            a->clear_with_default();
+
+        // AFTER clear_with_default
+        mHalfedgesSize = 0;
+    }
+
+    mRemovedFaces = 0;
+    mRemovedHalfedges = 0;
+    mRemovedVertices = 0;
+    mCompact = true;
+}
+
+inline void Mesh::shrink_to_fit()
+{
+    if (mVerticesCapacity > mVerticesSize)
+    {
+        detail::shrink_to_fit(mVerticesSize, mVerticesCapacity, mVertexToOutgoingHalfedge);
+
+        for (auto a = mVertexAttrs; a; a = a->mNextAttribute)
+            a->resize_from(mVerticesSize);
+    }
+
+    if (mFacesCapacity > mFacesSize)
+    {
+        detail::shrink_to_fit(mFacesSize, mFacesCapacity, mFaceToHalfedge);
+
+        for (auto a = mFaceAttrs; a; a = a->mNextAttribute)
+            a->resize_from(mFacesSize);
+    }
+
+    if (mHalfedgesCapacity > mHalfedgesSize)
+    {
+        detail::shrink_to_fit(mHalfedgesSize, mHalfedgesCapacity, mHalfedgeToFace, mHalfedgeToVertex, mHalfedgeToNextHalfedge, mHalfedgeToPrevHalfedge);
+
+        for (auto a = mEdgeAttrs; a; a = a->mNextAttribute)
+            a->resize_from(mHalfedgesSize >> 1);
+        for (auto a = mHalfedgeAttrs; a; a = a->mNextAttribute)
+            a->resize_from(mHalfedgesSize);
+    }
+}
+
+inline void Mesh::reset()
+{
+    if (mVerticesCapacity > 0)
+    {
         detail::clear(mVerticesSize, mVerticesCapacity, mVertexToOutgoingHalfedge);
 
         for (auto a = mVertexAttrs; a; a = a->mNextAttribute)
