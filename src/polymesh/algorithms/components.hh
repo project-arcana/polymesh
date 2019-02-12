@@ -108,4 +108,4 @@ inline detail::bfs_range<face_tag> face_component(vertex_handle v)
             return {f};
     return {face_handle()};
 }
-}
+} // namespace polymesh
