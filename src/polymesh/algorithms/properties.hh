@@ -52,6 +52,13 @@ bool is_triangle_mesh(Mesh const& m);
 /// returns true iff all faces are quads
 bool is_quad_mesh(Mesh const& m);
 
+/// returns the euler characteristic for this mesh
+int euler_characteristic(Mesh const& m);
+
+/// returns true iff the mesh is closed (has no boundary)
+/// isolated vertices are ignored
+bool is_closed_mesh(Mesh const& m);
+
 /// returns the area of the (flat) polygonal face
 template <class Pos3, class Scalar = typename field3<Pos3>::scalar_t>
 Scalar face_area(face_handle f, vertex_attribute<Pos3> const& position);
@@ -177,6 +184,10 @@ inline bool is_quad(face_handle f) { return f.halfedges().size() == 4; }
 
 inline bool is_triangle_mesh(Mesh const& m) { return m.faces().all(is_triangle); }
 inline bool is_quad_mesh(Mesh const& m) { return m.faces().all(is_quad); }
+
+inline int euler_characteristic(Mesh const& m) { return m.vertices().size() - m.edges().size() + m.faces().size(); }
+
+inline bool is_closed_mesh(Mesh const& m) { return !m.halfedges().any(is_halfedge_boundary); }
 
 template <class Pos3, class Scalar>
 Scalar triangle_area(face_handle f, vertex_attribute<Pos3> const& position)
