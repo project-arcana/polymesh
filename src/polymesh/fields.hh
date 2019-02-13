@@ -26,7 +26,7 @@ struct field3
     using vec_t = typename detail::vec_type<Pos3>::type;
     using scalar_t = typename std::decay<decltype(std::declval<pos_t>()[0])>::type;
 
-    constexpr static pos_t make_pos(scalar_t x, scalar_t y, scalar_t z)
+    static pos_t make_pos(scalar_t x, scalar_t y, scalar_t z)
     {
         pos_t p;
         p[0] = x;
@@ -34,7 +34,7 @@ struct field3
         p[2] = z;
         return p;
     }
-    constexpr static vec_t make_vec(scalar_t x, scalar_t y, scalar_t z)
+    static vec_t make_vec(scalar_t x, scalar_t y, scalar_t z)
     {
         vec_t p;
         p[0] = x;
@@ -42,25 +42,25 @@ struct field3
         p[2] = z;
         return p;
     }
-    constexpr static pos_t zero_pos() { return make_pos(0, 0, 0); }
-    constexpr static vec_t zero_vec() { return make_vec(0, 0, 0); }
+    static pos_t zero_pos() { return make_pos(0, 0, 0); }
+    static vec_t zero_vec() { return make_vec(0, 0, 0); }
 
-    constexpr static scalar_t dot(vec_t const& a, vec_t const& b)
+    static scalar_t dot(vec_t const& a, vec_t const& b)
     {
         return a[0] * b[0] + //
                a[1] * b[1] + //
                a[2] * b[2];
     }
 
-    constexpr static vec_t cross(vec_t const& a, vec_t const& b)
+    static vec_t cross(vec_t const& a, vec_t const& b)
     {
         return vec_t(a[1] * b[2] - a[2] * b[1], //
                      a[2] * b[0] - a[0] * b[2], //
                      a[0] * b[1] - a[1] * b[0]);
     }
 
-    constexpr static scalar_t length(vec_t const& a) { return std::sqrt(dot(a, a)); }
+    static scalar_t length(vec_t const& a) { return std::sqrt(dot(a, a)); }
 
-    constexpr static scalar_t scalar(scalar_t v) { return v; }
+    static scalar_t scalar(scalar_t v) { return v; }
 };
 } // namespace polymesh
