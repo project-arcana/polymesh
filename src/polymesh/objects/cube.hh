@@ -23,7 +23,7 @@ auto add_cube(Mesh& m, vertex_attribute<Pos3>& pos) -> vertex_handle;
 template <class Pos3>
 auto add_cube(Mesh& m, vertex_attribute<Pos3>& pos) -> vertex_handle
 {
-    add_cube(m, [&](vertex_handle v, int x, int y, int z) { pos[v] = field3<Pos3>::make_pos(x, y, z); });
+    return add_cube(m, [&](vertex_handle v, int x, int y, int z) { pos[v] = field3<Pos3>::make_pos(x, y, z); });
 }
 
 template <class CubeF>

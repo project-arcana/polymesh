@@ -26,6 +26,17 @@ auto helper_max(A const &a, B const &b) -> decltype(!(a < b) ? a : b)
 {
     return !(a < b) ? a : b;
 }
+
+template <class T>
+auto helper_add(T const &a, T const &b) -> decltype(a + b)
+{
+    return a + b;
+}
+template <class A, class B>
+auto helper_add(A const &a, B const &b) -> decltype(A() + (a - A()) + (b - B()))
+{
+    return A() + (a - A()) + (b - B());
+}
 } // namespace detail
 
 template <class this_t, class ElementT>
@@ -237,7 +248,7 @@ auto smart_range<this_t, ElementT>::avg(FuncT &&f) const -> tmp::decayed_result_
     ++it_begin;
     while (it_begin != it_end)
     {
-        s = s + f(*it_begin);
+        s = detail::helper_add(s, f(*it_begin));
         ++cnt;
         ++it_begin;
     }
@@ -260,8 +271,9 @@ auto smart_range<this_t, ElementT>::weighted_avg(FuncT &&f, WeightT &&w) const -
     while (it_begin != it_end)
     {
         auto ee = *it_begin;
-        s = s + f(ee);
-        ws = ws + w(ee);
+        auto ww = w(ee);
+        s = detail::helper_add(s, f(ee) * ww);
+        ws = ws + ww;
         ++it_begin;
     }
     return s / ws;
