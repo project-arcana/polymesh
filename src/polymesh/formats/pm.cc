@@ -7,8 +7,8 @@
 #include <unordered_map>
 
 #ifdef POLYMESH_SUPPORT_GLM
-#include <glm/ext.hpp>
-#include <glm/glm.hpp>
+#include <glm/matrix.hpp>
+#include <glm/ext/quaternion_float.hpp>
 #endif
 
 #include "../low_level_api.hh"
