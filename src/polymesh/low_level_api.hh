@@ -65,6 +65,9 @@ public:
     size_t byte_size_topology() const;
     size_t byte_size_attributes() const;
 
+    size_t allocated_byte_size_topology() const;
+    size_t allocated_byte_size_attributes() const;
+
     // traversal helper
 public:
     // returns the next valid idx (returns the given one if valid)
@@ -366,8 +369,20 @@ public:
 };
 
 // Convenience functions
-inline low_level_api_const low_level_api(Mesh const& m) { return {m}; }
-inline low_level_api_const low_level_api(Mesh const* m) { return {*m}; }
-inline low_level_api_mutable low_level_api(Mesh& m) { return {m}; }
-inline low_level_api_mutable low_level_api(Mesh* m) { return {*m}; }
+inline low_level_api_const low_level_api(Mesh const& m)
+{
+    return {m};
+}
+inline low_level_api_const low_level_api(Mesh const* m)
+{
+    return {*m};
+}
+inline low_level_api_mutable low_level_api(Mesh& m)
+{
+    return {m};
+}
+inline low_level_api_mutable low_level_api(Mesh* m)
+{
+    return {*m};
+}
 } // namespace polymesh
