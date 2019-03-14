@@ -1086,7 +1086,9 @@ void halfedge_collection<iterator>::rotate_prev(halfedge_handle h) const
 }
 
 template <class ElementT, class RangeT, class PredT>
-filtered_range<ElementT, RangeT, PredT>::filtered_range(filtered_range::IteratorT begin, filtered_range::IteratorT end, PredT predicate)
+filtered_range<ElementT, RangeT, PredT>::filtered_range(typename filtered_range<ElementT, RangeT, PredT>::IteratorT begin,
+                                                        typename filtered_range<ElementT, RangeT, PredT>::IteratorT end,
+                                                        PredT predicate)
   : obegin(begin), oend(end), pred(predicate)
 {
 }
