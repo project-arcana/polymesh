@@ -138,7 +138,7 @@ bool read_stl_binary(std::istream &input, Mesh &mesh, vertex_attribute<std::arra
 }
 
 template <class ScalarT>
-static float read_real_with_nan(std::istream &input)
+static ScalarT read_real_with_nan(std::istream &input)
 {
     std::string s;
     input >> s;

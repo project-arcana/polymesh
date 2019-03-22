@@ -130,13 +130,13 @@ void write_pm(std::ostream &out, const Mesh &mesh, const attribute_collection &a
         std::cout << "polymesh::write_pm: saving a non-compact mesh." << std::endl;
 
     pm_header header;
-    header.num_vertices = mesh.all_vertices().size();
-    header.num_halfedges = mesh.all_halfedges().size();
-    header.num_faces = mesh.all_faces().size();
-    header.num_vertex_attributes = attributes.vertex_attributes().size();
-    header.num_halfedge_attributes = attributes.halfedge_attributes().size();
-    header.num_edge_attributes = attributes.edge_attributes().size();
-    header.num_face_attributes = attributes.face_attributes().size();
+    header.num_vertices = int(mesh.all_vertices().size());
+    header.num_halfedges = int(mesh.all_halfedges().size());
+    header.num_faces = int(mesh.all_faces().size());
+    header.num_vertex_attributes = int(attributes.vertex_attributes().size());
+    header.num_halfedge_attributes = int(attributes.halfedge_attributes().size());
+    header.num_edge_attributes = int(attributes.edge_attributes().size());
+    header.num_face_attributes = int(attributes.face_attributes().size());
     out.write(reinterpret_cast<char *>(&header), sizeof(header));
 
     // Store mesh topology

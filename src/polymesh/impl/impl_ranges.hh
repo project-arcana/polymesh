@@ -764,25 +764,25 @@ face_handle face_collection<iterator>::add(const halfedge_index *half_loop, int 
 template <class iterator>
 face_handle face_collection<iterator>::add(std::vector<vertex_handle> const &v_handles) const
 {
-    return add(v_handles.data(), v_handles.size());
+    return add(v_handles.data(), int(v_handles.size()));
 }
 
 template <class iterator>
 face_handle face_collection<iterator>::add(std::vector<vertex_index> const &v_indices) const
 {
-    return add(v_indices.data(), v_indices.size());
+    return add(v_indices.data(), int(v_indices.size()));
 }
 
 template <class iterator>
 face_handle face_collection<iterator>::add(std::vector<halfedge_handle> const &half_loop) const
 {
-    return add(half_loop.data(), (int)half_loop.size());
+    return add(half_loop.data(), int(half_loop.size()));
 }
 
 template <class iterator>
 face_handle face_collection<iterator>::add(std::vector<halfedge_index> const &half_loop) const
 {
-    return add(half_loop.data(), (int)half_loop.size());
+    return add(half_loop.data(), int(half_loop.size()));
 }
 
 template <class iterator>
@@ -869,25 +869,25 @@ bool face_collection<iterator>::can_add(const halfedge_index *half_loop, int vcn
 template <class iterator>
 bool face_collection<iterator>::can_add(std::vector<vertex_handle> const &v_handles) const
 {
-    return can_add(v_handles.data(), v_handles.size());
+    return can_add(v_handles.data(), int(v_handles.size()));
 }
 
 template <class iterator>
 bool face_collection<iterator>::can_add(std::vector<vertex_index> const &v_indices) const
 {
-    return can_add(v_indices.data(), v_indices.size());
+    return can_add(v_indices.data(), int(v_indices.size()));
 }
 
 template <class iterator>
 bool face_collection<iterator>::can_add(std::vector<halfedge_handle> const &half_loop) const
 {
-    return can_add(half_loop.data(), (int)half_loop.size());
+    return can_add(half_loop.data(), int(half_loop.size()));
 }
 
 template <class iterator>
 bool face_collection<iterator>::can_add(std::vector<halfedge_index> const &half_loop) const
 {
-    return can_add(half_loop.data(), (int)half_loop.size());
+    return can_add(half_loop.data(), int(half_loop.size()));
 }
 
 template <class iterator>

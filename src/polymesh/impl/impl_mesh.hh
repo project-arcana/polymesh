@@ -287,9 +287,9 @@ inline void Mesh::compactify()
         mHalfedgeToPrevHalfedge[i] = mHalfedgeToPrevHalfedge[h_new_to_old[i]];
     }
 
-    detail::resize(mVerticesSize, mVerticesCapacity, v_new_to_old.size(), mVertexToOutgoingHalfedge);
-    detail::resize(mFacesSize, mFacesCapacity, f_new_to_old.size(), mFaceToHalfedge);
-    detail::resize(mHalfedgesSize, mHalfedgesCapacity, h_new_to_old.size(), mHalfedgeToFace, mHalfedgeToVertex, mHalfedgeToNextHalfedge, mHalfedgeToPrevHalfedge);
+    detail::resize(mVerticesSize, mVerticesCapacity, int(v_new_to_old.size()), mVertexToOutgoingHalfedge);
+    detail::resize(mFacesSize, mFacesCapacity, int(f_new_to_old.size()), mFaceToHalfedge);
+    detail::resize(mHalfedgesSize, mHalfedgesCapacity, int(h_new_to_old.size()), mHalfedgeToFace, mHalfedgeToVertex, mHalfedgeToNextHalfedge, mHalfedgeToPrevHalfedge);
 
     for (auto &v_out : detail::range(mVerticesSize, mVertexToOutgoingHalfedge))
         if (v_out.value >= 0)
