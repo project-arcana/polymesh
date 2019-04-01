@@ -5,75 +5,75 @@
 namespace polymesh
 {
 template <class tag, class AttrT>
-AttrT &primitive_attribute<tag, AttrT>::operator[](handle_t h)
+AttrT& primitive_attribute<tag, AttrT>::operator[](handle_t h)
 {
     assert(this->mMesh == h.mesh && "Handle belongs to a different mesh");
     return mData[h.idx.value];
 }
 template <class tag, class AttrT>
-AttrT const &primitive_attribute<tag, AttrT>::operator[](handle_t h) const
+AttrT const& primitive_attribute<tag, AttrT>::operator[](handle_t h) const
 {
     assert(this->mMesh == h.mesh && "Handle belongs to a different mesh");
     return mData[h.idx.value];
 }
 template <class tag, class AttrT>
-AttrT &primitive_attribute<tag, AttrT>::operator()(handle_t h)
+AttrT& primitive_attribute<tag, AttrT>::operator()(handle_t h)
 {
     assert(this->mMesh == h.mesh && "Handle belongs to a different mesh");
     return mData[h.idx.value];
 }
 template <class tag, class AttrT>
-AttrT const &primitive_attribute<tag, AttrT>::operator()(handle_t h) const
+AttrT const& primitive_attribute<tag, AttrT>::operator()(handle_t h) const
 {
     assert(this->mMesh == h.mesh && "Handle belongs to a different mesh");
     return mData[h.idx.value];
 }
 
 template <class AttrT>
-AttrT &edge_attribute<AttrT>::operator[](halfedge_handle h)
+AttrT& edge_attribute<AttrT>::operator[](halfedge_handle h)
 {
     assert(this->mMesh == h.mesh && "Handle belongs to a different mesh");
     return this->mData[h.idx.value >> 1];
 }
 template <class AttrT>
-AttrT const &edge_attribute<AttrT>::operator[](halfedge_handle h) const
+AttrT const& edge_attribute<AttrT>::operator[](halfedge_handle h) const
 {
     assert(this->mMesh == h.mesh && "Handle belongs to a different mesh");
     return this->mData[h.idx.value >> 1];
 }
 template <class AttrT>
-AttrT &edge_attribute<AttrT>::operator()(halfedge_handle h)
+AttrT& edge_attribute<AttrT>::operator()(halfedge_handle h)
 {
     assert(this->mMesh == h.mesh && "Handle belongs to a different mesh");
     return this->mData[h.idx.value >> 1];
 }
 template <class AttrT>
-AttrT const &edge_attribute<AttrT>::operator()(halfedge_handle h) const
+AttrT const& edge_attribute<AttrT>::operator()(halfedge_handle h) const
 {
     assert(this->mMesh == h.mesh && "Handle belongs to a different mesh");
     return this->mData[h.idx.value >> 1];
 }
 
 template <class tag, class AttrT>
-void primitive_attribute<tag, AttrT>::copy_from(std::vector<AttrT> const &data)
+void primitive_attribute<tag, AttrT>::copy_from(std::vector<AttrT> const& data)
 {
     std::copy_n(data.data(), std::min(int(data.size()), this->size()), this->data());
 }
 
 template <class tag, class AttrT>
-void primitive_attribute<tag, AttrT>::copy_from(const AttrT *data, int cnt)
+void primitive_attribute<tag, AttrT>::copy_from(const AttrT* data, int cnt)
 {
     std::copy_n(data, std::min(cnt, this->size()), this->data());
 }
 
 template <class tag, class AttrT>
-void primitive_attribute<tag, AttrT>::copy_from(attribute<AttrT> const &data)
+void primitive_attribute<tag, AttrT>::copy_from(attribute<AttrT> const& data)
 {
     std::copy_n(data.data(), std::min(data.size(), this->size()), this->data());
 }
 
 template <class tag, class AttrT>
-auto primitive_attribute<tag, AttrT>::copy_to(Mesh const &m) const -> attribute<AttrT>
+auto primitive_attribute<tag, AttrT>::copy_to(Mesh const& m) const -> attribute<AttrT>
 {
     attribute<AttrT> new_attr(m, this->mDefaultValue);
     new_attr.copy_from(this->data(), this->size());
@@ -90,14 +90,14 @@ std::vector<AttrT> primitive_attribute<tag, AttrT>::to_vector() const
 }
 
 template <class tag, class AttrT>
-void primitive_attribute<tag, AttrT>::apply_remapping(const std::vector<int> &map)
+void primitive_attribute<tag, AttrT>::apply_remapping(const std::vector<int>& map)
 {
     for (auto i = 0u; i < map.size(); ++i)
         this->mData[i] = this->mData[map[i]];
 }
 
 template <class tag, class AttrT>
-void primitive_attribute<tag, AttrT>::apply_transpositions(std::vector<std::pair<int, int>> const &ts)
+void primitive_attribute<tag, AttrT>::apply_transpositions(std::vector<std::pair<int, int>> const& ts)
 {
     using std::swap;
     for (auto t : ts)
@@ -106,13 +106,13 @@ void primitive_attribute<tag, AttrT>::apply_transpositions(std::vector<std::pair
 
 // ==== User ctor: delegates to internal standard ctor
 template <class tag, class AttrT>
-primitive_attribute<tag, AttrT>::primitive_attribute(Mesh const &mesh, const AttrT &def_value) : primitive_attribute(&mesh, def_value)
+primitive_attribute<tag, AttrT>::primitive_attribute(Mesh const& mesh, const AttrT& def_value) : primitive_attribute(&mesh, def_value)
 {
 }
 
 // ==== Internal standard ctor: registers and allocates default data
 template <class tag, class AttrT>
-primitive_attribute<tag, AttrT>::primitive_attribute(const Mesh *mesh, const AttrT &def_value)
+primitive_attribute<tag, AttrT>::primitive_attribute(const Mesh* mesh, const AttrT& def_value)
   : primitive_attribute_base<tag>(mesh), mDefaultValue(def_value)
 {
     // register
@@ -127,7 +127,7 @@ primitive_attribute<tag, AttrT>::primitive_attribute(const Mesh *mesh, const Att
 
 // ==== Copy ctor: register, copy rhs data, fill default data
 template <class tag, class AttrT>
-primitive_attribute<tag, AttrT>::primitive_attribute(primitive_attribute const &rhs) noexcept : primitive_attribute_base<tag>(rhs.mMesh) // copy
+primitive_attribute<tag, AttrT>::primitive_attribute(primitive_attribute const& rhs) noexcept : primitive_attribute_base<tag>(rhs.mMesh) // copy
 {
     // get default value
     this->mDefaultValue = rhs.mDefaultValue;
@@ -144,7 +144,7 @@ primitive_attribute<tag, AttrT>::primitive_attribute(primitive_attribute const &
 
 // ==== Move ctor: take rhs data, deregister rhs
 template <class tag, class AttrT>
-primitive_attribute<tag, AttrT>::primitive_attribute(primitive_attribute &&rhs) noexcept : primitive_attribute_base<tag>(rhs.mMesh) // move
+primitive_attribute<tag, AttrT>::primitive_attribute(primitive_attribute&& rhs) noexcept : primitive_attribute_base<tag>(rhs.mMesh) // move
 {
     // take default value and data from rhs
     this->mDefaultValue = std::move(rhs.mDefaultValue);
@@ -159,8 +159,11 @@ primitive_attribute<tag, AttrT>::primitive_attribute(primitive_attribute &&rhs) 
 
 // ==== Copy assignment: register onto new mesh, copy data and default value from rhs
 template <class tag, class AttrT>
-primitive_attribute<tag, AttrT> &primitive_attribute<tag, AttrT>::operator=(primitive_attribute const &rhs) noexcept // copy
+primitive_attribute<tag, AttrT>& primitive_attribute<tag, AttrT>::operator=(primitive_attribute const& rhs) noexcept // copy
 {
+    if (this == &rhs) // prevent self-copy
+        return *this;
+
     // save old capacity for no-realloc path
     auto old_capacity = is_valid() ? this->capacity() : 0;
 
@@ -190,8 +193,11 @@ primitive_attribute<tag, AttrT> &primitive_attribute<tag, AttrT>::operator=(prim
 
 // ==== Move assignment: register onto new mesh, take rhs data, invalidate rhs
 template <class tag, class AttrT>
-primitive_attribute<tag, AttrT> &primitive_attribute<tag, AttrT>::operator=(primitive_attribute &&rhs) noexcept // move
+primitive_attribute<tag, AttrT>& primitive_attribute<tag, AttrT>::operator=(primitive_attribute&& rhs) noexcept // move
 {
+    if (this == &rhs) // prevent self-move
+        return *this;
+
     // deregister from old mesh
     this->deregister_attr();
 
@@ -238,7 +244,7 @@ void primitive_attribute<tag, AttrT>::clear_with_default()
     std::fill_n(this->data(), this->size(), mDefaultValue);
 }
 
-inline void Mesh::register_attr(primitive_attribute_base<vertex_tag> *attr) const
+inline void Mesh::register_attr(primitive_attribute_base<vertex_tag>* attr) const
 {
     // insert in front
     auto nextAttrs = mVertexAttrs;
@@ -248,7 +254,7 @@ inline void Mesh::register_attr(primitive_attribute_base<vertex_tag> *attr) cons
         nextAttrs->mPrevAttribute = attr;
 }
 
-inline void Mesh::deregister_attr(primitive_attribute_base<vertex_tag> *attr) const
+inline void Mesh::deregister_attr(primitive_attribute_base<vertex_tag>* attr) const
 {
     if (attr->mPrevAttribute)
         attr->mPrevAttribute->mNextAttribute = attr->mNextAttribute;
@@ -263,7 +269,7 @@ inline void Mesh::deregister_attr(primitive_attribute_base<vertex_tag> *attr) co
     attr->mPrevAttribute = nullptr;
 }
 
-inline void Mesh::register_attr(primitive_attribute_base<face_tag> *attr) const
+inline void Mesh::register_attr(primitive_attribute_base<face_tag>* attr) const
 {
     // insert in front
     auto nextAttrs = mFaceAttrs;
@@ -273,7 +279,7 @@ inline void Mesh::register_attr(primitive_attribute_base<face_tag> *attr) const
         nextAttrs->mPrevAttribute = attr;
 }
 
-inline void Mesh::deregister_attr(primitive_attribute_base<face_tag> *attr) const
+inline void Mesh::deregister_attr(primitive_attribute_base<face_tag>* attr) const
 {
     if (attr->mPrevAttribute)
         attr->mPrevAttribute->mNextAttribute = attr->mNextAttribute;
@@ -288,7 +294,7 @@ inline void Mesh::deregister_attr(primitive_attribute_base<face_tag> *attr) cons
     attr->mPrevAttribute = nullptr;
 }
 
-inline void Mesh::register_attr(primitive_attribute_base<edge_tag> *attr) const
+inline void Mesh::register_attr(primitive_attribute_base<edge_tag>* attr) const
 {
     // insert in front
     auto nextAttrs = mEdgeAttrs;
@@ -298,7 +304,7 @@ inline void Mesh::register_attr(primitive_attribute_base<edge_tag> *attr) const
         nextAttrs->mPrevAttribute = attr;
 }
 
-inline void Mesh::deregister_attr(primitive_attribute_base<edge_tag> *attr) const
+inline void Mesh::deregister_attr(primitive_attribute_base<edge_tag>* attr) const
 {
     if (attr->mPrevAttribute)
         attr->mPrevAttribute->mNextAttribute = attr->mNextAttribute;
@@ -313,7 +319,7 @@ inline void Mesh::deregister_attr(primitive_attribute_base<edge_tag> *attr) cons
     attr->mPrevAttribute = nullptr;
 }
 
-inline void Mesh::register_attr(primitive_attribute_base<halfedge_tag> *attr) const
+inline void Mesh::register_attr(primitive_attribute_base<halfedge_tag>* attr) const
 {
     // insert in front
     auto nextAttrs = mHalfedgeAttrs;
@@ -323,7 +329,7 @@ inline void Mesh::register_attr(primitive_attribute_base<halfedge_tag> *attr) co
         nextAttrs->mPrevAttribute = attr;
 }
 
-inline void Mesh::deregister_attr(primitive_attribute_base<halfedge_tag> *attr) const
+inline void Mesh::deregister_attr(primitive_attribute_base<halfedge_tag>* attr) const
 {
     if (attr->mPrevAttribute)
         attr->mPrevAttribute->mNextAttribute = attr->mNextAttribute;
@@ -367,7 +373,7 @@ int primitive_attribute<tag, AttrT>::capacity() const
 }
 
 template <class tag, class AttrT>
-void primitive_attribute<tag, AttrT>::clear(AttrT const &value)
+void primitive_attribute<tag, AttrT>::clear(AttrT const& value)
 {
     std::fill_n(this->data(), size(), value);
 }
@@ -380,7 +386,7 @@ void primitive_attribute<tag, AttrT>::clear()
 
 template <class tag, class AttrT>
 template <class FuncT>
-auto primitive_attribute<tag, AttrT>::map(FuncT &&f) const -> attribute<tmp::decayed_result_type_of<FuncT, AttrT>>
+auto primitive_attribute<tag, AttrT>::map(FuncT&& f) const -> attribute<tmp::decayed_result_type_of<FuncT, AttrT>>
 {
     auto attr = primitive<tag>::all_collection_of(*this->mMesh).template make_attribute<tmp::decayed_result_type_of<FuncT, AttrT>>();
     auto s = size();
@@ -406,7 +412,7 @@ auto primitive_attribute<tag, AttrT>::to() const -> attribute<T>
 
 template <class tag, class AttrT>
 template <class FuncT>
-void primitive_attribute<tag, AttrT>::apply(FuncT &&f)
+void primitive_attribute<tag, AttrT>::apply(FuncT&& f)
 {
     auto s = size();
     auto d = data();
@@ -416,7 +422,7 @@ void primitive_attribute<tag, AttrT>::apply(FuncT &&f)
 
 template <class tag, class AttrT>
 template <class FuncT>
-void primitive_attribute<tag, AttrT>::compute(FuncT &&f)
+void primitive_attribute<tag, AttrT>::compute(FuncT&& f)
 {
     auto d = data();
     for (auto h : primitive<tag>::valid_collection_of(*this->mMesh))
@@ -425,9 +431,9 @@ void primitive_attribute<tag, AttrT>::compute(FuncT &&f)
 
 template <class tag, class AttrT>
 template <class FuncT>
-auto primitive_attribute<tag, AttrT>::view(FuncT &&f) const -> readonly_property<primitive_attribute<tag, AttrT> const &, FuncT>
+auto primitive_attribute<tag, AttrT>::view(FuncT&& f) const -> readonly_property<primitive_attribute<tag, AttrT> const&, FuncT>
 {
-    return readonly_property<primitive_attribute<tag, AttrT> const &, FuncT>(*this, f);
+    return readonly_property<primitive_attribute<tag, AttrT> const&, FuncT>(*this, f);
 }
 
 } // namespace polymesh
