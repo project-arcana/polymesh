@@ -11,7 +11,7 @@ struct readonly_property
 
     using index_t = typename std::decay<CollectionT>::type::index_t;
     using handle_t = typename std::decay<CollectionT>::type::handle_t;
-    using input_t = decltype(std::declval<CollectionT>().operator[](index_t()));
+    using input_t = decltype(std::declval<CollectionT>()[index_t()]);
     using output_t = typename tmp::decayed_result_type_of<FuncT, input_t>;
 
     output_t operator[](handle_t h) const { return mFunc(mCollection(h)); }
