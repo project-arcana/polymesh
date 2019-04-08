@@ -17,11 +17,11 @@ namespace polymesh
 {
 namespace
 {
-std::unordered_map<std::string, std::unique_ptr<detail::GenericAttributeSerializer>> sSerializers;
+std::unordered_map<std::string, unique_ptr<detail::GenericAttributeSerializer>> sSerializers;
 const std::string unregistered_type_name = "UNREGISTERED_TYPE";
 } // namespace
 
-void detail::register_attribute_serializer(const std::string& identifier, std::unique_ptr<detail::GenericAttributeSerializer> ptr)
+void detail::register_attribute_serializer(const std::string& identifier, unique_ptr<detail::GenericAttributeSerializer> ptr)
 {
     sSerializers[identifier] = std::move(ptr);
 }
@@ -78,7 +78,7 @@ static std::istream& read_string(std::istream& in, std::string& text)
 }
 
 template <class tag>
-static std::ostream& storeAttributes(std::ostream& out, std::map<std::string, std::unique_ptr<primitive_attribute_base<tag>>> const& attrs)
+static std::ostream& storeAttributes(std::ostream& out, std::map<std::string, unique_ptr<primitive_attribute_base<tag>>> const& attrs)
 {
     for (auto const& attr : attrs)
     {

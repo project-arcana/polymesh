@@ -1,11 +1,11 @@
 #pragma once
 
 #include <cstddef>
-#include <memory>
 #include <vector>
 
 #include "attribute_base.hh"
 #include "cursors.hh"
+#include "detail/unique_array.hh"
 #include "properties.hh"
 #include "ranges.hh"
 #include "tmp.hh"
@@ -139,7 +139,7 @@ public:
 
     // members
 protected:
-    std::unique_ptr<AttrT[]> mData;
+    unique_array<AttrT> mData;
     AttrT mDefaultValue;
 
 protected:
@@ -193,12 +193,12 @@ struct edge_attribute final : primitive_attribute<edge_tag, AttrT>
     AttrT const& operator[](halfedge_handle h) const;
     AttrT& operator[](halfedge_index h)
     {
-        POLYMESH_ASSERT(h.is_valid());
+        POLYMESH_ASSERT(0 <= h.value && h.value / 2 < this->size());
         return this->mData[h.value >> 1];
     }
     AttrT const& operator[](halfedge_index h) const
     {
-        POLYMESH_ASSERT(h.is_valid());
+        POLYMESH_ASSERT(0 <= h.value && h.value / 2 < this->size());
         return this->mData[h.value >> 1];
     }
 
@@ -206,12 +206,12 @@ struct edge_attribute final : primitive_attribute<edge_tag, AttrT>
     AttrT const& operator()(halfedge_handle h) const;
     AttrT& operator()(halfedge_index h)
     {
-        POLYMESH_ASSERT(h.is_valid());
+        POLYMESH_ASSERT(0 <= h.value && h.value / 2 < this->size());
         return this->mData[h.value >> 1];
     }
     AttrT const& operator()(halfedge_index h) const
     {
-        POLYMESH_ASSERT(h.is_valid());
+        POLYMESH_ASSERT(0 <= h.value && h.value / 2 < this->size());
         return this->mData[h.value >> 1];
     }
 

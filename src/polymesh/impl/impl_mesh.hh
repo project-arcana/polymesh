@@ -531,7 +531,7 @@ inline void Mesh::copy_from(const Mesh& m)
         a->resize_from(old_h_size);
 }
 
-inline SharedMesh Mesh::copy() const
+inline unique_ptr<Mesh> Mesh::copy() const
 {
     auto m = create();
     m->copy_from(*this);

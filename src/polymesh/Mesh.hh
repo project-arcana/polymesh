@@ -1,11 +1,12 @@
 #pragma once
 
 #include <cstddef>
-#include <memory>
 #include <vector>
 
 #include "attributes.hh"
 #include "cursors.hh"
+#include "detail/unique_array.hh"
+#include "detail/unique_ptr.hh"
 #include "ranges.hh"
 
 // often used helper
@@ -17,8 +18,6 @@ namespace pm = polymesh;
 
 namespace polymesh
 {
-using SharedMesh = std::shared_ptr<Mesh>;
-
 /**
  * @brief Half-edge Mesh Data Structure
  *
@@ -121,28 +120,28 @@ public:
     Mesh& operator=(Mesh&&) = delete;
 
     /// Creates a new mesh and returns a shared_ptr to it
-    static SharedMesh create() { return std::make_shared<Mesh>(); }
+    static unique_ptr<Mesh> create() { return make_unique<Mesh>(); }
 
     /// Clears this mesh and copies mesh topology, NOT attributes!
     void copy_from(Mesh const& m);
     /// Creates a new mesh and calls copy_from(*this);
     /// Note: does NOT copy attributes!
-    SharedMesh copy() const;
+    unique_ptr<Mesh> copy() const;
 
     // internal primitives
 private:
-    std::unique_ptr<halfedge_index[]> mFaceToHalfedge;
+    unique_array<halfedge_index> mFaceToHalfedge;
     int mFacesSize = 0;
     int mFacesCapacity = 0;
 
-    std::unique_ptr<halfedge_index[]> mVertexToOutgoingHalfedge;
+    unique_array<halfedge_index> mVertexToOutgoingHalfedge;
     int mVerticesSize = 0;
     int mVerticesCapacity = 0;
 
-    std::unique_ptr<vertex_index[]> mHalfedgeToVertex;
-    std::unique_ptr<face_index[]> mHalfedgeToFace;
-    std::unique_ptr<halfedge_index[]> mHalfedgeToNextHalfedge;
-    std::unique_ptr<halfedge_index[]> mHalfedgeToPrevHalfedge;
+    unique_array<vertex_index> mHalfedgeToVertex;
+    unique_array<face_index> mHalfedgeToFace;
+    unique_array<halfedge_index> mHalfedgeToNextHalfedge;
+    unique_array<halfedge_index> mHalfedgeToPrevHalfedge;
     int mHalfedgesSize = 0;
     int mHalfedgesCapacity = 0;
 

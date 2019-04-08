@@ -1,7 +1,6 @@
 #pragma once
 
 #include <iostream>
-#include <memory>
 #include <typeindex>
 
 #include "../Mesh.hh"

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include <utility>
 
 namespace polymesh
@@ -75,15 +74,5 @@ struct can_divide_by
         value = sizeof(test<T>(0)) == sizeof(bool)
     };
 };
-
-// std::add_lvalue_reference
-// template <class T>
-
-/// For C++11
-template <typename T, typename... Args>
-std::unique_ptr<T> make_unique(Args&&... args)
-{
-    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
-}
 } // namespace tmp
 } // namespace polymesh

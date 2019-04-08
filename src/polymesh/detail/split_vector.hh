@@ -1,9 +1,11 @@
 #pragma once
 
+#include <algorithm>
 #include <limits>
-#include <memory>
 
 #include <polymesh/assert.hh>
+
+#include "unique_array.hh"
 
 namespace polymesh
 {
@@ -96,7 +98,7 @@ struct split_vector_range
 };
 
 template <class T>
-split_vector_range<T> range(int size, std::unique_ptr<T[]>& ptr)
+split_vector_range<T> range(int size, unique_array<T>& ptr)
 {
     return {ptr.get(), ptr.get() + size};
 }

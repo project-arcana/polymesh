@@ -1,11 +1,11 @@
 #pragma once
 
 #include <map>
-#include <memory>
 #include <string>
 
 #include "assert.hh"
 #include "attributes.hh"
+#include "detail/unique_ptr.hh"
 
 namespace polymesh
 {
@@ -34,10 +34,10 @@ struct attribute_collection
 
     /// access to all attributes
     /// (should usually not be used)
-    std::map<std::string, std::unique_ptr<primitive_attribute_base<vertex_tag>>> const& vertex_attributes() const { return mVertexAttrs; }
-    std::map<std::string, std::unique_ptr<primitive_attribute_base<face_tag>>> const& face_attributes() const { return mFaceAttrs; }
-    std::map<std::string, std::unique_ptr<primitive_attribute_base<edge_tag>>> const& edge_attributes() const { return mEdgeAttrs; }
-    std::map<std::string, std::unique_ptr<primitive_attribute_base<halfedge_tag>>> const& halfedge_attributes() const { return mHalfedgeAttrs; }
+    std::map<std::string, unique_ptr<primitive_attribute_base<vertex_tag>>> const& vertex_attributes() const { return mVertexAttrs; }
+    std::map<std::string, unique_ptr<primitive_attribute_base<face_tag>>> const& face_attributes() const { return mFaceAttrs; }
+    std::map<std::string, unique_ptr<primitive_attribute_base<edge_tag>>> const& edge_attributes() const { return mEdgeAttrs; }
+    std::map<std::string, unique_ptr<primitive_attribute_base<halfedge_tag>>> const& halfedge_attributes() const { return mHalfedgeAttrs; }
 
 public:
     struct accessor
@@ -135,10 +135,10 @@ public:
     };
 
 private:
-    std::map<std::string, std::unique_ptr<primitive_attribute_base<vertex_tag>>> mVertexAttrs;
-    std::map<std::string, std::unique_ptr<primitive_attribute_base<face_tag>>> mFaceAttrs;
-    std::map<std::string, std::unique_ptr<primitive_attribute_base<edge_tag>>> mEdgeAttrs;
-    std::map<std::string, std::unique_ptr<primitive_attribute_base<halfedge_tag>>> mHalfedgeAttrs;
+    std::map<std::string, unique_ptr<primitive_attribute_base<vertex_tag>>> mVertexAttrs;
+    std::map<std::string, unique_ptr<primitive_attribute_base<face_tag>>> mFaceAttrs;
+    std::map<std::string, unique_ptr<primitive_attribute_base<edge_tag>>> mEdgeAttrs;
+    std::map<std::string, unique_ptr<primitive_attribute_base<halfedge_tag>>> mHalfedgeAttrs;
 
     friend accessor;
     friend const_accessor;
