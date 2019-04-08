@@ -8,24 +8,28 @@ template <class tag, class AttrT>
 AttrT& primitive_attribute<tag, AttrT>::operator[](handle_t h)
 {
     POLYMESH_ASSERT(this->mMesh == h.mesh && "Handle belongs to a different mesh");
+    POLYMESH_ASSERT(0 <= h.idx.value && h.idx.value < this->size() && "out of bounds");
     return mData[h.idx.value];
 }
 template <class tag, class AttrT>
 AttrT const& primitive_attribute<tag, AttrT>::operator[](handle_t h) const
 {
     POLYMESH_ASSERT(this->mMesh == h.mesh && "Handle belongs to a different mesh");
+    POLYMESH_ASSERT(0 <= h.idx.value && h.idx.value < this->size() && "out of bounds");
     return mData[h.idx.value];
 }
 template <class tag, class AttrT>
 AttrT& primitive_attribute<tag, AttrT>::operator()(handle_t h)
 {
     POLYMESH_ASSERT(this->mMesh == h.mesh && "Handle belongs to a different mesh");
+    POLYMESH_ASSERT(0 <= h.idx.value && h.idx.value < this->size() && "out of bounds");
     return mData[h.idx.value];
 }
 template <class tag, class AttrT>
 AttrT const& primitive_attribute<tag, AttrT>::operator()(handle_t h) const
 {
     POLYMESH_ASSERT(this->mMesh == h.mesh && "Handle belongs to a different mesh");
+    POLYMESH_ASSERT(0 <= h.idx.value && h.idx.value < this->size() && "out of bounds");
     return mData[h.idx.value];
 }
 
@@ -33,24 +37,28 @@ template <class AttrT>
 AttrT& edge_attribute<AttrT>::operator[](halfedge_handle h)
 {
     POLYMESH_ASSERT(this->mMesh == h.mesh && "Handle belongs to a different mesh");
+    POLYMESH_ASSERT(0 <= h.idx.value && h.idx.value < this->size() / 2 && "out of bounds");
     return this->mData[h.idx.value >> 1];
 }
 template <class AttrT>
 AttrT const& edge_attribute<AttrT>::operator[](halfedge_handle h) const
 {
     POLYMESH_ASSERT(this->mMesh == h.mesh && "Handle belongs to a different mesh");
+    POLYMESH_ASSERT(0 <= h.idx.value && h.idx.value < this->size() / 2 && "out of bounds");
     return this->mData[h.idx.value >> 1];
 }
 template <class AttrT>
 AttrT& edge_attribute<AttrT>::operator()(halfedge_handle h)
 {
     POLYMESH_ASSERT(this->mMesh == h.mesh && "Handle belongs to a different mesh");
+    POLYMESH_ASSERT(0 <= h.idx.value && h.idx.value < this->size() / 2 && "out of bounds");
     return this->mData[h.idx.value >> 1];
 }
 template <class AttrT>
 AttrT const& edge_attribute<AttrT>::operator()(halfedge_handle h) const
 {
     POLYMESH_ASSERT(this->mMesh == h.mesh && "Handle belongs to a different mesh");
+    POLYMESH_ASSERT(0 <= h.idx.value && h.idx.value < this->size() / 2 && "out of bounds");
     return this->mData[h.idx.value >> 1];
 }
 
