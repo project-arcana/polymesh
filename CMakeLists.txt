@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 project(PolyMesh)
 
-option(POLYMESH_ENABLE_ASSERTIONS "if true, enables assertions (even in release)" ON)
+option(POLYMESH_ENABLE_ASSERTIONS "if true, enables assertions (even in RelWithDebug, not in Release)" ON)
 
 file(GLOB_RECURSE SOURCE_FILES "src/*.cc")
 file(GLOB_RECURSE HEADER_FILES "src/*.hh")
@@ -20,7 +20,8 @@ else()
 endif()
 
 if (POLYMESH_ENABLE_ASSERTIONS)
-    target_compile_definitions(polymesh PUBLIC POLYMESH_ENABLE_ASSERTIONS)
+    target_compile_definitions(polymesh PUBLIC $<$<CONFIG:DEBUG>:POLYMESH_ENABLE_ASSERTIONS>)
+    target_compile_definitions(polymesh PUBLIC $<$<CONFIG:RELWITHDEBINFO>:POLYMESH_ENABLE_ASSERTIONS>)
 endif()
 
 # optional libs:

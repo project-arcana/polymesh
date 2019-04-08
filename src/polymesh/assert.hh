@@ -12,9 +12,9 @@
 // NOTE: neither macro must contain side effects!
 
 // compile flags
-// POLYMESH_ENABLE_POLYMESH_ASSERTIONS enables assertions
+// POLYMESH_ENABLE_ASSERTIONS enables assertions
 
-#if !defined(POLYMESH_ENABLE_POLYMESH_ASSERTIONS)
+#if !defined(POLYMESH_ENABLE_ASSERTIONS)
 #define POLYMESH_ASSERT(condition) POLYMESH_UNUSED(condition)
 
 #elif defined(POLYMESH_DEBUG)
