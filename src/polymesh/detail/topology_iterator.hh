@@ -32,7 +32,7 @@ struct bfs_range
 
     handle_t advance(handle_t curr)
     {
-        assert(curr == queue.front() && "this iterator type can only be used in a single range-based for!");
+        POLYMESH_ASSERT(curr == queue.front() && "this iterator type can only be used in a single range-based for!");
         queue.pop();
 
         expand(curr);

@@ -115,16 +115,16 @@ public:
     Mesh() = default;
 
     /// Meshes can be neither moved nor copied because attributes depend on the Mesh address
-    Mesh(Mesh const &) = delete;
-    Mesh(Mesh &&) = delete;
-    Mesh &operator=(Mesh const &) = delete;
-    Mesh &operator=(Mesh &&) = delete;
+    Mesh(Mesh const&) = delete;
+    Mesh(Mesh&&) = delete;
+    Mesh& operator=(Mesh const&) = delete;
+    Mesh& operator=(Mesh&&) = delete;
 
     /// Creates a new mesh and returns a shared_ptr to it
     static SharedMesh create() { return std::make_shared<Mesh>(); }
 
     /// Clears this mesh and copies mesh topology, NOT attributes!
-    void copy_from(Mesh const &m);
+    void copy_from(Mesh const& m);
     /// Creates a new mesh and calls copy_from(*this);
     /// Note: does NOT copy attributes!
     SharedMesh copy() const;
@@ -160,19 +160,19 @@ private:
 
     // primitive access
 private:
-    vertex_index &to_vertex_of(halfedge_index idx);
-    face_index &face_of(halfedge_index idx);
-    halfedge_index &next_halfedge_of(halfedge_index idx);
-    halfedge_index &prev_halfedge_of(halfedge_index idx);
-    halfedge_index &halfedge_of(face_index idx);
-    halfedge_index &outgoing_halfedge_of(vertex_index idx);
+    vertex_index& to_vertex_of(halfedge_index idx);
+    face_index& face_of(halfedge_index idx);
+    halfedge_index& next_halfedge_of(halfedge_index idx);
+    halfedge_index& prev_halfedge_of(halfedge_index idx);
+    halfedge_index& halfedge_of(face_index idx);
+    halfedge_index& outgoing_halfedge_of(vertex_index idx);
 
-    vertex_index const &to_vertex_of(halfedge_index idx) const;
-    face_index const &face_of(halfedge_index idx) const;
-    halfedge_index const &next_halfedge_of(halfedge_index idx) const;
-    halfedge_index const &prev_halfedge_of(halfedge_index idx) const;
-    halfedge_index const &halfedge_of(face_index idx) const;
-    halfedge_index const &outgoing_halfedge_of(vertex_index idx) const;
+    vertex_index const& to_vertex_of(halfedge_index idx) const;
+    face_index const& face_of(halfedge_index idx) const;
+    halfedge_index const& next_halfedge_of(halfedge_index idx) const;
+    halfedge_index const& prev_halfedge_of(halfedge_index idx) const;
+    halfedge_index const& halfedge_of(face_index idx) const;
+    halfedge_index const& outgoing_halfedge_of(vertex_index idx) const;
 
     // primitive allocation
 private:
@@ -195,11 +195,11 @@ private:
     // primitive reordering
 private:
     /// applies an index remapping to all face indices (p[curr_idx] = new_idx)
-    void permute_faces(std::vector<int> const &p);
+    void permute_faces(std::vector<int> const& p);
     /// applies an index remapping to all edge (and half-edge) indices (p[curr_idx] = new_idx)
-    void permute_edges(std::vector<int> const &p);
+    void permute_edges(std::vector<int> const& p);
     /// applies an index remapping to all vertices indices (p[curr_idx] = new_idx)
-    void permute_vertices(std::vector<int> const &p);
+    void permute_vertices(std::vector<int> const& p);
 
     // internal state
 private:
@@ -211,19 +211,19 @@ private:
     // attributes
 private:
     // linked lists of all attributes
-    mutable primitive_attribute_base<vertex_tag> *mVertexAttrs = nullptr;
-    mutable primitive_attribute_base<face_tag> *mFaceAttrs = nullptr;
-    mutable primitive_attribute_base<edge_tag> *mEdgeAttrs = nullptr;
-    mutable primitive_attribute_base<halfedge_tag> *mHalfedgeAttrs = nullptr;
+    mutable primitive_attribute_base<vertex_tag>* mVertexAttrs = nullptr;
+    mutable primitive_attribute_base<face_tag>* mFaceAttrs = nullptr;
+    mutable primitive_attribute_base<edge_tag>* mEdgeAttrs = nullptr;
+    mutable primitive_attribute_base<halfedge_tag>* mHalfedgeAttrs = nullptr;
 
-    void register_attr(primitive_attribute_base<vertex_tag> *attr) const;
-    void deregister_attr(primitive_attribute_base<vertex_tag> *attr) const;
-    void register_attr(primitive_attribute_base<face_tag> *attr) const;
-    void deregister_attr(primitive_attribute_base<face_tag> *attr) const;
-    void register_attr(primitive_attribute_base<edge_tag> *attr) const;
-    void deregister_attr(primitive_attribute_base<edge_tag> *attr) const;
-    void register_attr(primitive_attribute_base<halfedge_tag> *attr) const;
-    void deregister_attr(primitive_attribute_base<halfedge_tag> *attr) const;
+    void register_attr(primitive_attribute_base<vertex_tag>* attr) const;
+    void deregister_attr(primitive_attribute_base<vertex_tag>* attr) const;
+    void register_attr(primitive_attribute_base<face_tag>* attr) const;
+    void deregister_attr(primitive_attribute_base<face_tag>* attr) const;
+    void register_attr(primitive_attribute_base<edge_tag>* attr) const;
+    void deregister_attr(primitive_attribute_base<edge_tag>* attr) const;
+    void register_attr(primitive_attribute_base<halfedge_tag>* attr) const;
+    void deregister_attr(primitive_attribute_base<halfedge_tag>* attr) const;
 
     // friends
 private:

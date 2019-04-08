@@ -7,8 +7,8 @@
 #include <unordered_map>
 
 #ifdef POLYMESH_SUPPORT_GLM
-#include <glm/matrix.hpp>
 #include <glm/ext/quaternion_float.hpp>
+#include <glm/matrix.hpp>
 #endif
 
 #include "../low_level_api.hh"
@@ -21,15 +21,15 @@ std::unordered_map<std::string, std::unique_ptr<detail::GenericAttributeSerializ
 const std::string unregistered_type_name = "UNREGISTERED_TYPE";
 } // namespace
 
-void detail::register_attribute_serializer(const std::string &identifier, std::unique_ptr<detail::GenericAttributeSerializer> ptr)
+void detail::register_attribute_serializer(const std::string& identifier, std::unique_ptr<detail::GenericAttributeSerializer> ptr)
 {
     sSerializers[identifier] = std::move(ptr);
 }
 
 template <class Tag>
-std::pair<std::string, detail::GenericAttributeSerializer *> find_serializer_for(primitive_attribute_base<Tag> const &attr)
+std::pair<std::string, detail::GenericAttributeSerializer*> find_serializer_for(primitive_attribute_base<Tag> const& attr)
 {
-    for (auto const &pair : sSerializers)
+    for (auto const& pair : sSerializers)
     {
         if (pair.second->is_compatible_to(attr))
             return {pair.first, pair.second.get()};
@@ -53,32 +53,38 @@ struct pm_header
 };
 
 template <class tag>
-static std::istream &read_index(std::istream &in, primitive_index<tag> &idx)
+static std::istream& read_index(std::istream& in, primitive_index<tag>& idx)
 {
     int32_t val;
-    in.read(reinterpret_cast<char *>(&val), sizeof(int32_t));
+    in.read(reinterpret_cast<char*>(&val), sizeof(int32_t));
     idx.value = val;
     return in;
 }
 
 template <class tag>
-static std::ostream &write_index(std::ostream &out, primitive_index<tag> const &idx)
+static std::ostream& write_index(std::ostream& out, primitive_index<tag> const& idx)
 {
     const int32_t val = idx.value;
-    return out.write(reinterpret_cast<char const *>(&val), sizeof(int32_t));
+    return out.write(reinterpret_cast<char const*>(&val), sizeof(int32_t));
 }
 
-static std::ostream &write_string(std::ostream &out, std::string const &text) { return out.write(text.c_str(), text.size() + 1); }
-static std::istream &read_string(std::istream &in, std::string &text) { return std::getline(in, text, '\0'); }
+static std::ostream& write_string(std::ostream& out, std::string const& text)
+{
+    return out.write(text.c_str(), text.size() + 1);
+}
+static std::istream& read_string(std::istream& in, std::string& text)
+{
+    return std::getline(in, text, '\0');
+}
 
 template <class tag>
-static std::ostream &storeAttributes(std::ostream &out, std::map<std::string, std::unique_ptr<primitive_attribute_base<tag>>> const &attrs)
+static std::ostream& storeAttributes(std::ostream& out, std::map<std::string, std::unique_ptr<primitive_attribute_base<tag>>> const& attrs)
 {
-    for (auto const &attr : attrs)
+    for (auto const& attr : attrs)
     {
         write_string(out, attr.first); // Attribute Name
 
-        auto const &ser = find_serializer_for(*attr.second);
+        auto const& ser = find_serializer_for(*attr.second);
         if (ser.second)
         {
             write_string(out, ser.first);             // Attribute Type
@@ -94,9 +100,9 @@ static std::ostream &storeAttributes(std::ostream &out, std::map<std::string, st
 }
 
 template <class tag>
-static bool restoreAttributes(std::istream &in, Mesh const &mesh, attribute_collection &attrs, uint32_t count)
+static bool restoreAttributes(std::istream& in, Mesh const& mesh, attribute_collection& attrs, uint32_t count)
 {
-    using tag_ptr = tag *;
+    using tag_ptr = tag*;
 
     for (uint32_t i = 0; i < count; i++)
     {
@@ -122,7 +128,7 @@ static bool restoreAttributes(std::istream &in, Mesh const &mesh, attribute_coll
     return true;
 }
 
-void write_pm(std::ostream &out, const Mesh &mesh, const attribute_collection &attributes)
+void write_pm(std::ostream& out, const Mesh& mesh, const attribute_collection& attributes)
 {
     auto ll = low_level_api(mesh);
 
@@ -137,7 +143,7 @@ void write_pm(std::ostream &out, const Mesh &mesh, const attribute_collection &a
     header.num_halfedge_attributes = int(attributes.halfedge_attributes().size());
     header.num_edge_attributes = int(attributes.edge_attributes().size());
     header.num_face_attributes = int(attributes.face_attributes().size());
-    out.write(reinterpret_cast<char *>(&header), sizeof(header));
+    out.write(reinterpret_cast<char*>(&header), sizeof(header));
 
     // Store mesh topology
     for (int i = 0; i < header.num_faces; ++i)
@@ -161,11 +167,11 @@ void write_pm(std::ostream &out, const Mesh &mesh, const attribute_collection &a
     storeAttributes(out, attributes.face_attributes());
 }
 
-bool read_pm(std::istream &input, Mesh &mesh, attribute_collection &attributes)
+bool read_pm(std::istream& input, Mesh& mesh, attribute_collection& attributes)
 {
     pm_header header;
-    input.read(reinterpret_cast<char *>(&header), sizeof(header));
-    assert(header.valid() && "PM-File contains the wrong magic number!");
+    input.read(reinterpret_cast<char*>(&header), sizeof(header));
+    POLYMESH_ASSERT(header.valid() && "PM-File contains the wrong magic number!");
 
     mesh.clear();
     auto ll = low_level_api(mesh);
@@ -193,13 +199,13 @@ bool read_pm(std::istream &input, Mesh &mesh, attribute_collection &attributes)
            && !input.fail();
 }
 
-void write_pm(const std::string &filename, const Mesh &mesh, const attribute_collection &attributes)
+void write_pm(const std::string& filename, const Mesh& mesh, const attribute_collection& attributes)
 {
     std::ofstream out(filename, std::ios::binary | std::ios::trunc);
     write_pm(out, mesh, attributes);
 }
 
-bool read_pm(const std::string &filename, Mesh &mesh, attribute_collection &attributes)
+bool read_pm(const std::string& filename, Mesh& mesh, attribute_collection& attributes)
 {
     std::ifstream in(filename, std::ios::binary);
     return read_pm(in, mesh, attributes);

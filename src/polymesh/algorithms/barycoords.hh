@@ -16,7 +16,7 @@ std::array<Scalar, 3> barycoords(face_handle f, vertex_attribute<Pos3> const& po
 template <class Pos3, class Scalar>
 std::array<Scalar, 3> barycoords(face_handle f, vertex_attribute<Pos3> const& positions, Pos3 p)
 {
-    assert(f.vertices().size() == 3 && "only supports triangles");
+    POLYMESH_ASSERT(f.vertices().size() == 3 && "only supports triangles");
 
     auto ps = f.vertices().to_array<3>(positions);
 

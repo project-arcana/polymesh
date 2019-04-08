@@ -1,8 +1,9 @@
 #pragma once
 
-#include <cassert>
 #include <limits>
 #include <memory>
+
+#include <polymesh/assert.hh>
 
 namespace polymesh
 {
@@ -13,7 +14,7 @@ inline void reserve(int, int) {}
 template <class TFirst, class... TRest>
 void reserve(int old_size, int new_capacity, TFirst& ptr, TRest&... rest_ptrs)
 {
-    assert(new_capacity >= old_size && "cannot reserve less than the current number of elements");
+    POLYMESH_ASSERT(new_capacity >= old_size && "cannot reserve less than the current number of elements");
 
     using element_t = typename TFirst::element_type;
 
@@ -54,7 +55,7 @@ bool resize(int& size, int& capacity, int new_size, TS&... ptrs)
 template <class... TS>
 bool alloc_back(int& size, int& capacity, TS&... ptrs)
 {
-    assert(size < std::numeric_limits<int>::max() && "polymesh only supports 2^31 primitives");
+    POLYMESH_ASSERT(size < std::numeric_limits<int>::max() && "polymesh only supports 2^31 primitives");
     size++;
 
     if (size > capacity)

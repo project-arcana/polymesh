@@ -1,9 +1,10 @@
 #pragma once
 
 #include <algorithm>
-#include <cassert>
 #include <cstddef>
 #include <vector>
+
+#include "assert.hh"
 
 // Helper for mesh-based attribute bookkeeping
 

@@ -62,14 +62,14 @@ inline void optimize_for_vertex_traversal(Mesh& m)
 inline void optimize_for_rendering(Mesh& m)
 {
     // TODO
-    assert(0 && "TODO");
+    POLYMESH_ASSERT(0 && "TODO");
 }
 
 inline std::vector<int> cache_coherent_face_layout(Mesh const& m)
 {
     if (m.faces().empty())
         return {};
-    assert(m.faces().size() == m.all_faces().size() && "non-compact currently not supported");
+    POLYMESH_ASSERT(m.faces().size() == m.all_faces().size() && "non-compact currently not supported");
 
     auto clusters = make_partitioning(m.faces());
 
@@ -89,7 +89,7 @@ inline std::vector<int> cache_coherent_face_layout(Mesh const& m)
         {
             if (is_leaf())
             {
-                assert((int)rep < (int)indices.size());
+                POLYMESH_ASSERT((int)rep < (int)indices.size());
                 indices[(int)rep] = next_idx++;
             }
             else
@@ -177,7 +177,7 @@ inline std::vector<int> cache_coherent_face_layout(Mesh const& m)
     int next_idx = 0;
     for (auto const& kvp : cluster_centers)
         kvp.second->assign_idx(next_idx, new_indices);
-    assert(next_idx == m.faces().size());
+    POLYMESH_ASSERT(next_idx == m.faces().size());
 
     // cleanup
     for (auto const& kvp : cluster_centers)
@@ -190,7 +190,7 @@ inline std::vector<int> cache_coherent_vertex_layout(Mesh const& m)
 {
     if (m.vertices().empty())
         return {};
-    assert(m.vertices().size() == m.all_vertices().size() && "non-compact currently not supported");
+    POLYMESH_ASSERT(m.vertices().size() == m.all_vertices().size() && "non-compact currently not supported");
 
     auto clusters = make_partitioning(m.vertices());
 
@@ -209,7 +209,7 @@ inline std::vector<int> cache_coherent_vertex_layout(Mesh const& m)
         {
             if (is_leaf())
             {
-                assert((int)rep < (int)indices.size());
+                POLYMESH_ASSERT((int)rep < (int)indices.size());
                 indices[(int)rep] = next_idx++;
             }
             else
@@ -297,7 +297,7 @@ inline std::vector<int> cache_coherent_vertex_layout(Mesh const& m)
     int next_idx = 0;
     for (auto const& kvp : cluster_centers)
         kvp.second->assign_idx(next_idx, new_indices);
-    assert(next_idx == m.vertices().size());
+    POLYMESH_ASSERT(next_idx == m.vertices().size());
 
     // cleanup
     for (auto const& kvp : cluster_centers)

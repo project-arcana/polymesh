@@ -1,7 +1,6 @@
 #pragma once
 
-#include <cassert>
-
+#include "assert.hh"
 #include "cursors.hh"
 
 // For iterator interfaces, see http://anderberg.me/2016/07/04/c-custom-iterators/
@@ -37,12 +36,12 @@ struct valid_primitive_iterator final
     }
     bool operator==(valid_primitive_iterator const& rhs) const
     {
-        assert(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
+        POLYMESH_ASSERT(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
         return handle.idx == rhs.handle.idx;
     }
     bool operator!=(valid_primitive_iterator const& rhs) const
     {
-        assert(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
+        POLYMESH_ASSERT(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
         return handle.idx != rhs.handle.idx;
     }
 
@@ -77,12 +76,12 @@ struct all_primitive_iterator final
     }
     bool operator==(all_primitive_iterator const& rhs) const
     {
-        assert(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
+        POLYMESH_ASSERT(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
         return handle.idx == rhs.handle.idx;
     }
     bool operator!=(all_primitive_iterator const& rhs) const
     {
-        assert(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
+        POLYMESH_ASSERT(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
         return handle.idx != rhs.handle.idx;
     }
 
@@ -174,12 +173,12 @@ struct primitive_circulator
     }
     bool operator==(primitive_circulator const& rhs) const
     {
-        assert(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
+        POLYMESH_ASSERT(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
         return not_at_begin == rhs.not_at_begin && handle.idx == rhs.handle.idx;
     }
     bool operator!=(primitive_circulator const& rhs) const
     {
-        assert(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
+        POLYMESH_ASSERT(handle.mesh == rhs.handle.mesh && "comparing iterators from different meshes");
         return not_at_begin != rhs.not_at_begin || handle.idx != rhs.handle.idx;
     }
 

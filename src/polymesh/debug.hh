@@ -11,8 +11,7 @@ inline void print_debug(Mesh const& m)
 {
     using namespace std;
 
-    cout << "[Mesh: " << m.vertices().size() << " vertices, " << m.faces().size() << " faces, " << m.edges().size()
-         << " edges]" << endl;
+    cout << "[Mesh: " << m.vertices().size() << " vertices, " << m.faces().size() << " faces, " << m.edges().size() << " edges]" << endl;
 
     cout << " vertices:" << endl;
     for (auto v : m.vertices())

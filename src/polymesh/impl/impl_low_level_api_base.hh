@@ -197,7 +197,7 @@ size_t low_level_api_base<MeshT>::allocated_byte_size_attributes() const
 }
 
 template <class MeshT>
-bool low_level_api_base<MeshT>::can_add_face(const vertex_handle *v_handles, int vcnt) const
+bool low_level_api_base<MeshT>::can_add_face(const vertex_handle* v_handles, int vcnt) const
 {
     if (vcnt < 3)
         return false; // too few vertices
@@ -244,7 +244,7 @@ bool low_level_api_base<MeshT>::can_add_face(const vertex_handle *v_handles, int
 }
 
 template <class MeshT>
-bool low_level_api_base<MeshT>::can_add_face(const vertex_index *v_indices, int vcnt) const
+bool low_level_api_base<MeshT>::can_add_face(const vertex_index* v_indices, int vcnt) const
 {
     if (vcnt < 3)
         return false; // too few vertices
@@ -294,7 +294,7 @@ bool low_level_api_base<MeshT>::can_add_face(const vertex_index *v_indices, int 
 }
 
 template <class MeshT>
-bool low_level_api_base<MeshT>::can_add_face(const halfedge_handle *half_loop, int vcnt) const
+bool low_level_api_base<MeshT>::can_add_face(const halfedge_handle* half_loop, int vcnt) const
 {
     if (vcnt < 3)
         return false; // too few vertices
@@ -324,7 +324,7 @@ bool low_level_api_base<MeshT>::can_add_face(const halfedge_handle *half_loop, i
 }
 
 template <class MeshT>
-bool low_level_api_base<MeshT>::can_add_face(const halfedge_index *half_loop, int vcnt) const
+bool low_level_api_base<MeshT>::can_add_face(const halfedge_index* half_loop, int vcnt) const
 {
     if (vcnt < 3)
         return false; // too few vertices
@@ -356,12 +356,12 @@ bool low_level_api_base<MeshT>::can_add_face(const halfedge_index *half_loop, in
 template <class MeshT>
 halfedge_index low_level_api_base<MeshT>::find_free_incident(halfedge_index in_begin, halfedge_index in_end) const
 {
-    assert(to_vertex_of(in_begin) == to_vertex_of(in_end));
+    POLYMESH_ASSERT(to_vertex_of(in_begin) == to_vertex_of(in_end));
 
     auto he = in_begin;
     do
     {
-        assert(to_vertex_of(he) == to_vertex_of(in_end));
+        POLYMESH_ASSERT(to_vertex_of(he) == to_vertex_of(in_end));
 
         // free? found one!
         if (is_free(he))

@@ -5,7 +5,6 @@
 
 namespace polymesh
 {
-
 /**
  * Traces a ray inside the triangle stopping at the next edge
  */
@@ -22,11 +21,10 @@ std::pair<halfedge_handle, float> trace_step(halfedge_handle h, EdgeLengthF&& ed
 template <class Scalar, class EdgeLengthF>
 std::pair<halfedge_handle, float> trace_step(halfedge_handle h, EdgeLengthF&& edge_length, Scalar x, Scalar d1_sqr, Scalar d2_sqr)
 {
-    assert(!h.is_boundary() && "cannot trace into boundary");
+    POLYMESH_ASSERT(!h.is_boundary() && "cannot trace into boundary");
     auto f = h.face();
-    assert(f.vertices().size() == 3 && "only supports triangles");
+    POLYMESH_ASSERT(f.vertices().size() == 3 && "only supports triangles");
 
     // TODO
 }
-
 }

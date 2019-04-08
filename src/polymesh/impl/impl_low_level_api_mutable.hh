@@ -4,26 +4,62 @@
 
 namespace polymesh
 {
-inline vertex_index low_level_api_mutable::add_vertex() const { return alloc_vertex(); }
+inline vertex_index low_level_api_mutable::add_vertex() const
+{
+    return alloc_vertex();
+}
 
-inline vertex_index low_level_api_mutable::alloc_vertex() const { return m.alloc_vertex(); }
-inline face_index low_level_api_mutable::alloc_face() const { return m.alloc_face(); }
-inline edge_index low_level_api_mutable::alloc_edge() const { return m.alloc_edge(); }
-inline void low_level_api_mutable::alloc_primitives(int vertices, int faces, int halfedges) const { m.alloc_primitives(vertices, faces, halfedges); }
+inline vertex_index low_level_api_mutable::alloc_vertex() const
+{
+    return m.alloc_vertex();
+}
+inline face_index low_level_api_mutable::alloc_face() const
+{
+    return m.alloc_face();
+}
+inline edge_index low_level_api_mutable::alloc_edge() const
+{
+    return m.alloc_edge();
+}
+inline void low_level_api_mutable::alloc_primitives(int vertices, int faces, int halfedges) const
+{
+    m.alloc_primitives(vertices, faces, halfedges);
+}
 
-inline void low_level_api_mutable::reserve_vertices(int capacity) const { m.reserve_vertices(capacity); }
-inline void low_level_api_mutable::reserve_edges(int capacity) const { m.reserve_edges(capacity); }
-inline void low_level_api_mutable::reserve_halfedges(int capacity) const { m.reserve_halfedges(capacity); }
-inline void low_level_api_mutable::reserve_faces(int capacity) const { m.reserve_faces(capacity); }
+inline void low_level_api_mutable::reserve_vertices(int capacity) const
+{
+    m.reserve_vertices(capacity);
+}
+inline void low_level_api_mutable::reserve_edges(int capacity) const
+{
+    m.reserve_edges(capacity);
+}
+inline void low_level_api_mutable::reserve_halfedges(int capacity) const
+{
+    m.reserve_halfedges(capacity);
+}
+inline void low_level_api_mutable::reserve_faces(int capacity) const
+{
+    m.reserve_faces(capacity);
+}
 
-inline void low_level_api_mutable::permute_faces(const std::vector<int> &p) const { m.permute_faces(p); }
-inline void low_level_api_mutable::permute_edges(const std::vector<int> &p) const { m.permute_edges(p); }
-inline void low_level_api_mutable::permute_vertices(const std::vector<int> &p) const { m.permute_vertices(p); }
+inline void low_level_api_mutable::permute_faces(const std::vector<int>& p) const
+{
+    m.permute_faces(p);
+}
+inline void low_level_api_mutable::permute_edges(const std::vector<int>& p) const
+{
+    m.permute_edges(p);
+}
+inline void low_level_api_mutable::permute_vertices(const std::vector<int>& p) const
+{
+    m.permute_vertices(p);
+}
 
 namespace detail
 {
 // NOTE: this is only ever used in the following three functions and there it is immediately consumed
-inline halfedge_index *face_insert_cache(int cnt)
+inline halfedge_index* face_insert_cache(int cnt)
 {
     static thread_local std::vector<halfedge_index> mFaceInsertCache;
     mFaceInsertCache.resize(cnt);
@@ -31,7 +67,7 @@ inline halfedge_index *face_insert_cache(int cnt)
 }
 } // namespace detail
 
-inline face_index low_level_api_mutable::add_face(const vertex_handle *v_handles, int vcnt, face_index res_idx) const
+inline face_index low_level_api_mutable::add_face(const vertex_handle* v_handles, int vcnt, face_index res_idx) const
 {
     auto cache = detail::face_insert_cache(vcnt);
     for (auto i = 0; i < vcnt; ++i)
@@ -39,7 +75,7 @@ inline face_index low_level_api_mutable::add_face(const vertex_handle *v_handles
     return add_face(cache, vcnt, res_idx);
 }
 
-inline face_index low_level_api_mutable::add_face(const vertex_index *v_indices, int vcnt, face_index res_idx) const
+inline face_index low_level_api_mutable::add_face(const vertex_index* v_indices, int vcnt, face_index res_idx) const
 {
     auto cache = detail::face_insert_cache(vcnt);
     for (auto i = 0; i < vcnt; ++i)
@@ -47,7 +83,7 @@ inline face_index low_level_api_mutable::add_face(const vertex_index *v_indices,
     return add_face(cache, vcnt, res_idx);
 }
 
-inline face_index low_level_api_mutable::add_face(const halfedge_handle *half_loop, int vcnt, face_index res_idx) const
+inline face_index low_level_api_mutable::add_face(const halfedge_handle* half_loop, int vcnt, face_index res_idx) const
 {
     auto cache = detail::face_insert_cache(vcnt);
     for (auto i = 0; i < vcnt; ++i)
@@ -55,10 +91,10 @@ inline face_index low_level_api_mutable::add_face(const halfedge_handle *half_lo
     return add_face(cache, vcnt, res_idx);
 }
 
-inline face_index low_level_api_mutable::add_face(const halfedge_index *half_loop, int vcnt, face_index res_idx) const
+inline face_index low_level_api_mutable::add_face(const halfedge_index* half_loop, int vcnt, face_index res_idx) const
 {
-    assert(vcnt >= 3 && "no support for less-than-triangular faces");
-    assert((res_idx.is_invalid() || is_removed(res_idx)) && "resurrected index must be previously removed!");
+    POLYMESH_ASSERT(vcnt >= 3 && "no support for less-than-triangular faces");
+    POLYMESH_ASSERT((res_idx.is_invalid() || is_removed(res_idx)) && "resurrected index must be previously removed!");
 
     auto fidx = res_idx.is_valid() ? res_idx : alloc_face();
 
@@ -76,9 +112,9 @@ inline face_index low_level_api_mutable::add_face(const halfedge_index *half_loo
         auto h1 = half_loop[(i + 1) % vcnt];
 
         // half-edge must form a chain
-        assert(to_vertex_of(h0) == from_vertex_of(h1) && "half-edges do not form a chain");
+        POLYMESH_ASSERT(to_vertex_of(h0) == from_vertex_of(h1) && "half-edges do not form a chain");
         // half-edge must be free, i.e. allow a new polygon
-        assert(is_free(h0) && "half-edge already contains a face");
+        POLYMESH_ASSERT(is_free(h0) && "half-edge already contains a face");
 
         // make them adjacent
         make_adjacent(h0, h1);
@@ -113,7 +149,7 @@ inline face_index low_level_api_mutable::add_face(const halfedge_index *half_loo
 
 inline edge_index low_level_api_mutable::add_or_get_edge(vertex_index v_from, vertex_index v_to) const
 {
-    assert(v_from != v_to);
+    POLYMESH_ASSERT(v_from != v_to);
 
     // already exists?
     auto he = find_halfedge(v_from, v_to);
@@ -137,7 +173,7 @@ inline edge_index low_level_api_mutable::add_or_get_edge(vertex_index v_from, ve
     else
     {
         auto from_in = find_free_incident(v_from);
-        assert(from_in.is_valid() && "vertex is already fully connected");
+        POLYMESH_ASSERT(from_in.is_valid() && "vertex is already fully connected");
 
         auto from_out = next_halfedge_of(from_in);
 
@@ -151,7 +187,7 @@ inline edge_index low_level_api_mutable::add_or_get_edge(vertex_index v_from, ve
     else
     {
         auto to_in = find_free_incident(v_to);
-        assert(to_in.is_valid() && "vertex is already fully connected");
+        POLYMESH_ASSERT(to_in.is_valid() && "vertex is already fully connected");
 
         auto to_out = next_halfedge_of(to_in);
 
@@ -172,7 +208,7 @@ inline halfedge_index low_level_api_mutable::add_or_get_halfedge(vertex_index v_
 
 inline edge_index low_level_api_mutable::add_or_get_edge(halfedge_index h_from, halfedge_index h_to) const
 {
-    assert(h_from != h_to);
+    POLYMESH_ASSERT(h_from != h_to);
 
     auto v_from = to_vertex_of(h_from);
     auto v_to = to_vertex_of(h_to);
@@ -180,13 +216,13 @@ inline edge_index low_level_api_mutable::add_or_get_edge(halfedge_index h_from, 
     auto ex_he = find_halfedge(v_from, v_to);
     if (ex_he.is_valid())
     {
-        assert(prev_halfedge_of(ex_he) == h_from && prev_halfedge_of(opposite(ex_he)) == h_to);
+        POLYMESH_ASSERT(prev_halfedge_of(ex_he) == h_from && prev_halfedge_of(opposite(ex_he)) == h_to);
 
         // TODO: Maybe try rewriting an existing halfedge that does NOT yet have the right connection.
         return edge_of(ex_he);
     }
 
-    assert(is_free(h_from) && is_free(h_to) && "Cannot insert into a face");
+    POLYMESH_ASSERT(is_free(h_from) && is_free(h_to) && "Cannot insert into a face");
 
     // allocate new
     auto e = alloc_edge();
@@ -233,7 +269,7 @@ inline void low_level_api_mutable::make_adjacent(halfedge_index he_in, halfedge_
 
     // find free half-edge after `out` but before `in`
     auto he_g = find_free_incident(opposite(he_out), he_in);
-    assert(he_g.is_valid() && "unable to make halfedges adjacent. maybe mesh is not manifold?"); // unable to make adjacent
+    POLYMESH_ASSERT(he_g.is_valid() && "unable to make halfedges adjacent. maybe mesh is not manifold?"); // unable to make adjacent
 
     auto he_h = next_halfedge_of(he_g);
 
@@ -245,13 +281,13 @@ inline void low_level_api_mutable::make_adjacent(halfedge_index he_in, halfedge_
 
 inline void low_level_api_mutable::remove_face(face_index f_idx) const
 {
-    assert(!is_removed(f_idx));
+    POLYMESH_ASSERT(!is_removed(f_idx));
 
     auto he_begin = halfedge_of(f_idx);
     auto he = he_begin;
     do
     {
-        assert(face_of(he) == f_idx);
+        POLYMESH_ASSERT(face_of(he) == f_idx);
 
         // set half-edge face to invalid
         face_of(he) = face_index::invalid();
@@ -280,8 +316,8 @@ inline void low_level_api_mutable::remove_edge(edge_index e_idx) const
     auto h_in = halfedge_of(e_idx, 0);
     auto h_out = halfedge_of(e_idx, 1);
 
-    assert(!is_removed(h_in));
-    assert(!is_removed(h_out));
+    POLYMESH_ASSERT(!is_removed(h_in));
+    POLYMESH_ASSERT(!is_removed(h_out));
 
     auto f0 = face_of(h_in);
     auto f1 = face_of(h_out);
@@ -303,7 +339,7 @@ inline void low_level_api_mutable::remove_edge(edge_index e_idx) const
     auto hi_in_next = next_halfedge_of(h_in);
 
     // modify vertex if outgoing half-edge is going to be removed
-    auto &v_in_to_out = outgoing_halfedge_of(v_in_to);
+    auto& v_in_to_out = outgoing_halfedge_of(v_in_to);
     if (v_in_to_out == h_out)
     {
         if (hi_in_next == h_out) // v_in_to becomes isolated
@@ -312,7 +348,7 @@ inline void low_level_api_mutable::remove_edge(edge_index e_idx) const
             v_in_to_out = hi_in_next;
     }
 
-    auto &v_out_to_out = outgoing_halfedge_of(v_out_to);
+    auto& v_out_to_out = outgoing_halfedge_of(v_out_to);
     if (v_out_to_out == h_in)
     {
         if (hi_out_next == h_in) // v_out_to becomes isolated
@@ -331,7 +367,7 @@ inline void low_level_api_mutable::remove_edge(edge_index e_idx) const
 
 inline void low_level_api_mutable::remove_vertex(vertex_index v_idx) const
 {
-    assert(!is_removed(v_idx));
+    POLYMESH_ASSERT(!is_removed(v_idx));
 
     // remove all outgoing edges
     while (!is_isolated(v_idx))
@@ -343,7 +379,7 @@ inline void low_level_api_mutable::remove_vertex(vertex_index v_idx) const
 
 inline void low_level_api_mutable::clear_removed_edge_vector() const
 {
-    assert(m.edges().empty() && "only works for no-edge meshes");
+    POLYMESH_ASSERT(m.edges().empty() && "only works for no-edge meshes");
 
     // this was using vector::clear before, which does not change the capacity either
     m.mHalfedgesSize = 0;
@@ -354,7 +390,7 @@ inline void low_level_api_mutable::clear_removed_edge_vector() const
 
 inline void low_level_api_mutable::fix_boundary_state_of(vertex_index v_idx) const
 {
-    assert(!is_isolated(v_idx));
+    POLYMESH_ASSERT(!is_isolated(v_idx));
 
     auto he_begin = outgoing_halfedge_of(v_idx);
     auto he = he_begin;
@@ -406,7 +442,7 @@ inline void low_level_api_mutable::fix_boundary_state_of_vertices(face_index f_i
 
 inline void low_level_api_mutable::set_removed(vertex_index idx) const
 {
-    assert(!is_removed(idx) && "cannot remove an already removed entry");
+    POLYMESH_ASSERT(!is_removed(idx) && "cannot remove an already removed entry");
     outgoing_halfedge_of(idx).value = -2;
 
     // bookkeeping
@@ -416,7 +452,7 @@ inline void low_level_api_mutable::set_removed(vertex_index idx) const
 
 inline void low_level_api_mutable::set_removed(face_index idx) const
 {
-    assert(!is_removed(idx) && "cannot remove an already removed entry");
+    POLYMESH_ASSERT(!is_removed(idx) && "cannot remove an already removed entry");
     halfedge_of(idx) = halfedge_index::invalid();
 
     // bookkeeping
@@ -426,7 +462,7 @@ inline void low_level_api_mutable::set_removed(face_index idx) const
 
 inline void low_level_api_mutable::set_removed(edge_index idx) const
 {
-    assert(!is_removed(idx) && "cannot remove an already removed entry");
+    POLYMESH_ASSERT(!is_removed(idx) && "cannot remove an already removed entry");
     to_vertex_of(halfedge_of(idx, 0)) = vertex_index::invalid();
     to_vertex_of(halfedge_of(idx, 1)) = vertex_index::invalid();
 
@@ -459,7 +495,7 @@ inline vertex_index low_level_api_mutable::face_split(face_index f) const
 
 inline void low_level_api_mutable::face_split(face_index f, vertex_index v) const
 {
-    assert(is_isolated(v));
+    POLYMESH_ASSERT(is_isolated(v));
     // TODO: can be made more performant
 
     auto h_begin = halfedge_of(f);
@@ -494,7 +530,7 @@ inline vertex_index low_level_api_mutable::edge_split(edge_index e) const
 
 inline void low_level_api_mutable::edge_split(edge_index e, vertex_index v) const
 {
-    assert(is_isolated(v));
+    POLYMESH_ASSERT(is_isolated(v));
 
     auto h0 = halfedge_of(e, 0);
     auto h1 = halfedge_of(e, 1);
@@ -547,8 +583,8 @@ inline void low_level_api_mutable::edge_split(edge_index e, vertex_index v) cons
     }
 
     // rewire vertices
-    auto &v0_out = outgoing_halfedge_of(v0);
-    auto &v1_out = outgoing_halfedge_of(v1);
+    auto& v0_out = outgoing_halfedge_of(v0);
+    auto& v1_out = outgoing_halfedge_of(v1);
     if (v0_out == h1)
         v0_out = e1h1;
     if (v1_out == h0)
@@ -559,13 +595,13 @@ inline void low_level_api_mutable::edge_split(edge_index e, vertex_index v) cons
     // rewire faces
     if (f0.is_valid())
     {
-        auto &f0_h = halfedge_of(f0);
+        auto& f0_h = halfedge_of(f0);
         if (f0_h == h0)
             f0_h = e1h0;
     }
     if (f1.is_valid())
     {
-        auto &f1_h = halfedge_of(f1);
+        auto& f1_h = halfedge_of(f1);
         if (f1_h == h1)
             f1_h = e2h1;
     }
@@ -625,7 +661,7 @@ inline void low_level_api_mutable::halfedge_split(halfedge_index h, vertex_index
 
 
     // rewire vertices
-    auto &v0_out = outgoing_halfedge_of(v0);
+    auto& v0_out = outgoing_halfedge_of(v0);
     if (v0_out == h1)
         v0_out = h3;
 
@@ -637,7 +673,7 @@ inline void low_level_api_mutable::halfedge_split(halfedge_index h, vertex_index
 
 inline face_index low_level_api_mutable::face_fill(halfedge_index h) const
 {
-    assert(is_boundary(h));
+    POLYMESH_ASSERT(is_boundary(h));
 
     auto f = alloc_face();
 
@@ -670,7 +706,7 @@ inline face_index low_level_api_mutable::face_fill(halfedge_index h) const
 
 inline void low_level_api_mutable::halfedge_attach(halfedge_index h, vertex_index v) const
 {
-    assert(is_isolated(v));
+    POLYMESH_ASSERT(is_isolated(v));
 
     auto h_next = next_halfedge_of(h);
     auto v_to = to_vertex_of(h);
@@ -698,7 +734,7 @@ inline void low_level_api_mutable::halfedge_merge(halfedge_index h) const
 {
     auto v_center = from_vertex_of(h);
 
-    assert(m.handle_of(v_center).adjacent_vertices().size() == 2 && "vertex_from must have valence 2");
+    POLYMESH_ASSERT(m.handle_of(v_center).adjacent_vertices().size() == 2 && "vertex_from must have valence 2");
 
     //   |                                   |
     //   |      h_prev               h       |
@@ -752,7 +788,7 @@ inline void low_level_api_mutable::vertex_collapse(vertex_index v) const
     // boundary vertices are special
     else if (is_boundary(v))
     {
-        assert(0 && "not implemented");
+        POLYMESH_ASSERT(0 && "not implemented");
     }
     else // interior vertex
     {
@@ -760,7 +796,7 @@ inline void low_level_api_mutable::vertex_collapse(vertex_index v) const
 
         remove_vertex(v);
 
-        assert(is_boundary(h_begin));
+        POLYMESH_ASSERT(is_boundary(h_begin));
 
         // TODO: optimize
         std::vector<halfedge_index> hs;
@@ -784,8 +820,8 @@ inline void low_level_api_mutable::halfedge_collapse(halfedge_index h) const
     auto h0 = h;
     auto h1 = opposite(h);
 
-    assert(!is_boundary(h0) && "boundaries are not supported yet");
-    assert(!is_boundary(h1) && "boundaries are not supported yet");
+    POLYMESH_ASSERT(!is_boundary(h0) && "boundaries are not supported yet");
+    POLYMESH_ASSERT(!is_boundary(h1) && "boundaries are not supported yet");
 
     auto v_to = to_vertex_of(h);
     auto v_from = from_vertex_of(h);
@@ -799,8 +835,8 @@ inline void low_level_api_mutable::halfedge_collapse(halfedge_index h) const
     auto h1_next = next_halfedge_of(h1);
 
     // TODO: preserve adjacent non-triangles
-    assert(prev_halfedge_of(h0_prev) == h0_next && "non-triangle adjacent faces not supported yet");
-    assert(prev_halfedge_of(h1_prev) == h1_next && "non-triangle adjacent faces not supported yet");
+    POLYMESH_ASSERT(prev_halfedge_of(h0_prev) == h0_next && "non-triangle adjacent faces not supported yet");
+    POLYMESH_ASSERT(prev_halfedge_of(h1_prev) == h1_next && "non-triangle adjacent faces not supported yet");
 
     // fix faces
     auto h0_prev_opp = opposite(h0_prev);
@@ -819,7 +855,7 @@ inline void low_level_api_mutable::halfedge_collapse(halfedge_index h) const
     do
     {
         // point to collapsed vertex
-        assert(to_vertex_of(hv) == v_from);
+        POLYMESH_ASSERT(to_vertex_of(hv) == v_from);
         to_vertex_of(hv) = v_to;
 
         // advance
@@ -854,9 +890,9 @@ inline void low_level_api_mutable::halfedge_collapse(halfedge_index h) const
 
 inline void low_level_api_mutable::edge_rotate_next(edge_index e) const
 {
-    assert(!is_boundary(e) && "does not work on boundaries");
-    assert(m.handle_of(e).vertexA().adjacent_vertices().size() > 2 && "does not work on valence <= 2 vertices");
-    assert(m.handle_of(e).vertexB().adjacent_vertices().size() > 2 && "does not work on valence <= 2 vertices");
+    POLYMESH_ASSERT(!is_boundary(e) && "does not work on boundaries");
+    POLYMESH_ASSERT(m.handle_of(e).vertexA().adjacent_vertices().size() > 2 && "does not work on valence <= 2 vertices");
+    POLYMESH_ASSERT(m.handle_of(e).vertexB().adjacent_vertices().size() > 2 && "does not work on valence <= 2 vertices");
 
     auto h0 = halfedge_of(e, 0);
     auto h1 = halfedge_of(e, 1);
@@ -870,10 +906,10 @@ inline void low_level_api_mutable::edge_rotate_next(edge_index e) const
     auto h1_next_next = next_halfedge_of(h1_next);
 
     // fix vertices
-    auto &v0_out = outgoing_halfedge_of(to_vertex_of(h0));
+    auto& v0_out = outgoing_halfedge_of(to_vertex_of(h0));
     if (v0_out == h1)
         v0_out = h0_next;
-    auto &v1_out = outgoing_halfedge_of(to_vertex_of(h1));
+    auto& v1_out = outgoing_halfedge_of(to_vertex_of(h1));
     if (v1_out == h0)
         v1_out = h1_next;
 
@@ -904,9 +940,9 @@ inline void low_level_api_mutable::edge_rotate_next(edge_index e) const
 
 inline void low_level_api_mutable::edge_rotate_prev(edge_index e) const
 {
-    assert(!is_boundary(e) && "does not work on boundaries");
-    assert(m.handle_of(e).vertexA().adjacent_vertices().size() > 2 && "does not work on valence <= 2 vertices");
-    assert(m.handle_of(e).vertexB().adjacent_vertices().size() > 2 && "does not work on valence <= 2 vertices");
+    POLYMESH_ASSERT(!is_boundary(e) && "does not work on boundaries");
+    POLYMESH_ASSERT(m.handle_of(e).vertexA().adjacent_vertices().size() > 2 && "does not work on valence <= 2 vertices");
+    POLYMESH_ASSERT(m.handle_of(e).vertexB().adjacent_vertices().size() > 2 && "does not work on valence <= 2 vertices");
 
     auto h0 = halfedge_of(e, 0);
     auto h1 = halfedge_of(e, 1);
@@ -920,10 +956,10 @@ inline void low_level_api_mutable::edge_rotate_prev(edge_index e) const
     auto h1_prev_prev = prev_halfedge_of(h1_prev);
 
     // fix vertex
-    auto &v0_out = outgoing_halfedge_of(to_vertex_of(h0));
+    auto& v0_out = outgoing_halfedge_of(to_vertex_of(h0));
     if (v0_out == h1)
         v0_out = h0_next;
-    auto &v1_out = outgoing_halfedge_of(to_vertex_of(h1));
+    auto& v1_out = outgoing_halfedge_of(to_vertex_of(h1));
     if (v1_out == h0)
         v1_out = h1_next;
 
@@ -954,9 +990,9 @@ inline void low_level_api_mutable::edge_rotate_prev(edge_index e) const
 
 inline void low_level_api_mutable::halfedge_rotate_next(halfedge_index h) const
 {
-    assert(m.handle_of(h).next().next().next() != h && "does not work for triangles");
-    assert(!m.handle_of(h).edge().is_boundary() && "does not work on boundaries");
-    assert(m.handle_of(h).vertex_to().adjacent_vertices().size() > 2 && "does not work on valence <= 2 vertices");
+    POLYMESH_ASSERT(m.handle_of(h).next().next().next() != h && "does not work for triangles");
+    POLYMESH_ASSERT(!m.handle_of(h).edge().is_boundary() && "does not work on boundaries");
+    POLYMESH_ASSERT(m.handle_of(h).vertex_to().adjacent_vertices().size() > 2 && "does not work on valence <= 2 vertices");
 
     auto h0 = h;
     auto h1 = opposite(h);
@@ -966,7 +1002,7 @@ inline void low_level_api_mutable::halfedge_rotate_next(halfedge_index h) const
     auto h0_next_next = next_halfedge_of(h0_next);
 
     // fix vertex
-    auto &v_out = outgoing_halfedge_of(to_vertex_of(h0));
+    auto& v_out = outgoing_halfedge_of(to_vertex_of(h0));
     if (v_out == h1)
         v_out = h0_next;
 
@@ -990,9 +1026,9 @@ inline void low_level_api_mutable::halfedge_rotate_next(halfedge_index h) const
 
 inline void low_level_api_mutable::halfedge_rotate_prev(halfedge_index h) const
 {
-    assert(m.handle_of(h).prev().prev().prev() != h && "does not work for triangles");
-    assert(!m.handle_of(h).edge().is_boundary() && "does not work on boundaries");
-    assert(m.handle_of(h).vertex_from().adjacent_vertices().size() > 2 && "does not work on valence <= 2 vertices");
+    POLYMESH_ASSERT(m.handle_of(h).prev().prev().prev() != h && "does not work for triangles");
+    POLYMESH_ASSERT(!m.handle_of(h).edge().is_boundary() && "does not work on boundaries");
+    POLYMESH_ASSERT(m.handle_of(h).vertex_from().adjacent_vertices().size() > 2 && "does not work on valence <= 2 vertices");
 
     auto h0 = h;
     auto h1 = opposite(h);
@@ -1002,7 +1038,7 @@ inline void low_level_api_mutable::halfedge_rotate_prev(halfedge_index h) const
     auto h0_prev_prev = prev_halfedge_of(h0_prev);
 
     // fix vertex
-    auto &v_out = outgoing_halfedge_of(to_vertex_of(h1));
+    auto& v_out = outgoing_halfedge_of(to_vertex_of(h1));
     if (v_out == h0)
         v_out = h1_next;
 

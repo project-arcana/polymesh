@@ -1,9 +1,8 @@
 #pragma once
 
-#include <cassert>
-
 #include <polymesh/Mesh.hh>
 #include <polymesh/algorithms/properties.hh>
+#include <polymesh/assert.hh>
 
 namespace polymesh
 {
@@ -29,9 +28,9 @@ int make_delaunay(Mesh& m, vertex_attribute<Vec3> const& position)
         auto e = queue.back().of(m);
         queue.pop_back();
 
-        assert(e.is_valid());
-        assert(!e.is_removed());
-        assert(e.vertexA() != e.vertexB());
+        POLYMESH_ASSERT(e.is_valid());
+        POLYMESH_ASSERT(!e.is_removed());
+        POLYMESH_ASSERT(e.vertexA() != e.vertexB());
 
         if (e.is_boundary())
             continue;

@@ -1,25 +1,74 @@
 #pragma once
 
 #include "../Mesh.hh"
+#include "../assert.hh"
 
 #include "../detail/permutation.hh"
 #include "../detail/split_vector.hh"
 
 namespace polymesh
 {
-inline face_index &Mesh::face_of(halfedge_index idx) { return mHalfedgeToFace[(int)idx]; }
-inline vertex_index &Mesh::to_vertex_of(halfedge_index idx) { return mHalfedgeToVertex[(int)idx]; }
-inline halfedge_index &Mesh::next_halfedge_of(halfedge_index idx) { return mHalfedgeToNextHalfedge[(int)idx]; }
-inline halfedge_index &Mesh::prev_halfedge_of(halfedge_index idx) { return mHalfedgeToPrevHalfedge[(int)idx]; }
-inline halfedge_index &Mesh::halfedge_of(face_index idx) { return mFaceToHalfedge[(int)idx]; }
-inline halfedge_index &Mesh::outgoing_halfedge_of(vertex_index idx) { return mVertexToOutgoingHalfedge[(int)idx]; }
+inline face_index& Mesh::face_of(halfedge_index idx)
+{
+    POLYMESH_ASSERT(0 <= idx.value && idx.value < mHalfedgesSize && "out of bounds");
+    return mHalfedgeToFace[(int)idx];
+}
+inline vertex_index& Mesh::to_vertex_of(halfedge_index idx)
+{
+    POLYMESH_ASSERT(0 <= idx.value && idx.value < mHalfedgesSize && "out of bounds");
+    return mHalfedgeToVertex[(int)idx];
+}
+inline halfedge_index& Mesh::next_halfedge_of(halfedge_index idx)
+{
+    POLYMESH_ASSERT(0 <= idx.value && idx.value < mHalfedgesSize && "out of bounds");
+    return mHalfedgeToNextHalfedge[(int)idx];
+}
+inline halfedge_index& Mesh::prev_halfedge_of(halfedge_index idx)
+{
+    POLYMESH_ASSERT(0 <= idx.value && idx.value < mHalfedgesSize && "out of bounds");
+    return mHalfedgeToPrevHalfedge[(int)idx];
+}
+inline halfedge_index& Mesh::halfedge_of(face_index idx)
+{
+    POLYMESH_ASSERT(0 <= idx.value && idx.value < mFacesSize && "out of bounds");
+    return mFaceToHalfedge[(int)idx];
+}
+inline halfedge_index& Mesh::outgoing_halfedge_of(vertex_index idx)
+{
+    POLYMESH_ASSERT(0 <= idx.value && idx.value < mVerticesSize && "out of bounds");
+    return mVertexToOutgoingHalfedge[(int)idx];
+}
 
-inline face_index const &Mesh::face_of(halfedge_index idx) const { return mHalfedgeToFace[(int)idx]; }
-inline vertex_index const &Mesh::to_vertex_of(halfedge_index idx) const { return mHalfedgeToVertex[(int)idx]; }
-inline halfedge_index const &Mesh::next_halfedge_of(halfedge_index idx) const { return mHalfedgeToNextHalfedge[(int)idx]; }
-inline halfedge_index const &Mesh::prev_halfedge_of(halfedge_index idx) const { return mHalfedgeToPrevHalfedge[(int)idx]; }
-inline halfedge_index const &Mesh::halfedge_of(face_index idx) const { return mFaceToHalfedge[(int)idx]; }
-inline halfedge_index const &Mesh::outgoing_halfedge_of(vertex_index idx) const { return mVertexToOutgoingHalfedge[(int)idx]; }
+inline face_index const& Mesh::face_of(halfedge_index idx) const
+{
+    POLYMESH_ASSERT(0 <= idx.value && idx.value < mHalfedgesSize && "out of bounds");
+    return mHalfedgeToFace[(int)idx];
+}
+inline vertex_index const& Mesh::to_vertex_of(halfedge_index idx) const
+{
+    POLYMESH_ASSERT(0 <= idx.value && idx.value < mHalfedgesSize && "out of bounds");
+    return mHalfedgeToVertex[(int)idx];
+}
+inline halfedge_index const& Mesh::next_halfedge_of(halfedge_index idx) const
+{
+    POLYMESH_ASSERT(0 <= idx.value && idx.value < mHalfedgesSize && "out of bounds");
+    return mHalfedgeToNextHalfedge[(int)idx];
+}
+inline halfedge_index const& Mesh::prev_halfedge_of(halfedge_index idx) const
+{
+    POLYMESH_ASSERT(0 <= idx.value && idx.value < mHalfedgesSize && "out of bounds");
+    return mHalfedgeToPrevHalfedge[(int)idx];
+}
+inline halfedge_index const& Mesh::halfedge_of(face_index idx) const
+{
+    POLYMESH_ASSERT(0 <= idx.value && idx.value < mFacesSize && "out of bounds");
+    return mFaceToHalfedge[(int)idx];
+}
+inline halfedge_index const& Mesh::outgoing_halfedge_of(vertex_index idx) const
+{
+    POLYMESH_ASSERT(0 <= idx.value && idx.value < mVerticesSize && "out of bounds");
+    return mVertexToOutgoingHalfedge[(int)idx];
+}
 
 inline vertex_index Mesh::alloc_vertex()
 {
@@ -87,11 +136,11 @@ inline edge_index Mesh::alloc_edge()
 
 inline void Mesh::alloc_primitives(int vertices, int faces, int halfedges)
 {
-    assert(vertices >= 0 && faces >= 0 && halfedges >= 0);
+    POLYMESH_ASSERT(vertices >= 0 && faces >= 0 && halfedges >= 0);
 
-    assert(size_all_vertices() + int64_t(vertices) <= int64_t(std::numeric_limits<int>::max()) && "polymesh only supports 2^31 primitives");
-    assert(size_all_faces() + int64_t(faces) <= int64_t(std::numeric_limits<int>::max()) && "polymesh only supports 2^31 primitives");
-    assert(size_all_halfedges() + int64_t(halfedges) <= int64_t(std::numeric_limits<int>::max()) && "polymesh only supports 2^31 primitives");
+    POLYMESH_ASSERT(size_all_vertices() + int64_t(vertices) <= int64_t(std::numeric_limits<int>::max()) && "polymesh only supports 2^31 primitives");
+    POLYMESH_ASSERT(size_all_faces() + int64_t(faces) <= int64_t(std::numeric_limits<int>::max()) && "polymesh only supports 2^31 primitives");
+    POLYMESH_ASSERT(size_all_halfedges() + int64_t(halfedges) <= int64_t(std::numeric_limits<int>::max()) && "polymesh only supports 2^31 primitives");
 
     auto vCnt = size_all_vertices() + vertices;
     auto fCnt = size_all_faces() + faces;
@@ -127,9 +176,9 @@ inline void Mesh::alloc_primitives(int vertices, int faces, int halfedges)
 }
 
 
-inline void Mesh::permute_vertices(std::vector<int> const &p)
+inline void Mesh::permute_vertices(std::vector<int> const& p)
 {
-    assert(detail::is_valid_permutation(p));
+    POLYMESH_ASSERT(detail::is_valid_permutation(p));
 
     // calculate transpositions
     auto ts = detail::transpositions_of(p);
@@ -139,7 +188,7 @@ inline void Mesh::permute_vertices(std::vector<int> const &p)
         std::swap(mVertexToOutgoingHalfedge[t.first], mVertexToOutgoingHalfedge[t.second]);
 
     // fix half-edges
-    for (auto &h_to : detail::range(mHalfedgesSize, mHalfedgeToVertex))
+    for (auto& h_to : detail::range(mHalfedgesSize, mHalfedgeToVertex))
         if (h_to.is_valid())
             h_to.value = p[h_to.value];
 
@@ -148,9 +197,9 @@ inline void Mesh::permute_vertices(std::vector<int> const &p)
         a->apply_transpositions(ts);
 }
 
-inline void Mesh::permute_faces(std::vector<int> const &p)
+inline void Mesh::permute_faces(std::vector<int> const& p)
 {
-    assert(detail::is_valid_permutation(p));
+    POLYMESH_ASSERT(detail::is_valid_permutation(p));
 
     // calculate transpositions
     auto ts = detail::transpositions_of(p);
@@ -160,7 +209,7 @@ inline void Mesh::permute_faces(std::vector<int> const &p)
         std::swap(mFaceToHalfedge[t.first], mFaceToHalfedge[t.second]);
 
     // fix half-edges
-    for (auto &h_f : detail::range(mHalfedgesSize, mHalfedgeToFace))
+    for (auto& h_f : detail::range(mHalfedgesSize, mHalfedgeToFace))
         if (h_f.is_valid())
             h_f.value = p[h_f.value];
 
@@ -169,9 +218,9 @@ inline void Mesh::permute_faces(std::vector<int> const &p)
         a->apply_transpositions(ts);
 }
 
-inline void Mesh::permute_edges(std::vector<int> const &p)
+inline void Mesh::permute_edges(std::vector<int> const& p)
 {
-    assert(detail::is_valid_permutation(p));
+    POLYMESH_ASSERT(detail::is_valid_permutation(p));
 
     std::vector<int> hp(p.size() * 2);
     for (auto i = 0u; i < p.size(); ++i)
@@ -179,7 +228,7 @@ inline void Mesh::permute_edges(std::vector<int> const &p)
         hp[i * 2 + 0] = p[i] * 2 + 0;
         hp[i * 2 + 1] = p[i] * 2 + 1;
     }
-    assert(detail::is_valid_permutation(hp));
+    POLYMESH_ASSERT(detail::is_valid_permutation(hp));
 
     // calculate transpositions
     std::vector<std::pair<int, int>> edge_ts;
@@ -201,19 +250,19 @@ inline void Mesh::permute_edges(std::vector<int> const &p)
     }
 
     // fix half-edges
-    for (auto &v_out : detail::range(mVerticesSize, mVertexToOutgoingHalfedge))
+    for (auto& v_out : detail::range(mVerticesSize, mVertexToOutgoingHalfedge))
         if (v_out.value >= 0)
             v_out.value = hp[v_out.value];
 
-    for (auto &f_h : detail::range(mFacesSize, mFaceToHalfedge))
+    for (auto& f_h : detail::range(mFacesSize, mFaceToHalfedge))
         if (f_h.value >= 0)
             f_h.value = hp[f_h.value];
 
-    for (auto &h_next : detail::range(mHalfedgesSize, mHalfedgeToNextHalfedge))
+    for (auto& h_next : detail::range(mHalfedgesSize, mHalfedgeToNextHalfedge))
         if (h_next.value >= 0)
             h_next.value = hp[h_next.value];
 
-    for (auto &h_prev : detail::range(mHalfedgesSize, mHalfedgeToPrevHalfedge))
+    for (auto& h_prev : detail::range(mHalfedgesSize, mHalfedgeToPrevHalfedge))
         if (h_prev.value >= 0)
             h_prev.value = hp[h_prev.value];
 
@@ -291,24 +340,24 @@ inline void Mesh::compactify()
     detail::resize(mFacesSize, mFacesCapacity, int(f_new_to_old.size()), mFaceToHalfedge);
     detail::resize(mHalfedgesSize, mHalfedgesCapacity, int(h_new_to_old.size()), mHalfedgeToFace, mHalfedgeToVertex, mHalfedgeToNextHalfedge, mHalfedgeToPrevHalfedge);
 
-    for (auto &v_out : detail::range(mVerticesSize, mVertexToOutgoingHalfedge))
+    for (auto& v_out : detail::range(mVerticesSize, mVertexToOutgoingHalfedge))
         if (v_out.value >= 0)
             v_out.value = h_old_to_new[v_out.value];
 
-    for (auto &f_h : detail::range(mFacesSize, mFaceToHalfedge))
+    for (auto& f_h : detail::range(mFacesSize, mFaceToHalfedge))
         if (f_h.value >= 0)
             f_h.value = h_old_to_new[f_h.value];
 
-    for (auto &h_next : detail::range(mHalfedgesSize, mHalfedgeToNextHalfedge))
+    for (auto& h_next : detail::range(mHalfedgesSize, mHalfedgeToNextHalfedge))
         if (h_next.value >= 0)
             h_next.value = h_old_to_new[h_next.value];
-    for (auto &h_prev : detail::range(mHalfedgesSize, mHalfedgeToPrevHalfedge))
+    for (auto& h_prev : detail::range(mHalfedgesSize, mHalfedgeToPrevHalfedge))
         if (h_prev.value >= 0)
             h_prev.value = h_old_to_new[h_prev.value];
-    for (auto &h_f : detail::range(mHalfedgesSize, mHalfedgeToFace))
+    for (auto& h_f : detail::range(mHalfedgesSize, mHalfedgeToFace))
         if (h_f.value >= 0)
             h_f.value = f_old_to_new[h_f.value];
-    for (auto &h_v : detail::range(mHalfedgesSize, mHalfedgeToVertex))
+    for (auto& h_v : detail::range(mHalfedgesSize, mHalfedgeToVertex))
         if (h_v.value >= 0)
             h_v.value = v_old_to_new[h_v.value];
 
@@ -445,7 +494,7 @@ inline void Mesh::reset()
     mCompact = true;
 }
 
-inline void Mesh::copy_from(const Mesh &m)
+inline void Mesh::copy_from(const Mesh& m)
 {
     auto old_v_size = mVerticesSize;
     auto old_f_size = mFacesSize;
@@ -515,7 +564,10 @@ inline void Mesh::reserve_vertices(int capacity)
         a->resize_from(old_size);
 }
 
-inline void Mesh::reserve_edges(int capacity) { reserve_halfedges(capacity << 1); }
+inline void Mesh::reserve_edges(int capacity)
+{
+    reserve_halfedges(capacity << 1);
+}
 
 inline void Mesh::reserve_halfedges(int capacity)
 {

@@ -19,7 +19,7 @@ auto add_quad(Mesh& m, QuadF&& qf, int w = 1, int h = 1) -> decltype(qf(vertex_h
 template <class QuadF>
 auto add_quad(Mesh& m, QuadF&& qf, int w, int h) -> decltype(qf(vertex_handle{}, float{}, float{}), vertex_handle{})
 {
-    assert(w > 0 && h > 0);
+    POLYMESH_ASSERT(w > 0 && h > 0);
 
     // fast path
     if (w == 1 && h == 1)

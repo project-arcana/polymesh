@@ -46,12 +46,12 @@ public:
     AttrT const& operator[](handle_t h) const;
     AttrT& operator[](index_t h)
     {
-        assert(h.is_valid());
+        POLYMESH_ASSERT(h.is_valid());
         return mData[h.value];
     }
     AttrT const& operator[](index_t h) const
     {
-        assert(h.is_valid());
+        POLYMESH_ASSERT(h.is_valid());
         return mData[h.value];
     }
 
@@ -59,13 +59,13 @@ public:
     AttrT const& operator()(handle_t h) const;
     AttrT& operator()(index_t h)
     {
-        assert(h.is_valid());
+        POLYMESH_ASSERT(h.is_valid());
         return mData[h.value];
     }
 
     AttrT const& operator()(index_t h) const
     {
-        assert(h.is_valid());
+        POLYMESH_ASSERT(h.is_valid());
         return mData[h.value];
     }
 
@@ -193,12 +193,12 @@ struct edge_attribute final : primitive_attribute<edge_tag, AttrT>
     AttrT const& operator[](halfedge_handle h) const;
     AttrT& operator[](halfedge_index h)
     {
-        assert(h.is_valid());
+        POLYMESH_ASSERT(h.is_valid());
         return this->mData[h.value >> 1];
     }
     AttrT const& operator[](halfedge_index h) const
     {
-        assert(h.is_valid());
+        POLYMESH_ASSERT(h.is_valid());
         return this->mData[h.value >> 1];
     }
 
@@ -206,12 +206,12 @@ struct edge_attribute final : primitive_attribute<edge_tag, AttrT>
     AttrT const& operator()(halfedge_handle h) const;
     AttrT& operator()(halfedge_index h)
     {
-        assert(h.is_valid());
+        POLYMESH_ASSERT(h.is_valid());
         return this->mData[h.value >> 1];
     }
     AttrT const& operator()(halfedge_index h) const
     {
-        assert(h.is_valid());
+        POLYMESH_ASSERT(h.is_valid());
         return this->mData[h.value >> 1];
     }
 

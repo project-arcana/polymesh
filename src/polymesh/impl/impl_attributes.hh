@@ -7,50 +7,50 @@ namespace polymesh
 template <class tag, class AttrT>
 AttrT& primitive_attribute<tag, AttrT>::operator[](handle_t h)
 {
-    assert(this->mMesh == h.mesh && "Handle belongs to a different mesh");
+    POLYMESH_ASSERT(this->mMesh == h.mesh && "Handle belongs to a different mesh");
     return mData[h.idx.value];
 }
 template <class tag, class AttrT>
 AttrT const& primitive_attribute<tag, AttrT>::operator[](handle_t h) const
 {
-    assert(this->mMesh == h.mesh && "Handle belongs to a different mesh");
+    POLYMESH_ASSERT(this->mMesh == h.mesh && "Handle belongs to a different mesh");
     return mData[h.idx.value];
 }
 template <class tag, class AttrT>
 AttrT& primitive_attribute<tag, AttrT>::operator()(handle_t h)
 {
-    assert(this->mMesh == h.mesh && "Handle belongs to a different mesh");
+    POLYMESH_ASSERT(this->mMesh == h.mesh && "Handle belongs to a different mesh");
     return mData[h.idx.value];
 }
 template <class tag, class AttrT>
 AttrT const& primitive_attribute<tag, AttrT>::operator()(handle_t h) const
 {
-    assert(this->mMesh == h.mesh && "Handle belongs to a different mesh");
+    POLYMESH_ASSERT(this->mMesh == h.mesh && "Handle belongs to a different mesh");
     return mData[h.idx.value];
 }
 
 template <class AttrT>
 AttrT& edge_attribute<AttrT>::operator[](halfedge_handle h)
 {
-    assert(this->mMesh == h.mesh && "Handle belongs to a different mesh");
+    POLYMESH_ASSERT(this->mMesh == h.mesh && "Handle belongs to a different mesh");
     return this->mData[h.idx.value >> 1];
 }
 template <class AttrT>
 AttrT const& edge_attribute<AttrT>::operator[](halfedge_handle h) const
 {
-    assert(this->mMesh == h.mesh && "Handle belongs to a different mesh");
+    POLYMESH_ASSERT(this->mMesh == h.mesh && "Handle belongs to a different mesh");
     return this->mData[h.idx.value >> 1];
 }
 template <class AttrT>
 AttrT& edge_attribute<AttrT>::operator()(halfedge_handle h)
 {
-    assert(this->mMesh == h.mesh && "Handle belongs to a different mesh");
+    POLYMESH_ASSERT(this->mMesh == h.mesh && "Handle belongs to a different mesh");
     return this->mData[h.idx.value >> 1];
 }
 template <class AttrT>
 AttrT const& edge_attribute<AttrT>::operator()(halfedge_handle h) const
 {
-    assert(this->mMesh == h.mesh && "Handle belongs to a different mesh");
+    POLYMESH_ASSERT(this->mMesh == h.mesh && "Handle belongs to a different mesh");
     return this->mData[h.idx.value >> 1];
 }
 
@@ -223,7 +223,7 @@ void primitive_attribute<tag, AttrT>::resize_from(int old_size)
 
     auto new_capacity = this->capacity();
     auto shared_size = std::min(this->size(), old_size);
-    assert(shared_size <= new_capacity && "size cannot exceed capacity");
+    POLYMESH_ASSERT(shared_size <= new_capacity && "size cannot exceed capacity");
 
     // alloc new data
     auto new_data = new_capacity > 0 ? new AttrT[new_capacity] : nullptr;
