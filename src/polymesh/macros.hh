@@ -55,9 +55,4 @@
 #define POLYMESH_DETAIL_MACRO_JOIN(arg1, arg2) arg1##arg2
 #define POLYMESH_MACRO_JOIN(arg1, arg2) POLYMESH_DETAIL_MACRO_JOIN(arg1, arg2)
 
-#define POLYMESH_UNUSED(expr)                                                 \
-    do                                                                        \
-    {                                                                         \
-        using POLYMESH_MACRO_JOIN(_pm_unused_, __LINE__) = decltype(expr, 0); \
-        (void)(POLYMESH_MACRO_JOIN(_pm_unused_, __LINE__)) 0;                 \
-    } while (0) // force ;
+#define POLYMESH_UNUSED(expr) (void)(decltype(expr)) false // force ;
