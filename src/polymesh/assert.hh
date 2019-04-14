@@ -16,26 +16,9 @@
 
 #if !defined(POLYMESH_ENABLE_ASSERTIONS)
 #define POLYMESH_ASSERT(condition) POLYMESH_UNUSED(condition)
-
-#elif defined(POLYMESH_DEBUG)
-#define POLYMESH_ASSERT(condition)                                                                          \
-    do                                                                                                      \
-    {                                                                                                       \
-        static constexpr ::polymesh::detail::assertion_info POLYMESH_MACRO_JOIN(_pm_assert_info_, __LINE__) \
-            = {#condition, POLYMESH_PRETTY_FUNC, __FILE__, __LINE__};                                       \
-        if (!(condition))                                                                                   \
-            ::polymesh::detail::assertion_failed(POLYMESH_MACRO_JOIN(_pm_assert_info_, __LINE__));          \
-    } while (0) // force ;
-
 #else
-#define POLYMESH_ASSERT(condition)                                                                          \
-    do                                                                                                      \
-    {                                                                                                       \
-        static constexpr ::polymesh::detail::assertion_info POLYMESH_MACRO_JOIN(_pm_assert_info_, __LINE__) \
-            = {#condition, POLYMESH_PRETTY_FUNC, __FILE__, __LINE__};                                       \
-        if (POLYMESH_UNLIKELY(!(condition)))                                                                \
-            ::polymesh::detail::assertion_failed(POLYMESH_MACRO_JOIN(_pm_assert_info_, __LINE__));          \
-    } while (0) // force ;
+#define POLYMESH_ASSERT(condition) \
+    (POLYMESH_UNLIKELY(!(condition)) ? ::polymesh::detail::assertion_failed({#condition, POLYMESH_PRETTY_FUNC, __FILE__, __LINE__}) : void(0)) // force ;
 #endif
 
 namespace polymesh

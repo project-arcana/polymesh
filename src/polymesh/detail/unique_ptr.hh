@@ -37,39 +37,43 @@ struct unique_ptr
         return *this;
     }
 
-    ~unique_ptr() { delete ptr; }
+    ~unique_ptr()
+    {
+        static_assert(sizeof(T) > 0, "cannot delete incomplete type");
+        delete ptr;
+    }
 
-    void reset(T* p = nullptr) noexcept
+    void reset(T* p = nullptr)
     {
         POLYMESH_ASSERT(p == nullptr || p != ptr); // no self-reset
         delete ptr;
         ptr = p;
     }
 
-    T* release() noexcept
+    T* release()
     {
         auto p = ptr;
         ptr = nullptr;
         return p;
     }
 
-    T* get() const noexcept { return ptr; }
+    T* get() const { return ptr; }
 
-    T* operator->() const noexcept
+    T* operator->() const
     {
         POLYMESH_ASSERT(ptr != nullptr);
         return ptr;
     }
-    T& operator*() const noexcept
+    T& operator*() const
     {
         POLYMESH_ASSERT(ptr != nullptr);
         return *ptr;
     }
 
-    bool operator==(unique_ptr const& rhs) const noexcept { return ptr == rhs.ptr; }
-    bool operator!=(unique_ptr const& rhs) const noexcept { return ptr != rhs.ptr; }
-    bool operator==(T const* rhs) const noexcept { return ptr == rhs; }
-    bool operator!=(T const* rhs) const noexcept { return ptr != rhs; }
+    bool operator==(unique_ptr const& rhs) const { return ptr == rhs.ptr; }
+    bool operator!=(unique_ptr const& rhs) const { return ptr != rhs.ptr; }
+    bool operator==(T const* rhs) const { return ptr == rhs; }
+    bool operator!=(T const* rhs) const { return ptr != rhs; }
 
 private:
     T* ptr = nullptr;
@@ -78,7 +82,7 @@ private:
 template <class T>
 struct unique_ptr<T[]>
 {
-    static_assert(decltype((T*)nullptr, false)(false), "unique_ptr does not support arrays, use a vector instead");
+    static_assert(sizeof(T) >= 0, "unique_ptr does not support arrays, use a vector instead");
 };
 
 template <typename T, typename... Args>
