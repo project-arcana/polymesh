@@ -6,29 +6,29 @@
 namespace polymesh
 {
 template <class ScalarT>
-void write_obj(std::string const &filename, Mesh const &mesh, vertex_attribute<std::array<ScalarT, 3>> const &position)
+void write_obj(std::string const& filename, Mesh const& mesh, vertex_attribute<std::array<ScalarT, 3>> const& position)
 {
     obj_writer<ScalarT> obj(filename);
     obj.write_mesh(mesh, position);
 }
 
 template <class ScalarT>
-bool read_obj(const std::string &filename, Mesh &mesh, vertex_attribute<std::array<ScalarT, 3>> &position)
+bool read_obj(const std::string& filename, Mesh& mesh, vertex_attribute<std::array<ScalarT, 3>>& position)
 {
     obj_reader<ScalarT> reader(filename, mesh);
-    position = reader.get_positions().map([](std::array<ScalarT, 4> const &p) { return std::array<ScalarT, 3>{p[0], p[1], p[2]}; });
+    position = reader.get_positions().map([](std::array<ScalarT, 4> const& p) { return std::array<ScalarT, 3>{{p[0], p[1], p[2]}}; });
     return reader.error_faces() == 0;
 }
 
 template <class ScalarT>
-obj_writer<ScalarT>::obj_writer(const std::string &filename)
+obj_writer<ScalarT>::obj_writer(const std::string& filename)
 {
     tmp_out = new std::ofstream(filename);
     out = tmp_out;
 }
 
 template <class ScalarT>
-obj_writer<ScalarT>::obj_writer(std::ostream &out)
+obj_writer<ScalarT>::obj_writer(std::ostream& out)
 {
     this->out = &out;
 }
@@ -46,10 +46,10 @@ void obj_writer<ScalarT>::write_object_name(std::string object_name)
 }
 
 template <class ScalarT>
-void obj_writer<ScalarT>::write_mesh(const Mesh &mesh,
-                                     vertex_attribute<std::array<ScalarT, 3>> const &position,
-                                     vertex_attribute<std::array<ScalarT, 2>> const *tex_coord,
-                                     vertex_attribute<std::array<ScalarT, 3>> const *normal)
+void obj_writer<ScalarT>::write_mesh(const Mesh& mesh,
+                                     vertex_attribute<std::array<ScalarT, 3>> const& position,
+                                     vertex_attribute<std::array<ScalarT, 2>> const* tex_coord,
+                                     vertex_attribute<std::array<ScalarT, 3>> const* normal)
 {
     auto base_v = vertex_idx;
     auto base_t = texture_idx;
@@ -101,10 +101,10 @@ void obj_writer<ScalarT>::write_mesh(const Mesh &mesh,
 }
 
 template <class ScalarT>
-void obj_writer<ScalarT>::write_mesh(const Mesh &mesh,
-                                     vertex_attribute<std::array<ScalarT, 4>> const &position,
-                                     halfedge_attribute<std::array<ScalarT, 3>> const *tex_coord,
-                                     halfedge_attribute<std::array<ScalarT, 3>> const *normal)
+void obj_writer<ScalarT>::write_mesh(const Mesh& mesh,
+                                     vertex_attribute<std::array<ScalarT, 4>> const& position,
+                                     halfedge_attribute<std::array<ScalarT, 3>> const* tex_coord,
+                                     halfedge_attribute<std::array<ScalarT, 3>> const* normal)
 {
     auto base_v = vertex_idx;
     auto base_t = texture_idx;
@@ -157,7 +157,7 @@ void obj_writer<ScalarT>::write_mesh(const Mesh &mesh,
 }
 
 template <class ScalarT>
-obj_reader<ScalarT>::obj_reader(const std::string &filename, Mesh &mesh) : positions(mesh), tex_coords(mesh), normals(mesh)
+obj_reader<ScalarT>::obj_reader(const std::string& filename, Mesh& mesh) : positions(mesh), tex_coords(mesh), normals(mesh)
 {
     std::ifstream file(filename);
     if (!file.good())
@@ -167,13 +167,13 @@ obj_reader<ScalarT>::obj_reader(const std::string &filename, Mesh &mesh) : posit
 }
 
 template <class ScalarT>
-obj_reader<ScalarT>::obj_reader(std::istream &in, Mesh &mesh) : positions(mesh), tex_coords(mesh), normals(mesh)
+obj_reader<ScalarT>::obj_reader(std::istream& in, Mesh& mesh) : positions(mesh), tex_coords(mesh), normals(mesh)
 {
     parse(in, mesh);
 }
 
 template <class ScalarT>
-void obj_reader<ScalarT>::parse(std::istream &in, Mesh &mesh)
+void obj_reader<ScalarT>::parse(std::istream& in, Mesh& mesh)
 {
     mesh.clear();
 
@@ -272,7 +272,7 @@ void obj_reader<ScalarT>::parse(std::istream &in, Mesh &mesh)
                 int sc = 0;
                 auto first_s = fs.find_first_of('/');
                 auto last_s = fs.find_last_of('/');
-                for (auto &c : fs)
+                for (auto& c : fs)
                     if (c == '/')
                     {
                         c = ' ';
@@ -320,8 +320,8 @@ void obj_reader<ScalarT>::parse(std::istream &in, Mesh &mesh)
             poly_hs.resize(poly.size());
             for (auto i = 0u; i < poly.size(); ++i)
             {
-                auto const &f0 = poly[i];
-                auto const &f1 = poly[(i + 1) % poly.size()];
+                auto const& f0 = poly[i];
+                auto const& f1 = poly[(i + 1) % poly.size()];
                 auto v0 = f0.vh;
                 auto v1 = f1.vh;
                 auto hh = mesh.halfedges().add_or_get(v0, v1);
@@ -374,13 +374,13 @@ void obj_reader<ScalarT>::parse(std::istream &in, Mesh &mesh)
     }
 }
 
-template void write_obj<float>(std::string const &filename, Mesh const &mesh, vertex_attribute<std::array<float, 3>> const &position);
-template bool read_obj<float>(std::string const &filename, Mesh &mesh, vertex_attribute<std::array<float, 3>> &position);
+template void write_obj<float>(std::string const& filename, Mesh const& mesh, vertex_attribute<std::array<float, 3>> const& position);
+template bool read_obj<float>(std::string const& filename, Mesh& mesh, vertex_attribute<std::array<float, 3>>& position);
 template struct obj_reader<float>;
 template struct obj_writer<float>;
 
-template void write_obj<double>(std::string const &filename, Mesh const &mesh, vertex_attribute<std::array<double, 3>> const &position);
-template bool read_obj<double>(std::string const &filename, Mesh &mesh, vertex_attribute<std::array<double, 3>> &position);
+template void write_obj<double>(std::string const& filename, Mesh const& mesh, vertex_attribute<std::array<double, 3>> const& position);
+template bool read_obj<double>(std::string const& filename, Mesh& mesh, vertex_attribute<std::array<double, 3>>& position);
 template struct obj_reader<double>;
 template struct obj_writer<double>;
 
