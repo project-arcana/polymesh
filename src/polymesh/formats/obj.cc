@@ -329,9 +329,9 @@ void obj_reader<ScalarT>::parse(std::istream& in, Mesh& mesh)
                 poly_hs[i] = hh;
 
                 if (f1.t > 0)
-                    tex_coords[hh] = raw_tex_coords[f1.t - 1];
+                    tex_coords[hh] = raw_tex_coords[size_t(f1.t - 1)];
                 if (f1.n > 0)
-                    normals[hh] = raw_normals[f1.n - 1];
+                    normals[hh] = raw_normals[size_t(f1.n - 1)];
             }
 
             mesh.faces().add(poly_hs);
