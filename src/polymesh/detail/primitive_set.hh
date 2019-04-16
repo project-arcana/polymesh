@@ -2,6 +2,8 @@
 
 #include <unordered_set>
 
+#include <polymesh/std/hash.hh> // only depends on <utility>
+
 /// Primitive sets are sets optimized for storing primitive indices
 /// They support these operations:
 ///   .insert(T t) -> bool   // true iff actually inserted
