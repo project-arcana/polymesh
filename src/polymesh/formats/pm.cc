@@ -271,4 +271,15 @@ static bool registered_default_types = []() {
 
     return true;
 }();
+
+void detail::ostream_write(std::ostream& out, const char* data, size_t size)
+{
+    out.write(data, size);
+}
+
+void detail::ostream_read(std::istream& in, char* data, size_t size)
+{
+    in.read(data, size);
+}
+
 } // namespace polymesh

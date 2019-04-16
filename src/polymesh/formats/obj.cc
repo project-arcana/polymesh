@@ -1,5 +1,6 @@
 #include "obj.hh"
 
+#include <iostream>
 #include <fstream>
 #include <sstream>
 

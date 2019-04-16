@@ -1,7 +1,5 @@
 #pragma once
 
-#include <iostream>
-
 #include "primitives.hh"
 #include "tmp.hh"
 
@@ -192,36 +190,5 @@ struct halfedge_handle : primitive_handle<halfedge_tag>
     face_handle opposite_face() const; ///< invalid if opposite boundary
 
     halfedge_ring ring() const; ///< all half-edges along the same ring
-};
-}
-
-// ======================== STD Extensions ========================
-
-namespace std
-{
-template <class tag>
-struct hash<polymesh::primitive_index<tag>>
-{
-    size_t operator()(polymesh::primitive_index<tag> const& i) const { return std::hash<int>()(i.value); }
-};
-template <>
-struct hash<polymesh::face_index>
-{
-    size_t operator()(polymesh::face_index const& i) const { return std::hash<int>()(i.value); }
-};
-template <>
-struct hash<polymesh::vertex_index>
-{
-    size_t operator()(polymesh::vertex_index const& i) const { return std::hash<int>()(i.value); }
-};
-template <>
-struct hash<polymesh::edge_index>
-{
-    size_t operator()(polymesh::edge_index const& i) const { return std::hash<int>()(i.value); }
-};
-template <>
-struct hash<polymesh::halfedge_index>
-{
-    size_t operator()(polymesh::halfedge_index const& i) const { return std::hash<int>()(i.value); }
 };
 }

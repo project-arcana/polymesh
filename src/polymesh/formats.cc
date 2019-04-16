@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "formats.hh"
 
 #include <algorithm>

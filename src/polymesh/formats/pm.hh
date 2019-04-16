@@ -1,6 +1,6 @@
 #pragma once
 
-#include <iostream>
+#include <iosfwd>
 #include <string>
 
 #include "../Mesh.hh"
@@ -19,14 +19,17 @@ bool read_pm(std::istream& input, Mesh& mesh, attribute_collection& attributes);
 
 namespace detail
 {
+void ostream_write(std::ostream& out, char const* data, size_t size);
+void ostream_read(std::istream& in, char* data, size_t size);
+
 template <typename T>
 struct bytewise_serdes
 {
     void serialize(std::ostream& out, T const* data, size_t num_items) const
     {
-        out.write(reinterpret_cast<char const*>(data), num_items * sizeof(T));
+        ostream_write(out, reinterpret_cast<char const*>(data), num_items * sizeof(T));
     }
-    void deserialize(std::istream& in, T* data, size_t num_items) const { in.read(reinterpret_cast<char*>(data), num_items * sizeof(T)); }
+    void deserialize(std::istream& in, T* data, size_t num_items) const { ostream_read(in, reinterpret_cast<char*>(data), num_items * sizeof(T)); }
 };
 
 struct string_serdes
@@ -34,7 +37,7 @@ struct string_serdes
     void serialize(std::ostream& out, std::string const* strings, size_t num_items) const
     {
         for (size_t i = 0; i < num_items; i++)
-            out.write(strings[i].c_str(), strings[i].size() + 1);
+            ostream_write(out, strings[i].c_str(), strings[i].size() + 1);
     }
     void deserialize(std::istream& in, std::string* strings, size_t num_items) const
     {
