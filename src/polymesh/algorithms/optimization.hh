@@ -10,6 +10,8 @@
 
 #include "../data/partitioning.hh"
 
+#include "../std/hash.hh"
+
 namespace polymesh
 {
 /// Optimizes mesh layout for face traversals
