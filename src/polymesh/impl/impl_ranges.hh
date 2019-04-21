@@ -580,13 +580,12 @@ typename primitive<tag>::handle smart_collection<mesh_ptr, tag, iterator>::rando
 {
     auto s = primitive<tag>::all_size(*this->m);
     POLYMESH_ASSERT(s > 0 && "Cannot chose from empty mesh");
-    std::uniform_int_distribution<> uniform(0, s - 1);
 
-    typename primitive<tag>::handle h = {this->m, typename primitive<tag>::index(uniform(g))};
+    typename primitive<tag>::handle h = {this->m, typename primitive<tag>::index(int(g() % s))};
 
     if (iterator::is_valid_iterator)
         while (h.is_removed())
-            h = {this->m, typename primitive<tag>::index(uniform(g))};
+            h = {this->m, typename primitive<tag>::index(int(g() % s))};
 
     return h;
 }
