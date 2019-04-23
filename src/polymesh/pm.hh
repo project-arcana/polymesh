@@ -2,7 +2,10 @@
 
 // Includes all polymesh features
 
-#include "Mesh.hh"
+#include <polymesh/Mesh.hh>
 
-#include "objects.hh"
-#include "formats.hh"
+#include <polymesh/algorithms/optimization.hh>
+#include <polymesh/algorithms/properties.hh>
+
+#include <polymesh/formats.hh>
+#include <polymesh/objects.hh>
