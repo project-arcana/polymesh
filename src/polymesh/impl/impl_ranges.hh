@@ -316,7 +316,7 @@ template <class this_t, class ElementT>
 template <class FuncT>
 auto smart_range<this_t, ElementT>::order_statistic(float p, FuncT&& f) const -> tmp::decayed_result_type_of<FuncT, ElementT>
 {
-    auto vals = this->to_vector();
+    auto vals = this->to_vector(f);
     POLYMESH_ASSERT(!vals.empty() && "requires non-empty range");
     auto n = (int)(std::roundf(vals.size() * p));
     if (n < 0)
