@@ -155,8 +155,8 @@ inline std::vector<int> cache_coherent_face_layout(Mesh const& m)
         edges.clear();
         for (auto const& kvp : cluster_neighbors)
         {
-            auto f0 = face_index(kvp.first / fcnt);
-            auto f1 = face_index(kvp.first % fcnt);
+            auto f0 = face_index(int(kvp.first / fcnt));
+            auto f1 = face_index(int(kvp.first % fcnt));
             edges.push_back({kvp.second, {f0, f1}});
         }
         sort(edges.begin(), edges.end());
@@ -275,8 +275,8 @@ inline std::vector<int> cache_coherent_vertex_layout(Mesh const& m)
         edges.clear();
         for (auto const& kvp : cluster_neighbors)
         {
-            auto f0 = vertex_index(kvp.first / vcnt);
-            auto f1 = vertex_index(kvp.first % vcnt);
+            auto f0 = vertex_index(int(kvp.first / vcnt));
+            auto f1 = vertex_index(int(kvp.first % vcnt));
             edges.push_back({kvp.second, {f0, f1}});
         }
         sort(edges.begin(), edges.end());
