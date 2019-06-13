@@ -14,8 +14,8 @@ namespace polymesh
 void triangulate_naive(Mesh& m);
 
 /// Given a 2d mesh filled with vertices, creates a delauny triangulation
-template <class Vec2>
-bool add_delauny_triangulation(Mesh& m, vertex_attribute<Vec2> const& position);
+template <class Pos2>
+bool add_delauny_triangulation(Mesh& m, vertex_attribute<Pos2> const& position);
 
 /// ======== IMPLEMENTATION ========
 
