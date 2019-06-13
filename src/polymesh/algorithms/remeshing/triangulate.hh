@@ -2,7 +2,6 @@
 
 #include <polymesh/Mesh.hh>
 #include <polymesh/detail/delaunay.hh>
-#include <unordered_set>
 
 // Basic mesh operations, including:
 // - elementary subdivision
