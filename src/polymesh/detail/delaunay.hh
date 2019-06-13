@@ -1,9 +1,6 @@
 #pragma once
 #include "../Mesh.hh"
-namespace polymesh
-{
-namespace detail
+namespace polymesh::detail
 {
 bool add_delauny_triangulation_delabella(Mesh &m, float const *pos);
-}
-} // namespace polymesh
+} // namespace polymesh::detail
