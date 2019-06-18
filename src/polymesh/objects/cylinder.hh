@@ -11,12 +11,12 @@ namespace polymesh::objects
 /// returns the one of the new vertices
 /// NOTE: the result is NOT triangulated!
 template <class CylinderF>
-auto add_cylinder(Mesh& m, CylinderF&& qf, int segments) -> decltype(qf(vertex_handle{}, float{}, float{}), vertex_handle{});
+auto add_cylinder(Mesh& m, CylinderF&& qf, int segments, bool closed = true) -> decltype(qf(vertex_handle{}, float{}, float{}), vertex_handle{});
 
 /// ======== IMPLEMENTATION ========
 
 template <class CylinderF>
-auto add_cylinder(Mesh& m, CylinderF&& qf, int segments) -> decltype(qf(vertex_handle{}, float{}, float{}), vertex_handle{})
+auto add_cylinder(Mesh& m, CylinderF&& qf, int segments, bool closed) -> decltype(qf(vertex_handle{}, float{}, float{}), vertex_handle{})
 {
     POLYMESH_ASSERT(segments > 2);
 
@@ -47,10 +47,13 @@ auto add_cylinder(Mesh& m, CylinderF&& qf, int segments) -> decltype(qf(vertex_h
         m.faces().add(v00, v01, v11, v10);
     }
 
-    m.faces().add(v_top);
+    if (closed)
+    {
+        m.faces().add(v_top);
 
-    reverse(begin(v_bot), end(v_bot));
-    m.faces().add(v_bot);
+        reverse(begin(v_bot), end(v_bot));
+        m.faces().add(v_bot);
+    }
 
     return v_top[0].of(m);
 }
