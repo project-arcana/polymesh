@@ -24,7 +24,7 @@ void print_stats(std::ostream& out, Mesh const& m, vertex_attribute<Vec3> const*
 {
     auto ln = "\n";
 
-    auto to_string = [&](Vec3 const& v) {
+    auto to_string = [&](auto const& v) {
         std::stringstream ss;
         ss << "(" << v[0] << ", " << v[1] << ", " << v[2] << ")";
         return ss.str();
