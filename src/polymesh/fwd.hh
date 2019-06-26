@@ -66,3 +66,6 @@ struct vertex_vertex_ring;
 
 struct halfedge_ring;
 }
+
+// alias pm
+namespace pm = polymesh;

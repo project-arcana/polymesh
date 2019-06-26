@@ -3,6 +3,8 @@
 #include <cstddef>
 #include <vector>
 
+#include "fwd.hh"
+
 #include "attributes.hh"
 #include "cursors.hh"
 #include "detail/unique_array.hh"
@@ -12,9 +14,6 @@
 // often used helper
 #include "attribute_collection.hh"
 #include "low_level_api.hh"
-
-// alias pm
-namespace pm = polymesh;
 
 namespace polymesh
 {
