@@ -203,13 +203,12 @@ Scalar triangle_area(face_handle f, vertex_attribute<Pos3> const& position)
 template <class Pos3>
 Pos3 triangle_centroid(face_handle f, vertex_attribute<Pos3> const& position)
 {
-    auto z = field3<Pos3>::zero_pos();
     auto h = f.any_halfedge();
-    auto p0 = position[h.vertex_from()] - z;
-    auto p1 = position[h.vertex_to()] - z;
-    auto p2 = position[h.next().vertex_to()] - z;
+    auto p0 = position[h.vertex_from()];
+    auto p1 = position[h.vertex_to()];
+    auto p2 = position[h.next().vertex_to()];
 
-    return z + (p0 + p1 + p2) / field3<Pos3>::scalar(3);
+    return (p0 + p1 + p2) / field3<Pos3>::scalar(3);
 }
 
 template <class Pos3>
@@ -278,22 +277,20 @@ Pos3 face_centroid(face_handle f, vertex_attribute<Pos3> const& position)
 {
     // TODO: make correct for non-convex polygons!
 
-    auto z = field3<Pos3>::zero_pos();
-
     auto area = field3<Pos3>::scalar(0);
-    auto centroid = z;
+    decltype(Pos3{} + Pos3{}) centroid = field3<Pos3>::zero_pos();
 
     auto h = f.any_halfedge();
 
     auto v0 = h.vertex_from();
-    auto p0 = v0[position] - z;
+    auto p0 = v0[position];
 
-    auto p_prev = h.vertex_to()[position] - z;
+    auto p_prev = h.vertex_to()[position];
     h = h.next();
 
     do
     {
-        auto p_curr = h.vertex_to()[position] - z;
+        auto p_curr = h.vertex_to()[position];
 
         auto a = field3<Pos3>::length(field3<Pos3>::cross(p_prev - p0, p_curr - p0));
         area += a;
@@ -394,12 +391,11 @@ Scalar angle_defect(vertex_handle v, vertex_attribute<Pos3> const& position)
 template <class Pos3>
 Pos3 bary_interpolate(face_handle f, Pos3 bary, vertex_attribute<Pos3> const& position)
 {
-    auto z = field3<Pos3>::zero_pos();
     auto h = f.any_halfedge();
-    auto v0 = h.vertex_to()[position] - z;
-    auto v1 = h.next().vertex_to()[position] - z;
-    auto v2 = h.next().next().vertex_to()[position] - z;
-    return z + v0 * bary[0] + v1 * bary[1] + v2 * bary[2];
+    auto v0 = h.vertex_to()[position];
+    auto v1 = h.next().vertex_to()[position];
+    auto v2 = h.next().next().vertex_to()[position];
+    return (v0 * bary[0] + v1 * bary[1] + v2 * bary[2]) / field3<Pos3>::scalar(1);
 }
 
 template <class Pos3, class Scalar>

@@ -241,14 +241,14 @@ auto smart_range<this_t, ElementT>::avg(FuncT&& f) const -> tmp::decayed_result_
     auto it_begin = static_cast<this_t const*>(this)->begin();
     auto it_end = static_cast<this_t const*>(this)->end();
     POLYMESH_ASSERT(it_begin != it_end && "requires non-empty range");
-    auto s = f(*it_begin);
+    decltype(f(*it_begin) + f(*it_begin)) s = f(*it_begin);
     auto cnt = 1;
     static_assert(tmp::can_divide_by<decltype(s), decltype(cnt)>::value, "Cannot divide sum by an integer. (if glm is used, including <glm/ext.hpp> "
                                                                          "might help)");
     ++it_begin;
     while (it_begin != it_end)
     {
-        s = detail::helper_add(s, f(*it_begin));
+        s = s + f(*it_begin);
         ++cnt;
         ++it_begin;
     }
@@ -263,7 +263,7 @@ auto smart_range<this_t, ElementT>::weighted_avg(FuncT&& f, WeightT&& w) const -
     auto it_end = static_cast<this_t const*>(this)->end();
     POLYMESH_ASSERT(it_begin != it_end && "requires non-empty range");
     auto e = *it_begin;
-    auto s = f(e);
+    decltype(f(e) + f(e)) s = f(e);
     auto ws = w(e);
     static_assert(tmp::can_divide_by<decltype(s), decltype(ws)>::value, "Cannot divide sum by weight. (if glm is used, including <glm/ext.hpp> might "
                                                                         "help)");
@@ -272,7 +272,7 @@ auto smart_range<this_t, ElementT>::weighted_avg(FuncT&& f, WeightT&& w) const -
     {
         auto ee = *it_begin;
         auto ww = w(ee);
-        s = detail::helper_add(s, f(ee) * ww);
+        s = s + f(ee) * ww;
         ws = ws + ww;
         ++it_begin;
     }
