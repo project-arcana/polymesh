@@ -7,8 +7,8 @@
 #include <unordered_map>
 
 #ifdef POLYMESH_SUPPORT_GLM
-#include <glm/ext/quaternion_float.hpp>
-#include <glm/matrix.hpp>
+#include <glm/ext.hpp>
+#include <glm/glm.hpp>
 #endif
 
 #include "../low_level_api.hh"
@@ -68,14 +68,8 @@ static std::ostream& write_index(std::ostream& out, primitive_index<tag> const& 
     return out.write(reinterpret_cast<char const*>(&val), sizeof(int32_t));
 }
 
-static std::ostream& write_string(std::ostream& out, std::string const& text)
-{
-    return out.write(text.c_str(), text.size() + 1);
-}
-static std::istream& read_string(std::istream& in, std::string& text)
-{
-    return std::getline(in, text, '\0');
-}
+static std::ostream& write_string(std::ostream& out, std::string const& text) { return out.write(text.c_str(), text.size() + 1); }
+static std::istream& read_string(std::istream& in, std::string& text) { return std::getline(in, text, '\0'); }
 
 template <class tag>
 static std::ostream& storeAttributes(std::ostream& out, std::map<std::string, unique_ptr<primitive_attribute_base<tag>>> const& attrs)
@@ -272,14 +266,8 @@ static bool registered_default_types = []() {
     return true;
 }();
 
-void detail::ostream_write(std::ostream& out, const char* data, size_t size)
-{
-    out.write(data, size);
-}
+void detail::ostream_write(std::ostream& out, const char* data, size_t size) { out.write(data, size); }
 
-void detail::ostream_read(std::istream& in, char* data, size_t size)
-{
-    in.read(data, size);
-}
+void detail::ostream_read(std::istream& in, char* data, size_t size) { in.read(data, size); }
 
 } // namespace polymesh
