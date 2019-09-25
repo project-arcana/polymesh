@@ -9,6 +9,9 @@ namespace polymesh
 template <class Pos3>
 void normalize(vertex_attribute<Pos3>& pos)
 {
+    if (pos.mesh().vertices().size() == 0)
+        return;
+
     auto mm = pos.minmax();
     auto mi = mm.min;
     auto ma = mm.max;
