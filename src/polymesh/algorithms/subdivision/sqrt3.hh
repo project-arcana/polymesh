@@ -22,6 +22,7 @@ void subdivide_sqrt3(Mesh& m, VertexF&& vf)
         auto v0 = h.vertex_from();
         auto v1 = h.vertex_to();
         auto v2 = h.next().vertex_to();
+        POLYMESH_ASSERT(h.next().next().vertex_to() == v0 && "must be triangle mesh");
 
         // split face
         auto v = m.faces().split(f);
