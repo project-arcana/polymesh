@@ -41,4 +41,4 @@ POLYMESH_COLD_FUNC POLYMESH_DONT_INLINE void assertion_failed(assertion_info con
 /// this is a thread_local handler
 /// the handler must be replaced before it is deleted (non-owning view)
 void set_assertion_handler(void (*handler)(detail::assertion_info const& info));
-} // namespace cc
+}
