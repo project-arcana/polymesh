@@ -288,17 +288,6 @@ auto smart_range<this_t, ElementT>::arithmetic_mean(FuncT&& f) const -> tmp::dec
 
 template <class this_t, class ElementT>
 template <class FuncT>
-auto smart_range<this_t, ElementT>::geometric_mean(FuncT&& f) const -> tmp::decayed_result_type_of<FuncT, ElementT>
-{
-    using std::exp;
-    using std::log;
-    auto ff = [&f](ElementT const& e) { return log(f(e)); };
-    auto ff_inv = [](decltype(ff(std::declval<ElementT>())) const& d) { return exp(d); };
-    return this->f_mean(ff, ff_inv);
-}
-
-template <class this_t, class ElementT>
-template <class FuncT>
 auto smart_range<this_t, ElementT>::median(FuncT&& f) const -> tmp::decayed_result_type_of<FuncT, ElementT>
 {
     return this->order_statistic(0.5f, f);
@@ -310,7 +299,7 @@ auto smart_range<this_t, ElementT>::order_statistic(float p, FuncT&& f) const ->
 {
     auto vals = this->to_vector(f);
     POLYMESH_ASSERT(!vals.empty() && "requires non-empty range");
-    auto n = (int)(std::roundf(vals.size() * p));
+    auto n = int(vals.size() * p + .5f);
     if (n < 0)
         n = 0;
     if (n >= (int)vals.size())

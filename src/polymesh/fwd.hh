@@ -65,6 +65,8 @@ struct vertex_edge_ring;
 struct vertex_vertex_ring;
 
 struct halfedge_ring;
+
+struct attribute_collection;
 }
 
 // alias pm

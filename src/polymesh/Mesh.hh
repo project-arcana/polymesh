@@ -12,7 +12,6 @@
 #include "ranges.hh"
 
 // often used helper
-#include "attribute_collection.hh"
 #include "low_level_api.hh"
 
 namespace polymesh

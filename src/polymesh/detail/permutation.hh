@@ -1,6 +1,5 @@
 #pragma once
 
-#include <valarray>
 #include <vector>
 
 namespace polymesh
@@ -45,7 +44,7 @@ template <class Swap>
 void apply_permutation(std::vector<int> const& p, Swap&& s)
 {
     auto size = p.size();
-    std::valarray<bool> visited(false, size);
+    std::vector<bool> visited(size, false);
     for (auto pi = 0u; pi < size; ++pi)
     {
         auto i = pi;

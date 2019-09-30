@@ -1,5 +1,8 @@
 #include "pm.hh"
 
+#include <polymesh/ext/attribute_collection.hh>
+#include <polymesh/low_level_api.hh>
+
 #include <fstream>
 #include <iostream>
 #include <mutex>
@@ -10,8 +13,6 @@
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
 #endif
-
-#include "../low_level_api.hh"
 
 namespace polymesh
 {

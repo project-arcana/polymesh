@@ -4,7 +4,6 @@
 #include <string>
 
 #include "../Mesh.hh"
-#include "../attribute_collection.hh"
 #include "../attributes.hh"
 
 #include "../detail/AttributeSerializer.hh"

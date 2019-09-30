@@ -101,9 +101,6 @@ struct smart_range
     /// calculates the arithmetic mean of f(e) for this range (same as avg)
     template <class FuncT = tmp::identity>
     auto arithmetic_mean(FuncT&& f = {}) const -> tmp::decayed_result_type_of<FuncT, ElementT>;
-    /// calculates the geometric mean of f(e) for this range (also known as log-average)
-    template <class FuncT = tmp::identity>
-    auto geometric_mean(FuncT&& f = {}) const -> tmp::decayed_result_type_of<FuncT, ElementT>;
 
     /// computes the median
     /// NOTE: constructs an intermediate vector!

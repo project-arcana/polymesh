@@ -3,9 +3,9 @@
 #include <map>
 #include <string>
 
-#include "assert.hh"
-#include "attributes.hh"
-#include "detail/unique_ptr.hh"
+#include <polymesh/assert.hh>
+#include <polymesh/attributes.hh>
+#include <polymesh/detail/unique_ptr.hh>
 
 namespace polymesh
 {
