@@ -178,7 +178,11 @@ struct face_edge_circulator : primitive_circulator<face_edge_circulator>
 };
 struct face_face_circulator : primitive_circulator<face_face_circulator>
 {
-    using primitive_circulator<face_face_circulator>::primitive_circulator;
+    face_face_circulator(halfedge_handle h) : primitive_circulator(h)
+    {
+        if (!h.opposite_face().is_valid())
+            advance(); // make sure first handle is valid
+    }
     face_handle operator*() const { return handle.opposite_face(); }
     void advance()
     {
@@ -212,7 +216,11 @@ struct vertex_halfedge_in_circulator : primitive_circulator<vertex_halfedge_in_c
 };
 struct vertex_face_circulator : primitive_circulator<vertex_face_circulator>
 {
-    using primitive_circulator<vertex_face_circulator>::primitive_circulator;
+    vertex_face_circulator(halfedge_handle h, bool at_begin) : primitive_circulator(h, at_begin)
+    {
+        if (!h.face().is_valid())
+            advance(); // make sure first handle is valid
+    }
     face_handle operator*() const { return handle.face(); }
     void advance()
     {

@@ -58,7 +58,7 @@ ElementT smart_range<this_t, ElementT>::last() const
 template <class this_t, class ElementT>
 bool smart_range<this_t, ElementT>::empty() const
 {
-    return static_cast<this_t const*>(this)->begin().is_valid();
+    return !static_cast<this_t const*>(this)->begin().is_valid();
 }
 
 template <class this_t, class ElementT>
