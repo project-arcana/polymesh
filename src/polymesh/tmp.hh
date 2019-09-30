@@ -55,9 +55,9 @@ using cond_const_ref =
 struct identity
 {
     template <typename T>
-    T operator()(T x) const
+    decltype(auto) operator()(T&& x) const
     {
-        return x;
+        return std::forward<T>(x);
     }
 };
 

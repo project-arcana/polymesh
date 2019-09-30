@@ -241,7 +241,6 @@ private:
 
 #include "impl/impl_attributes.hh"
 #include "impl/impl_cursors.hh"
-#include "impl/impl_iterators.hh"
 #include "impl/impl_low_level_api_base.hh"
 #include "impl/impl_low_level_api_mutable.hh"
 #include "impl/impl_mesh.hh"

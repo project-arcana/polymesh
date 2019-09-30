@@ -42,7 +42,7 @@ auto helper_add(A const& a, B const& b) -> decltype(A() + (a - A()) + (b - B()))
 template <class this_t, class ElementT>
 ElementT smart_range<this_t, ElementT>::first() const
 {
-    for (auto h : *static_cast<this_t const*>(this))
+    for (auto&& h : *static_cast<this_t const*>(this))
         return h;
     return {};
 }
@@ -50,7 +50,7 @@ template <class this_t, class ElementT>
 ElementT smart_range<this_t, ElementT>::last() const
 {
     ElementT result;
-    for (auto h : *static_cast<this_t const*>(this))
+    for (auto&& h : *static_cast<this_t const*>(this))
         result = h;
     return result;
 }
@@ -58,14 +58,14 @@ ElementT smart_range<this_t, ElementT>::last() const
 template <class this_t, class ElementT>
 bool smart_range<this_t, ElementT>::empty() const
 {
-    return static_cast<this_t const*>(this)->begin() == static_cast<this_t const*>(this)->end();
+    return static_cast<this_t const*>(this)->begin().is_valid();
 }
 
 template <class this_t, class ElementT>
 template <class PredT>
 bool smart_range<this_t, ElementT>::any(PredT&& p) const
 {
-    for (auto h : *static_cast<this_t const*>(this))
+    for (auto&& h : *static_cast<this_t const*>(this))
         if (p(h))
             return true;
     return false;
@@ -75,7 +75,7 @@ template <class this_t, class ElementT>
 template <class PredT>
 bool smart_range<this_t, ElementT>::all(PredT&& p) const
 {
-    for (auto h : *static_cast<this_t const*>(this))
+    for (auto&& h : *static_cast<this_t const*>(this))
         if (!p(h))
             return false;
     return true;
@@ -86,7 +86,7 @@ template <class PredT>
 int smart_range<this_t, ElementT>::count(PredT&& p) const
 {
     auto cnt = 0;
-    for (auto h : *static_cast<this_t const*>(this))
+    for (auto&& h : *static_cast<this_t const*>(this))
         if (p(h))
             ++cnt;
     return cnt;
@@ -96,7 +96,7 @@ template <class this_t, class ElementT>
 int smart_range<this_t, ElementT>::count() const
 {
     auto cnt = 0;
-    for (auto h : *static_cast<this_t const*>(this))
+    for (auto&& h : *static_cast<this_t const*>(this))
     {
         (void)h; // unused
         ++cnt;
@@ -108,15 +108,14 @@ template <class this_t, class ElementT>
 template <class FuncT>
 auto smart_range<this_t, ElementT>::min(FuncT&& f) const -> tmp::decayed_result_type_of<FuncT, ElementT>
 {
-    auto it_begin = static_cast<this_t const*>(this)->begin();
-    auto it_end = static_cast<this_t const*>(this)->end();
-    POLYMESH_ASSERT(it_begin != it_end && "requires non-empty range");
-    auto v = f(*it_begin);
-    ++it_begin;
-    while (it_begin != it_end)
+    auto it = static_cast<this_t const*>(this)->begin();
+    POLYMESH_ASSERT(it.is_valid() && "requires non-empty range");
+    auto v = f(*it);
+    ++it;
+    while (it.is_valid())
     {
-        v = detail::helper_min(v, f(*it_begin));
-        ++it_begin;
+        v = detail::helper_min(v, f(*it));
+        ++it;
     }
     return v;
 }
@@ -125,15 +124,14 @@ template <class this_t, class ElementT>
 template <class FuncT>
 auto smart_range<this_t, ElementT>::max(FuncT&& f) const -> tmp::decayed_result_type_of<FuncT, ElementT>
 {
-    auto it_begin = static_cast<this_t const*>(this)->begin();
-    auto it_end = static_cast<this_t const*>(this)->end();
-    POLYMESH_ASSERT(it_begin != it_end && "requires non-empty range");
-    auto v = f(*it_begin);
-    ++it_begin;
-    while (it_begin != it_end)
+    auto it = static_cast<this_t const*>(this)->begin();
+    POLYMESH_ASSERT(it.is_valid() && "requires non-empty range");
+    auto v = f(*it);
+    ++it;
+    while (it.is_valid())
     {
-        v = detail::helper_max(v, f(*it_begin));
-        ++it_begin;
+        v = detail::helper_max(v, f(*it));
+        ++it;
     }
     return v;
 }
@@ -142,15 +140,14 @@ template <class this_t, class ElementT>
 template <class FuncT>
 auto smart_range<this_t, ElementT>::sum(FuncT&& f) const -> tmp::decayed_result_type_of<FuncT, ElementT>
 {
-    auto it_begin = static_cast<this_t const*>(this)->begin();
-    auto it_end = static_cast<this_t const*>(this)->end();
-    POLYMESH_ASSERT(it_begin != it_end && "requires non-empty range");
-    auto s = f(*it_begin);
-    ++it_begin;
-    while (it_begin != it_end)
+    auto it = static_cast<this_t const*>(this)->begin();
+    POLYMESH_ASSERT(it.is_valid() && "requires non-empty range");
+    auto s = f(*it);
+    ++it;
+    while (it.is_valid())
     {
-        s = s + f(*it_begin);
-        ++it_begin;
+        s = s + f(*it);
+        ++it;
     }
     return s;
 }
@@ -159,22 +156,21 @@ template <class this_t, class ElementT>
 template <class FuncT>
 ElementT smart_range<this_t, ElementT>::min_by(FuncT&& f) const
 {
-    auto it_begin = static_cast<this_t const*>(this)->begin();
-    auto it_end = static_cast<this_t const*>(this)->end();
-    POLYMESH_ASSERT(it_begin != it_end && "requires non-empty range");
-    auto e_min = *it_begin;
+    auto it = static_cast<this_t const*>(this)->begin();
+    POLYMESH_ASSERT(it.is_valid() && "requires non-empty range");
+    auto e_min = *it;
     auto v_min = f(e_min);
-    ++it_begin;
-    while (it_begin != it_end)
+    ++it;
+    while (it.is_valid())
     {
-        auto e = *it_begin;
-        auto v = f(*it_begin);
+        auto e = *it;
+        auto v = f(*it);
         if (v < v_min)
         {
             v_min = v;
             e_min = e;
         }
-        ++it_begin;
+        ++it;
     }
     return e_min;
 }
@@ -183,42 +179,40 @@ template <class this_t, class ElementT>
 template <class FuncT>
 ElementT smart_range<this_t, ElementT>::max_by(FuncT&& f) const
 {
-    auto it_begin = static_cast<this_t const*>(this)->begin();
-    auto it_end = static_cast<this_t const*>(this)->end();
-    POLYMESH_ASSERT(it_begin != it_end && "requires non-empty range");
-    auto e_max = *it_begin;
+    auto it = static_cast<this_t const*>(this)->begin();
+    POLYMESH_ASSERT(it.is_valid() && "requires non-empty range");
+    auto e_max = *it;
     auto v_max = f(e_max);
-    ++it_begin;
-    while (it_begin != it_end)
+    ++it;
+    while (it.is_valid())
     {
-        auto e = *it_begin;
-        auto v = f(*it_begin);
+        auto e = *it;
+        auto v = f(*it);
         if (v > v_max)
         {
             v_max = v;
             e_max = e;
         }
-        ++it_begin;
+        ++it;
     }
     return e_max;
 }
 
 template <class this_t, class ElementT>
 template <class FuncT>
-polymesh::aabb<ElementT> smart_range<this_t, ElementT>::minmax_by(FuncT&& f) const
+polymesh::minmax_t<ElementT> smart_range<this_t, ElementT>::minmax_by(FuncT&& f) const
 {
-    auto it_begin = static_cast<this_t const*>(this)->begin();
-    auto it_end = static_cast<this_t const*>(this)->end();
-    POLYMESH_ASSERT(it_begin != it_end && "requires non-empty range");
-    auto e_min = *it_begin;
+    auto it = static_cast<this_t const*>(this)->begin();
+    POLYMESH_ASSERT(it.is_valid() && "requires non-empty range");
+    auto e_min = *it;
     auto e_max = e_min;
     auto v_min = f(e_min);
     auto v_max = v_min;
-    ++it_begin;
-    while (it_begin != it_end)
+    ++it;
+    while (it.is_valid())
     {
-        auto e = *it_begin;
-        auto v = f(*it_begin);
+        auto e = *it;
+        auto v = f(*it);
         if (v < v_min)
         {
             v_min = v;
@@ -229,7 +223,7 @@ polymesh::aabb<ElementT> smart_range<this_t, ElementT>::minmax_by(FuncT&& f) con
             v_max = v;
             e_max = e;
         }
-        ++it_begin;
+        ++it;
     }
     return {e_min, e_max};
 }
@@ -238,19 +232,18 @@ template <class this_t, class ElementT>
 template <class FuncT>
 auto smart_range<this_t, ElementT>::avg(FuncT&& f) const -> tmp::decayed_result_type_of<FuncT, ElementT>
 {
-    auto it_begin = static_cast<this_t const*>(this)->begin();
-    auto it_end = static_cast<this_t const*>(this)->end();
-    POLYMESH_ASSERT(it_begin != it_end && "requires non-empty range");
-    decltype(f(*it_begin) + f(*it_begin)) s = f(*it_begin);
+    auto it = static_cast<this_t const*>(this)->begin();
+    POLYMESH_ASSERT(it.is_valid() && "requires non-empty range");
+    decltype(f(*it) + f(*it)) s = f(*it);
     auto cnt = 1;
     static_assert(tmp::can_divide_by<decltype(s), decltype(cnt)>::value, "Cannot divide sum by an integer. (if glm is used, including <glm/ext.hpp> "
                                                                          "might help)");
-    ++it_begin;
-    while (it_begin != it_end)
+    ++it;
+    while (it.is_valid())
     {
-        s = s + f(*it_begin);
+        s = s + f(*it);
         ++cnt;
-        ++it_begin;
+        ++it;
     }
     return s / cnt;
 }
@@ -259,22 +252,21 @@ template <class this_t, class ElementT>
 template <class FuncT, class WeightT>
 auto smart_range<this_t, ElementT>::weighted_avg(FuncT&& f, WeightT&& w) const -> tmp::decayed_result_type_of<FuncT, ElementT>
 {
-    auto it_begin = static_cast<this_t const*>(this)->begin();
-    auto it_end = static_cast<this_t const*>(this)->end();
-    POLYMESH_ASSERT(it_begin != it_end && "requires non-empty range");
-    auto e = *it_begin;
+    auto it = static_cast<this_t const*>(this)->begin();
+    POLYMESH_ASSERT(it.is_valid() && "requires non-empty range");
+    auto e = *it;
     decltype(f(e) + f(e)) s = f(e);
     auto ws = w(e);
     static_assert(tmp::can_divide_by<decltype(s), decltype(ws)>::value, "Cannot divide sum by weight. (if glm is used, including <glm/ext.hpp> might "
                                                                         "help)");
-    ++it_begin;
-    while (it_begin != it_end)
+    ++it;
+    while (it.is_valid())
     {
-        auto ee = *it_begin;
+        auto ee = *it;
         auto ww = w(ee);
         s = s + f(ee) * ww;
         ws = ws + ww;
-        ++it_begin;
+        ++it;
     }
     return s / ws;
 }
@@ -330,27 +322,26 @@ auto smart_range<this_t, ElementT>::order_statistic(float p, FuncT&& f) const ->
 
 template <class this_t, class ElementT>
 template <class FuncT>
-auto smart_range<this_t, ElementT>::aabb(FuncT&& f) const -> polymesh::aabb<tmp::decayed_result_type_of<FuncT, ElementT>>
+auto smart_range<this_t, ElementT>::aabb(FuncT&& f) const -> polymesh::minmax_t<tmp::decayed_result_type_of<FuncT, ElementT>>
 {
-    auto it_begin = static_cast<this_t const*>(this)->begin();
-    auto it_end = static_cast<this_t const*>(this)->end();
-    POLYMESH_ASSERT(it_begin != it_end && "requires non-empty range");
-    auto v = f(*it_begin);
-    polymesh::aabb<tmp::decayed_result_type_of<FuncT, ElementT>> r = {v, v};
-    ++it_begin;
-    while (it_begin != it_end)
+    auto it = static_cast<this_t const*>(this)->begin();
+    POLYMESH_ASSERT(it.is_valid() && "requires non-empty range");
+    auto v = f(*it);
+    polymesh::minmax_t<tmp::decayed_result_type_of<FuncT, ElementT>> r = {v, v};
+    ++it;
+    while (it.is_valid())
     {
-        auto vv = f(*it_begin);
+        auto vv = f(*it);
         r.min = detail::helper_min(r.min, vv);
         r.max = detail::helper_max(r.max, vv);
-        ++it_begin;
+        ++it;
     }
     return r;
 }
 
 template <class this_t, class ElementT>
 template <class FuncT>
-auto smart_range<this_t, ElementT>::minmax(FuncT&& f) const -> polymesh::aabb<tmp::decayed_result_type_of<FuncT, ElementT>>
+auto smart_range<this_t, ElementT>::minmax(FuncT&& f) const -> polymesh::minmax_t<tmp::decayed_result_type_of<FuncT, ElementT>>
 {
     return aabb(f);
 }
@@ -395,7 +386,7 @@ template <class this_t, class ElementT>
 template <class FuncT>
 void smart_range<this_t, ElementT>::into_vector(std::vector<tmp::decayed_result_type_of<FuncT, ElementT>>& container, FuncT&& f) const
 {
-    for (auto h : *static_cast<this_t const*>(this))
+    for (auto&& h : *static_cast<this_t const*>(this))
         container.push_back(f(h));
 }
 
@@ -403,7 +394,7 @@ template <class this_t, class ElementT>
 template <class FuncT>
 void smart_range<this_t, ElementT>::into_set(std::set<tmp::decayed_result_type_of<FuncT, ElementT>>& container, FuncT&& f) const
 {
-    for (auto h : *static_cast<this_t const*>(this))
+    for (auto&& h : *static_cast<this_t const*>(this))
         container.insert(f(h));
 }
 
@@ -411,7 +402,7 @@ template <class this_t, class ElementT>
 template <class FuncT>
 void smart_range<this_t, ElementT>::into_map(std::map<ElementT, tmp::decayed_result_type_of<FuncT, ElementT>>& container, FuncT&& f) const
 {
-    for (auto h : *static_cast<this_t const*>(this))
+    for (auto&& h : *static_cast<this_t const*>(this))
         container[h] = f(h);
 }
 
@@ -420,7 +411,7 @@ template <size_t N, class FuncT>
 void smart_range<this_t, ElementT>::into_array(std::array<tmp::decayed_result_type_of<FuncT, ElementT>, N>& container, FuncT&& f) const
 {
     auto idx = 0u;
-    for (auto h : *static_cast<this_t const*>(this))
+    for (auto&& h : *static_cast<this_t const*>(this))
     {
         if (idx >= N)
             break;
@@ -436,44 +427,35 @@ template <class this_t, class ElementT>
 template <class PredT>
 auto smart_range<this_t, ElementT>::where(PredT&& p) const -> filtered_range<ElementT, this_t const&, PredT>
 {
-    auto it_begin = static_cast<this_t const*>(this)->begin();
-    auto it_end = static_cast<this_t const*>(this)->end();
-    return {it_begin, it_end, p};
+    return {static_cast<this_t const*>(this)->begin(), p};
 }
 
 template <class this_t, class ElementT>
 template <class PredT>
 auto smart_range<this_t, ElementT>::where(PredT&& p) -> filtered_range<ElementT, this_t&, PredT>
 {
-    auto it_begin = static_cast<this_t*>(this)->begin();
-    auto it_end = static_cast<this_t*>(this)->end();
-    return {it_begin, it_end, p};
+    return {static_cast<this_t*>(this)->begin(), p};
 }
 
 template <class this_t, class ElementT>
 template <class PredT>
 auto smart_range<this_t, ElementT>::filter(PredT&& p) const -> filtered_range<ElementT, this_t const&, PredT>
 {
-    auto it_begin = static_cast<this_t const*>(this)->begin();
-    auto it_end = static_cast<this_t const*>(this)->end();
-    static_assert(std::is_same<decltype(it_begin), typename filtered_range<ElementT, this_t const&, PredT>::IteratorT>::value, "");
-    return filtered_range<ElementT, this_t const&, PredT>(it_begin, it_end, p);
+    return {static_cast<this_t const*>(this)->begin(), p};
 }
 
 template <class this_t, class ElementT>
 template <class PredT>
 auto smart_range<this_t, ElementT>::filter(PredT&& p) -> filtered_range<ElementT, this_t&, PredT>
 {
-    auto it_begin = static_cast<this_t*>(this)->begin();
-    auto it_end = static_cast<this_t*>(this)->end();
-    return {it_begin, it_end, p};
+    return {static_cast<this_t*>(this)->begin(), p};
 }
 
 template <class this_t, class tag>
 int primitive_ring<this_t, tag>::size() const
 {
     auto cnt = 0;
-    for (auto v : *static_cast<this_t const*>(this))
+    for (auto&& v : *static_cast<this_t const*>(this))
     {
         (void)v; // unused
         cnt++;
@@ -484,7 +466,7 @@ int primitive_ring<this_t, tag>::size() const
 template <class this_t, class tag>
 bool primitive_ring<this_t, tag>::contains(handle v) const
 {
-    for (auto v2 : *static_cast<this_t const*>(this))
+    for (auto&& v2 : *static_cast<this_t const*>(this))
         if (v == v2)
             return true;
     return false;
@@ -550,7 +532,7 @@ template <class FuncT, class AttrT>
 typename primitive<tag>::template attribute<AttrT> smart_collection<mesh_ptr, tag, iterator>::make_attribute(FuncT&& f, AttrT const& def_value) const
 {
     auto attr = make_attribute_with_default<AttrT>(def_value);
-    for (auto h : *this)
+    for (auto&& h : *this)
         attr[h] = f(h);
     return attr; // copy elison
 }
@@ -565,13 +547,7 @@ typename primitive<tag>::template attribute<AttrT> smart_collection<mesh_ptr, ta
 template <class mesh_ptr, class tag, class iterator>
 iterator smart_collection<mesh_ptr, tag, iterator>::begin() const
 {
-    return {{this->m, typename primitive<tag>::index(0)}};
-}
-
-template <class mesh_ptr, class tag, class iterator>
-iterator smart_collection<mesh_ptr, tag, iterator>::end() const
-{
-    return {{this->m, typename primitive<tag>::index(primitive<tag>::all_size(*this->m))}};
+    return {*this->m, index(0), index(primitive<tag>::all_size(*this->m))};
 }
 
 template <class mesh_ptr, class tag, class iterator>
@@ -583,7 +559,7 @@ typename primitive<tag>::handle smart_collection<mesh_ptr, tag, iterator>::rando
 
     typename primitive<tag>::handle h = {this->m, typename primitive<tag>::index(int(g() % s))};
 
-    if (iterator::is_valid_iterator)
+    if constexpr (iterator::is_valid_only_iterator)
         while (h.is_removed())
             h = {this->m, typename primitive<tag>::index(int(g() % s))};
 
@@ -1082,13 +1058,5 @@ template <class iterator>
 void halfedge_collection<iterator>::rotate_prev(halfedge_handle h) const
 {
     low_level_api(this->m).halfedge_rotate_prev(h.idx);
-}
-
-template <class ElementT, class RangeT, class PredT>
-filtered_range<ElementT, RangeT, PredT>::filtered_range(typename filtered_range<ElementT, RangeT, PredT>::IteratorT begin,
-                                                        typename filtered_range<ElementT, RangeT, PredT>::IteratorT end,
-                                                        PredT predicate)
-  : obegin(begin), oend(end), pred(predicate)
-{
 }
 } // namespace polymesh

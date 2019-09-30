@@ -75,10 +75,9 @@ public:
     int size() const;
     int capacity() const;
 
-    attribute_iterator<primitive_attribute&> begin() { return {0, *this}; }
-    attribute_iterator<primitive_attribute const&> begin() const { return {0, *this}; }
-    attribute_iterator<primitive_attribute&> end() { return {size(), *this}; }
-    attribute_iterator<primitive_attribute const&> end() const { return {size(), *this}; }
+    attribute_iterator<primitive_attribute> begin() { return {0, size(), *this}; }
+    attribute_iterator<primitive_attribute const&> begin() const { return {0, size(), *this}; }
+    end_iterator end() { return {}; }
 
     AttrT const& get_default_value() const { return mDefaultValue; }
     // cannot be set because this is more expensive than just setting

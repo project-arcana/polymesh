@@ -11,7 +11,7 @@
 namespace polymesh
 {
 template <class T>
-struct aabb
+struct minmax_t
 {
     T min;
     T max;
@@ -40,11 +40,11 @@ struct smart_range
 
     /// returns true if the range is empty
     bool empty() const;
-    /// returns true if any value fulfils p(v)
+    /// returns true if any value satisfying p(v)
     /// also works for boolean attributes
     template <class PredT = tmp::identity>
     bool any(PredT&& p = {}) const;
-    /// returns true if all values fulfil p(v)
+    /// returns true if all values satisfy p(v)
     /// also works for boolean attributes
     template <class PredT = tmp::identity>
     bool all(PredT&& p = {}) const;
@@ -53,7 +53,7 @@ struct smart_range
     /// NOTE: this is an O(n) operation, prefer size() if available
     /// TODO: maybe SFINAE to implement this via size() if available?
     int count() const;
-    /// returns the number of elements fulfilling p(v) in this range
+    /// returns the number of elements satisfying p(v) in this range
     template <class PredT>
     int count(PredT&& p) const;
 
@@ -119,15 +119,15 @@ struct smart_range
     /// undefined behavior if range is empty
     /// works for std::min/max and everything reachable by ADL (calls min/max(_, _))
     template <class FuncT = tmp::identity>
-    auto aabb(FuncT&& f = {}) const -> polymesh::aabb<tmp::decayed_result_type_of<FuncT, ElementT>>;
+    auto aabb(FuncT&& f = {}) const -> polymesh::minmax_t<tmp::decayed_result_type_of<FuncT, ElementT>>;
     /// same as aabb(...)
     template <class FuncT = tmp::identity>
-    auto minmax(FuncT&& f = {}) const -> polymesh::aabb<tmp::decayed_result_type_of<FuncT, ElementT>>;
+    auto minmax(FuncT&& f = {}) const -> polymesh::minmax_t<tmp::decayed_result_type_of<FuncT, ElementT>>;
     /// returns {e_min, e_max} that minimizes/maximizes f(e)
     /// undefined behavior if range is empty
     /// requires working comparison operators for the result
     template <class FuncT>
-    polymesh::aabb<ElementT> minmax_by(FuncT&& f) const;
+    polymesh::minmax_t<ElementT> minmax_by(FuncT&& f) const;
 
     /// converts this range to a vector containing f(v) entries
     template <class FuncT = tmp::identity>
@@ -172,6 +172,7 @@ struct smart_range
     // - conversions from vector/set/map
 };
 
+
 // ================= FILTER + MAP =================
 
 template <class ElementT, class RangeT, class PredT>
@@ -179,15 +180,12 @@ struct filtered_range : smart_range<filtered_range<ElementT, RangeT, PredT>, Ele
 {
     using IteratorT = decltype(std::declval<RangeT>().begin());
 
-    filtering_iterator<IteratorT, PredT> begin() const { return {obegin, oend, pred}; }
-    filtering_iterator<IteratorT, PredT> end() const { return {oend, oend, pred}; }
+    filtering_iterator<IteratorT, PredT> begin() const { return {it_begin, pred}; }
+    end_iterator end() const { return {}; }
 
-    IteratorT obegin;
-    IteratorT oend;
+    IteratorT it_begin;
     PredT pred;
 
-    filtered_range() = default;
-    filtered_range(IteratorT begin, IteratorT end, PredT predicate);
     filtered_range(filtered_range const&) = delete;
     filtered_range(filtered_range&&) = delete;
     filtered_range& operator=(filtered_range const&) = delete;
@@ -195,6 +193,7 @@ struct filtered_range : smart_range<filtered_range<ElementT, RangeT, PredT>, Ele
 };
 
 // TODO: mapped_range
+
 
 // ================= COLLECTION =================
 
@@ -206,7 +205,7 @@ struct smart_collection : smart_range<smart_collection<mesh_ptr, tag, iterator>,
     using handle = typename primitive<tag>::handle;
     using index = typename primitive<tag>::index;
 
-    /// Number of primitives, INCLUDING those marked for deletion
+    /// Number of primitives (includes those marked for deletion if all_xyz collection is used)
     /// O(1) computation
     int size() const;
 
@@ -234,7 +233,7 @@ struct smart_collection : smart_range<smart_collection<mesh_ptr, tag, iterator>,
 
     // Iteration:
     iterator begin() const;
-    iterator end() const;
+    end_iterator end() const { return {}; }
 
     /// returns a handle chosen uniformly at random
     /// NOTE: when only valid handles are allowed, this will use rejection sampling
@@ -255,7 +254,7 @@ protected:
 
 public:
     /// returns reference to mesh
-    decltype(*m) mesh() const { return *m; }
+    std::remove_pointer_t<mesh_ptr>& mesh() const { return *m; }
 };
 
 /// Collection of all vertices of a mesh
@@ -540,8 +539,8 @@ struct face_primitive_ring : primitive_ring<face_primitive_ring<tag, circulator>
     face_primitive_ring(face_handle f) { face = f; }
 
     // Iteration:
-    circulator begin() const { return {face.any_halfedge(), false}; }
-    circulator end() const { return {face.any_halfedge(), true}; }
+    circulator begin() const { return {face.any_halfedge()}; }
+    end_iterator end() const { return {}; }
 };
 
 template <class tag, class circulator>
@@ -551,8 +550,8 @@ struct vertex_primitive_ring : primitive_ring<vertex_primitive_ring<tag, circula
     vertex_primitive_ring(vertex_handle v) { vertex = v; }
 
     // Iteration:
-    circulator begin() const { return {vertex.any_outgoing_halfedge(), vertex.is_isolated()}; }
-    circulator end() const { return {vertex.any_outgoing_halfedge(), true}; }
+    circulator begin() const { return {vertex.any_outgoing_halfedge(), !vertex.is_isolated()}; }
+    end_iterator end() const { return {}; }
 };
 
 template <class tag, class circulator>
@@ -562,8 +561,8 @@ struct halfedge_primitive_ring : primitive_ring<halfedge_primitive_ring<tag, cir
     halfedge_primitive_ring(halfedge_handle h) { halfedge = h; }
 
     // Iteration:
-    circulator begin() const { return {halfedge, false}; }
-    circulator end() const { return {halfedge, true}; }
+    circulator begin() const { return {halfedge}; }
+    end_iterator end() const { return {}; }
 };
 
 /// all vertices belonging to a face

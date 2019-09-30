@@ -1,8 +1,8 @@
 #pragma once
 
 #include <type_traits>
-#include <vector>
-#include "attributes.hh"
+#include <vector> // TODO: replace me by span
+
 #include "cursors.hh"
 #include "tmp.hh"
 
@@ -369,20 +369,8 @@ public:
 };
 
 // Convenience functions
-inline low_level_api_const low_level_api(Mesh const& m)
-{
-    return {m};
-}
-inline low_level_api_const low_level_api(Mesh const* m)
-{
-    return {*m};
-}
-inline low_level_api_mutable low_level_api(Mesh& m)
-{
-    return {m};
-}
-inline low_level_api_mutable low_level_api(Mesh* m)
-{
-    return {*m};
-}
+inline low_level_api_const low_level_api(Mesh const& m) { return {m}; }
+inline low_level_api_const low_level_api(Mesh const* m) { return {*m}; }
+inline low_level_api_mutable low_level_api(Mesh& m) { return {m}; }
+inline low_level_api_mutable low_level_api(Mesh* m) { return {*m}; }
 } // namespace polymesh

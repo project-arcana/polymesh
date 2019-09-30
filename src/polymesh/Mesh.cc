@@ -223,10 +223,10 @@ void Mesh::assert_consistency() const
             POLYMESH_ASSERT(v.any_outgoing_halfedge().vertex_from() == v);
 
             for (auto f : v.faces())
-                if (f.is_valid())
-                {
-                    POLYMESH_ASSERT(f.vertices().contains(v));
-                }
+            {
+                POLYMESH_ASSERT(f.is_valid());
+                POLYMESH_ASSERT(f.vertices().contains(v));
+            }
 
             for (auto h : v.outgoing_halfedges())
                 POLYMESH_ASSERT(h.vertex_from() == v);
@@ -272,10 +272,10 @@ void Mesh::assert_consistency() const
             POLYMESH_ASSERT(v.faces().contains(f));
 
         for (auto ff : f.adjacent_faces())
-            if (ff.is_valid())
-            {
-                POLYMESH_ASSERT(ff.adjacent_faces().contains(f));
-            }
+        {
+            POLYMESH_ASSERT(ff.is_valid());
+            POLYMESH_ASSERT(ff.adjacent_faces().contains(f));
+        }
 
         for (auto e : f.edges())
             POLYMESH_ASSERT(e.faceA() == f || e.faceB() == f);
