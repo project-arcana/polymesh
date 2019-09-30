@@ -77,7 +77,7 @@ public:
 
     attribute_iterator<primitive_attribute> begin() { return {0, size(), *this}; }
     attribute_iterator<primitive_attribute const&> begin() const { return {0, size(), *this}; }
-    end_iterator end() { return {}; }
+    end_iterator end() const { return {}; }
 
     AttrT const& get_default_value() const { return mDefaultValue; }
     // cannot be set because this is more expensive than just setting
