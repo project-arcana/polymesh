@@ -143,8 +143,12 @@ template <class Pos3, class Scalar = typename field3<Pos3>::scalar_t>
 face_attribute<typename field3<Pos3>::vec_t> face_normals(Mesh const& m, vertex_attribute<Pos3> const& position);
 
 /// efficiently computes face normal attribute (assuming triangles)
-template <class Pos3, class Scalar = typename field3<Pos3>::scalar_t>
+template <class Pos3>
 face_attribute<typename field3<Pos3>::vec_t> triangle_normals(Mesh const& m, vertex_attribute<Pos3> const& position);
+
+/// efficiently computes a face area attribute (assuming triangles)
+template <class Pos3>
+face_attribute<typename field3<Pos3>::scalar_t> triangle_areas(Mesh const& m, vertex_attribute<Pos3> const& position);
 
 /// creates a Pos3 halfedge attribute with barycentric coordinates per to-vertex (i.e. 100, 010, 001)
 /// assumes triangle mesh
@@ -460,10 +464,16 @@ face_attribute<typename field3<Pos3>::vec_t> face_normals(Mesh const& m, vertex_
     return m.faces().map([&](face_handle f) { return face_normal(f, position); });
 }
 
-template <class Pos3, class Scalar>
+template <class Pos3>
 face_attribute<typename field3<Pos3>::vec_t> triangle_normals(Mesh const& m, vertex_attribute<Pos3> const& position)
 {
     return m.faces().map([&](face_handle f) { return triangle_normal(f, position); });
+}
+
+template <class Pos3>
+face_attribute<typename field3<Pos3>::scalar_t> triangle_areas(Mesh const& m, vertex_attribute<Pos3> const& position)
+{
+    return m.faces().map([&](face_handle f) { return triangle_area(f, position); });
 }
 
 template <class Pos3>
