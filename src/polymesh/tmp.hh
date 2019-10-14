@@ -7,6 +7,11 @@ namespace polymesh
 // small template metaprogramming
 namespace tmp
 {
+template <class M, class T>
+struct member_fun {
+    M T::* fun;
+};
+
 template <class FuncT>
 struct decayed_result_of
 {

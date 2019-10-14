@@ -580,10 +580,16 @@ struct face_edge_ring : face_primitive_ring<edge_tag, face_edge_circulator>
     using face_primitive_ring<edge_tag, face_edge_circulator>::face_primitive_ring;
 };
 
-/// all adjacent faces belonging to a face
+/// all adjacent faces belonging to a face (DOES NOT INCLUDE invalid ones for boundaries)
 struct face_face_ring : face_primitive_ring<face_tag, face_face_circulator>
 {
     using face_primitive_ring<face_tag, face_face_circulator>::face_primitive_ring;
+};
+
+/// all adjacent faces belonging to a face (INCLUDES invalid ones for boundaries)
+struct face_all_face_ring : face_primitive_ring<face_tag, face_all_face_circulator>
+{
+    using face_primitive_ring<face_tag, face_all_face_circulator>::face_primitive_ring;
 };
 
 /// all outgoing half-edges from a vertex
@@ -610,10 +616,16 @@ struct vertex_edge_ring : vertex_primitive_ring<edge_tag, vertex_edge_circulator
     using vertex_primitive_ring<edge_tag, vertex_edge_circulator>::vertex_primitive_ring;
 };
 
-/// all adjacent faces of a vertex (INCLUDES invalid ones for boundaries)
+/// all adjacent faces of a vertex (DOES NOT INCLUDE invalid ones for boundaries)
 struct vertex_face_ring : vertex_primitive_ring<face_tag, vertex_face_circulator>
 {
     using vertex_primitive_ring<face_tag, vertex_face_circulator>::vertex_primitive_ring;
+};
+
+/// all adjacent faces of a vertex (INCLUDES invalid ones for boundaries)
+struct vertex_all_face_ring : vertex_primitive_ring<face_tag, vertex_all_face_circulator>
+{
+    using vertex_primitive_ring<face_tag, vertex_all_face_circulator>::vertex_primitive_ring;
 };
 
 /// all half-edges along a ring (next -> next -> ...)

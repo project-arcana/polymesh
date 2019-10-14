@@ -193,6 +193,16 @@ struct face_face_circulator : primitive_circulator<face_face_circulator>
         at_begin = false;
     }
 };
+struct face_all_face_circulator : primitive_circulator<face_all_face_circulator>
+{
+    face_all_face_circulator(halfedge_handle h) : primitive_circulator(h) {}
+    face_handle operator*() const { return handle.opposite_face(); }
+    void advance()
+    {
+        handle = handle.next();
+        at_begin = false;
+    }
+};
 
 struct vertex_halfedge_out_circulator : primitive_circulator<vertex_halfedge_out_circulator>
 {
@@ -218,7 +228,7 @@ struct vertex_face_circulator : primitive_circulator<vertex_face_circulator>
 {
     vertex_face_circulator(halfedge_handle h, bool at_begin) : primitive_circulator(h, at_begin)
     {
-        if (!h.face().is_valid())
+        if (h.is_valid() && !h.face().is_valid())
             advance(); // make sure first handle is valid
     }
     face_handle operator*() const { return handle.face(); }
@@ -228,6 +238,16 @@ struct vertex_face_circulator : primitive_circulator<vertex_face_circulator>
         {
             handle = handle.prev().opposite();
         } while (handle != end && handle.face().is_invalid());
+        at_begin = false;
+    }
+};
+struct vertex_all_face_circulator : primitive_circulator<vertex_all_face_circulator>
+{
+    vertex_all_face_circulator(halfedge_handle h, bool at_begin) : primitive_circulator(h, at_begin) {}
+    face_handle operator*() const { return handle.face(); }
+    void advance()
+    {
+        handle = handle.prev().opposite();
         at_begin = false;
     }
 };

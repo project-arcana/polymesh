@@ -57,10 +57,12 @@ struct face_vertex_ring;
 struct face_edge_ring;
 struct face_halfedge_ring;
 struct face_face_ring;
+struct face_all_face_ring;
 
 struct vertex_halfedge_out_ring;
 struct vertex_halfedge_in_ring;
 struct vertex_face_ring;
+struct vertex_all_face_ring;
 struct vertex_edge_ring;
 struct vertex_vertex_ring;
 

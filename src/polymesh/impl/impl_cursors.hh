@@ -122,6 +122,8 @@ inline face_halfedge_ring face_handle::halfedges() const { return {*this}; }
 
 inline face_face_ring face_handle::adjacent_faces() const { return {*this}; }
 
+inline face_all_face_ring face_handle::all_adjacent_faces() const { return {*this}; }
+
 inline vertex_halfedge_in_ring vertex_handle::incoming_halfedges() const { return {*this}; }
 
 inline vertex_halfedge_out_ring vertex_handle::outgoing_halfedges() const { return {*this}; }
@@ -129,6 +131,8 @@ inline vertex_halfedge_out_ring vertex_handle::outgoing_halfedges() const { retu
 inline vertex_edge_ring vertex_handle::edges() const { return {*this}; }
 
 inline vertex_face_ring vertex_handle::faces() const { return {*this}; }
+
+inline vertex_all_face_ring vertex_handle::all_faces() const { return {*this}; }
 
 inline vertex_vertex_ring vertex_handle::adjacent_vertices() const { return {*this}; }
 

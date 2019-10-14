@@ -131,7 +131,8 @@ struct face_handle : primitive_handle<face_tag>
     face_vertex_ring vertices() const;
     face_edge_ring edges() const;
     face_halfedge_ring halfedges() const;
-    face_face_ring adjacent_faces() const; ///< includes invalid ones for boundaries!
+    face_face_ring adjacent_faces() const;         ///< DOES NOT include invalid ones for boundaries!
+    face_all_face_ring all_adjacent_faces() const; ///< includes invalid ones for boundaries!
 };
 
 struct vertex_handle : primitive_handle<vertex_tag>
@@ -153,7 +154,8 @@ struct vertex_handle : primitive_handle<vertex_tag>
     vertex_halfedge_in_ring incoming_halfedges() const;
     vertex_halfedge_out_ring outgoing_halfedges() const;
     vertex_edge_ring edges() const;
-    vertex_face_ring faces() const; ///< includes invalid ones for boundaries!
+    vertex_face_ring faces() const;         ///< DOES NOT include invalid ones for boundaries!
+    vertex_all_face_ring all_faces() const; ///< includes invalid ones for boundaries!
     vertex_vertex_ring adjacent_vertices() const;
 };
 
