@@ -7,14 +7,16 @@
 
 namespace polymesh
 {
-// PriorityF: (edge_handle) -> optional<T>
-//   (nullopt means edge should not be split, higher priorities are split first)
-// SplitF: (vertex_handle v, halfedge_handle h, vertex_handle v_from, vertex_handle v_to, auto&& emit_edge) -> void
-//   (h is a new halfedge pointing to the new vertex v, but can be used to access the old attribute data as well)
-//   (emit_edge is edge_index -> void and must be called for any newly user-created edge.
-//    the two guaranteed new edges from the split are already added)
-//
-// NOTE: if mesh was compact before it is compact afterwards
+/**
+ * PriorityF: (edge_handle) -> optional<T>
+ *   (nullopt means edge should not be split, higher priorities are split first)
+ * SplitF: (vertex_handle v, halfedge_handle h, vertex_handle v_from, vertex_handle v_to, auto&& emit_edge) -> void
+ *   (h is a new halfedge pointing to the new vertex v, but can be used to access the old attribute data as well)
+ *   (emit_edge is edge_index -> void and must be called for any newly user-created edge.
+ *    the two guaranteed new edges from the split are already added)
+ *
+ * NOTE: if mesh was compact before it is compact afterwards
+ */
 template <class PriorityF, class SplitF>
 void split_edges(Mesh& m, PriorityF&& priorityF, SplitF&& splitF)
 {
@@ -60,8 +62,24 @@ void split_edges(Mesh& m, PriorityF&& priorityF, SplitF&& splitF)
     }
 }
 
-// same as split_edges but splitF has no emit_edge and triangle splits are performed
-// the topology must not be altered in splitF
+/**
+ * same as split_edges but splitF has no emit_edge and triangle splits are performed
+ * the topology must not be altered in splitF
+ *
+ * Example:
+ *
+ *   pm::split_edges_trimesh(m,
+ *                           [&](pm::edge_handle e) -> tg::optional<float> {
+ *                               auto const l = pm::edge_length(e, pos);
+ *                               if (l < target_el)
+ *                                   return {};
+ *                               return l;
+ *                           },
+ *                           [&](pm::vertex_handle v, pm::halfedge_handle, pm::vertex_handle v_from, pm::vertex_handle v_to) {
+ *                               pos[v] = mix(pos[v_to], pos[v_from], 0.5f);
+ *                               // TODO: maybe propagate other attributes
+ *                           });
+ */
 template <class PriorityF, class SplitF>
 void split_edges_trimesh(Mesh& m, PriorityF&& priorityF, SplitF&& splitF)
 {
