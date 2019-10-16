@@ -8,8 +8,9 @@ namespace polymesh
 namespace tmp
 {
 template <class M, class T>
-struct member_fun {
-    M T::* fun;
+struct member_fun
+{
+    M T::*fun;
 };
 
 template <class FuncT>
@@ -28,6 +29,14 @@ struct result_of
     template <class ArgT>
     using type = decltype(std::declval<FuncT>()(std::declval<ArgT>()));
 };
+
+template <class T>
+struct dont_deduce_t
+{
+    using type = T;
+};
+template <class T>
+using dont_deduce = typename dont_deduce_t<T>::type;
 
 template <class FuncT, class ArgT>
 using result_type_of = typename result_of<FuncT>::template type<ArgT>;
@@ -79,5 +88,16 @@ struct can_divide_by
         value = sizeof(test<T>(0)) == sizeof(bool)
     };
 };
+
+template <class ScalarT, int Nom, int Denom>
+struct constant_rational
+{
+    template <class... Args>
+    constexpr ScalarT operator()(Args&&...) const
+    {
+        return ScalarT(Nom) / ScalarT(Denom);
+    }
+};
+
 } // namespace tmp
 } // namespace polymesh
