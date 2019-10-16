@@ -255,8 +255,8 @@ auto smart_range<this_t, ElementT>::weighted_avg(FuncT&& f, WeightT&& w) const -
     auto it = static_cast<this_t const*>(this)->begin();
     POLYMESH_ASSERT(it.is_valid() && "requires non-empty range");
     auto e = *it;
-    decltype(f(e) + f(e)) s = f(e);
     auto ws = w(e);
+    decltype(f(e) + f(e)) s = f(e) * ws;
     static_assert(tmp::can_divide_by<decltype(s), decltype(ws)>::value, "Cannot divide sum by weight. (if glm is used, including <glm/ext.hpp> might "
                                                                         "help)");
     ++it;
