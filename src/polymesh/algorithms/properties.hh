@@ -123,32 +123,42 @@ Scalar angle_sum(vertex_handle v, vertex_attribute<Pos3> const& position);
 template <class Pos3, class Scalar = typename field3<Pos3>::scalar_t>
 Scalar angle_defect(vertex_handle v, vertex_attribute<Pos3> const& position);
 
+/// computes the laplacian cotan weight for a single edge
+/// NOTE: only works for triangles!
+template <class Pos3, class Scalar = typename field3<Pos3>::scalar_t>
+Scalar cotan_weight(edge_handle e, vertex_attribute<Pos3> const& position);
+
 /// efficiently computes the voronoi areas of all vertices
 /// assumes triangle meshes for now
 template <class Pos3, class Scalar = typename field3<Pos3>::scalar_t>
-vertex_attribute<Scalar> vertex_voronoi_areas(Mesh const& m, vertex_attribute<Pos3> const& position);
+vertex_attribute<Scalar> vertex_voronoi_areas(vertex_attribute<Pos3> const& position);
 
 /// efficiently computes vertex normals by uniformly weighting face normals
 /// assumes triangle meshes for now
 template <class Pos3, class Scalar = typename field3<Pos3>::scalar_t>
-vertex_attribute<typename field3<Pos3>::vec_t> vertex_normals_uniform(Mesh const& m, vertex_attribute<Pos3> const& position);
+vertex_attribute<typename field3<Pos3>::vec_t> vertex_normals_uniform(vertex_attribute<Pos3> const& position);
 
 /// efficiently computes vertex normals by area weighting face normals
 /// assumes triangle meshes for now
 template <class Pos3, class Scalar = typename field3<Pos3>::scalar_t>
-vertex_attribute<typename field3<Pos3>::vec_t> vertex_normals_by_area(Mesh const& m, vertex_attribute<Pos3> const& position);
+vertex_attribute<typename field3<Pos3>::vec_t> vertex_normals_by_area(vertex_attribute<Pos3> const& position);
 
 /// efficiently computes face normal attribute
 template <class Pos3, class Scalar = typename field3<Pos3>::scalar_t>
-face_attribute<typename field3<Pos3>::vec_t> face_normals(Mesh const& m, vertex_attribute<Pos3> const& position);
+face_attribute<typename field3<Pos3>::vec_t> face_normals(vertex_attribute<Pos3> const& position);
 
 /// efficiently computes face normal attribute (assuming triangles)
 template <class Pos3>
-face_attribute<typename field3<Pos3>::vec_t> triangle_normals(Mesh const& m, vertex_attribute<Pos3> const& position);
+face_attribute<typename field3<Pos3>::vec_t> triangle_normals(vertex_attribute<Pos3> const& position);
 
 /// efficiently computes a face area attribute (assuming triangles)
 template <class Pos3>
-face_attribute<typename field3<Pos3>::scalar_t> triangle_areas(Mesh const& m, vertex_attribute<Pos3> const& position);
+face_attribute<typename field3<Pos3>::scalar_t> triangle_areas(vertex_attribute<Pos3> const& position);
+
+/// efficiently computes per-edge cotangent weights
+/// NOTE: only works for triangle meshes!
+template <class Pos3>
+edge_attribute<typename field3<Pos3>::scalar_t> cotan_weights(vertex_attribute<Pos3> const& position);
 
 /// creates a Pos3 halfedge attribute with barycentric coordinates per to-vertex (i.e. 100, 010, 001)
 /// assumes triangle mesh
@@ -392,6 +402,48 @@ Scalar angle_defect(vertex_handle v, vertex_attribute<Pos3> const& position)
     return 2 * M_PI - angle_sum(v, position);
 }
 
+template <class Pos3, class Scalar>
+Scalar cotan_weight(edge_handle e, vertex_attribute<Pos3> const& position)
+{
+    auto h0 = e.halfedgeA();
+    auto h1 = e.halfedgeB();
+
+    auto cot_a = Scalar(0);
+    auto cot_b = Scalar(0);
+
+    auto pi = position[h0.vertex_to()];
+    auto pj = position[h1.vertex_to()];
+
+    if (!h0.is_boundary())
+    {
+        POLYMESH_ASSERT(h0.next().next().vertex_to() == h0.vertex_from() && "only works on triangles");
+        auto pa = position[h0.next().vertex_to()];
+
+        auto e_ia = pi - pa;
+        auto e_ja = pj - pa;
+
+        cot_a = field3<Pos3>::dot(e_ia, e_ja) / field3<Pos3>::length(field3<Pos3>::cross(e_ia, e_ja));
+    }
+
+    if (!h1.is_boundary())
+    {
+        POLYMESH_ASSERT(h1.next().next().vertex_to() == h1.vertex_from() && "only works on triangles");
+        auto pb = position[h1.next().vertex_to()];
+
+        auto e_ib = pi - pb;
+        auto e_jb = pj - pb;
+
+        cot_b = field3<Pos3>::dot(e_ib, e_jb) / field3<Pos3>::length(field3<Pos3>::cross(e_ib, e_jb));
+    }
+
+    auto w = cot_a + cot_b;
+
+    if (std::isnan(w))
+        return Scalar(0);
+
+    return w;
+}
+
 template <class Pos3>
 Pos3 bary_interpolate(face_handle f, Pos3 bary, vertex_attribute<Pos3> const& position)
 {
@@ -403,8 +455,9 @@ Pos3 bary_interpolate(face_handle f, Pos3 bary, vertex_attribute<Pos3> const& po
 }
 
 template <class Pos3, class Scalar>
-vertex_attribute<Scalar> vertex_voronoi_areas(Mesh const& m, vertex_attribute<Pos3> const& position)
+vertex_attribute<Scalar> vertex_voronoi_areas(vertex_attribute<Pos3> const& position)
 {
+    auto const& m = position.mesh();
     vertex_attribute<Scalar> areas = m.vertices().make_attribute_with_default(Scalar(0));
 
     for (auto f : m.faces())
@@ -419,8 +472,9 @@ vertex_attribute<Scalar> vertex_voronoi_areas(Mesh const& m, vertex_attribute<Po
 }
 
 template <class Pos3, class Scalar>
-vertex_attribute<typename field3<Pos3>::vec_t> vertex_normals_uniform(Mesh const& m, vertex_attribute<Pos3> const& position)
+vertex_attribute<typename field3<Pos3>::vec_t> vertex_normals_uniform(vertex_attribute<Pos3> const& position)
 {
+    auto const& m = position.mesh();
     auto fnormals = m.faces().map([&](face_handle f) { return triangle_normal(f, position); });
     auto normals = m.vertices().make_attribute_with_default(field3<Pos3>::make_vec(0, 0, 0));
 
@@ -439,8 +493,9 @@ vertex_attribute<typename field3<Pos3>::vec_t> vertex_normals_uniform(Mesh const
 }
 
 template <class Pos3, class Scalar>
-vertex_attribute<typename field3<Pos3>::vec_t> vertex_normals_by_area(Mesh const& m, vertex_attribute<Pos3> const& position)
+vertex_attribute<typename field3<Pos3>::vec_t> vertex_normals_by_area(vertex_attribute<Pos3> const& position)
 {
+    auto const& m = position.mesh();
     auto fnormals = m.faces().map([&](face_handle f) { return triangle_normal_unorm(f, position); });
     auto normals = m.vertices().make_attribute_with_default(field3<Pos3>::make_vec(0, 0, 0));
 
@@ -459,21 +514,31 @@ vertex_attribute<typename field3<Pos3>::vec_t> vertex_normals_by_area(Mesh const
 }
 
 template <class Pos3, class Scalar>
-face_attribute<typename field3<Pos3>::vec_t> face_normals(Mesh const& m, vertex_attribute<Pos3> const& position)
+face_attribute<typename field3<Pos3>::vec_t> face_normals(vertex_attribute<Pos3> const& position)
 {
+    auto const& m = position.mesh();
     return m.faces().map([&](face_handle f) { return face_normal(f, position); });
 }
 
 template <class Pos3>
-face_attribute<typename field3<Pos3>::vec_t> triangle_normals(Mesh const& m, vertex_attribute<Pos3> const& position)
+face_attribute<typename field3<Pos3>::vec_t> triangle_normals(vertex_attribute<Pos3> const& position)
 {
+    auto const& m = position.mesh();
     return m.faces().map([&](face_handle f) { return triangle_normal(f, position); });
 }
 
 template <class Pos3>
-face_attribute<typename field3<Pos3>::scalar_t> triangle_areas(Mesh const& m, vertex_attribute<Pos3> const& position)
+face_attribute<typename field3<Pos3>::scalar_t> triangle_areas(vertex_attribute<Pos3> const& position)
 {
+    auto const& m = position.mesh();
     return m.faces().map([&](face_handle f) { return triangle_area(f, position); });
+}
+
+template <class Pos3>
+edge_attribute<typename field3<Pos3>::scalar_t> cotan_weights(vertex_attribute<Pos3> const& position)
+{
+    auto const& m = position.mesh();
+    return m.edges().map([&](edge_handle e) { return cotan_weight(e, position); });
 }
 
 template <class Pos3>
@@ -495,23 +560,6 @@ halfedge_attribute<Pos3> barycentric_coordinates(Mesh const& m)
 template <class Pos3>
 bool is_delaunay(edge_handle e, vertex_attribute<Pos3> const& position)
 {
-    auto h0 = e.halfedgeA();
-    auto h1 = e.halfedgeB();
-
-    auto pi = position[h0.vertex_to()];
-    auto pj = position[h1.vertex_to()];
-
-    auto pa = position[h0.next().vertex_to()];
-    auto pb = position[h1.next().vertex_to()];
-
-    auto e_ia = pi - pa;
-    auto e_ja = pj - pa;
-    auto e_ib = pi - pb;
-    auto e_jb = pj - pb;
-
-    auto cot_a = field3<Pos3>::dot(e_ia, e_ja) / field3<Pos3>::length(field3<Pos3>::cross(e_ia, e_ja));
-    auto cot_b = field3<Pos3>::dot(e_ib, e_jb) / field3<Pos3>::length(field3<Pos3>::cross(e_ib, e_jb));
-
-    return cot_a + cot_b >= 0;
+    return e.is_boundary() || cotan_weight(e, position) >= 0;
 }
 } // namespace polymesh
