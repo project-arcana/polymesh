@@ -26,7 +26,7 @@ struct field3
 {
     using pos_t = Pos3;
     using vec_t = typename detail::vec_type<Pos3>::type;
-    using scalar_t = typename std::decay<decltype(std::declval<pos_t>()[0])>::type;
+    using scalar_t = std::decay_t<decltype(std::declval<pos_t>()[0])>;
 
     static pos_t make_pos(scalar_t x, scalar_t y, scalar_t z)
     {
@@ -65,4 +65,7 @@ struct field3
 
     static scalar_t scalar(scalar_t v) { return v; }
 };
+
+template <class Pos3>
+using scalar_of = typename field3<Pos3>::scalar_t;
 } // namespace polymesh
