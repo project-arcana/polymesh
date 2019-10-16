@@ -82,7 +82,7 @@ inline face_handle edge_handle::faceB() const { return mesh->handle_of(low_level
 inline face_handle vertex_handle::any_face() const
 {
     auto h = low_level_api(mesh).outgoing_halfedge_of(idx);
-    return mesh->handle_of(h.is_valid() ? low_level_api(mesh).face_of(h) : face_index::invalid());
+    return mesh->handle_of(h.is_valid() ? low_level_api(mesh).face_of(h) : face_index::invalid);
 }
 
 inline face_handle vertex_handle::any_valid_face() const
@@ -90,7 +90,7 @@ inline face_handle vertex_handle::any_valid_face() const
     for (auto f : faces())
         if (f.is_valid())
             return f;
-    return mesh->handle_of(face_index::invalid());
+    return mesh->handle_of(face_index::invalid);
 }
 
 inline halfedge_handle vertex_handle::any_outgoing_halfedge() const { return mesh->handle_of(low_level_api(mesh).outgoing_halfedge_of(idx)); }
@@ -98,13 +98,13 @@ inline halfedge_handle vertex_handle::any_outgoing_halfedge() const { return mes
 inline halfedge_handle vertex_handle::any_incoming_halfedge() const
 {
     auto h = low_level_api(mesh).outgoing_halfedge_of(idx);
-    return mesh->handle_of(h.is_valid() ? low_level_api(mesh).opposite(h) : halfedge_index::invalid());
+    return mesh->handle_of(h.is_valid() ? low_level_api(mesh).opposite(h) : halfedge_index::invalid);
 }
 
 inline edge_handle vertex_handle::any_edge() const
 {
     auto h = low_level_api(mesh).outgoing_halfedge_of(idx);
-    return mesh->handle_of(h.is_valid() ? low_level_api(mesh).edge_of(h) : edge_index::invalid());
+    return mesh->handle_of(h.is_valid() ? low_level_api(mesh).edge_of(h) : edge_index::invalid);
 }
 
 inline vertex_handle face_handle::any_vertex() const

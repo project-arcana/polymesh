@@ -28,7 +28,7 @@ inline void remove_faces(Mesh& m)
 
     // remove all faces from half-edges
     for (auto h : m.halfedges())
-        ll.face_of(h) = face_index::invalid();
+        ll.face_of(h) = face_index::invalid;
 }
 
 inline void remove_edges_and_faces(Mesh& m)
@@ -45,6 +45,6 @@ inline void remove_edges_and_faces(Mesh& m)
 
     // remove all halfedges from vertices
     for (auto v : m.vertices())
-        ll.outgoing_halfedge_of(v) = halfedge_index::invalid();
+        ll.outgoing_halfedge_of(v) = halfedge_index::invalid;
 }
 }

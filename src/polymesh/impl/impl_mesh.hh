@@ -74,7 +74,7 @@ inline vertex_index Mesh::alloc_vertex()
 
     auto old_size = mVerticesSize;
     auto capacity_changed = detail::alloc_back(mVerticesSize, mVerticesCapacity, mVertexToOutgoingHalfedge);
-    mVertexToOutgoingHalfedge[mVerticesSize - 1] = halfedge_index::invalid();
+    mVertexToOutgoingHalfedge[mVerticesSize - 1] = halfedge_index::invalid;
 
     if (capacity_changed)
     {
@@ -92,7 +92,7 @@ inline face_index Mesh::alloc_face()
 
     auto old_size = mFacesSize;
     auto capacity_changed = detail::alloc_back(mFacesSize, mFacesCapacity, mFaceToHalfedge);
-    mFaceToHalfedge[mFacesSize - 1] = halfedge_index::invalid();
+    mFaceToHalfedge[mFacesSize - 1] = halfedge_index::invalid;
 
     if (capacity_changed)
     {
@@ -114,10 +114,10 @@ inline edge_index Mesh::alloc_edge()
     {
         capacity_changed |= detail::alloc_back(mHalfedgesSize, mHalfedgesCapacity, //
                                                mHalfedgeToFace, mHalfedgeToVertex, mHalfedgeToNextHalfedge, mHalfedgeToPrevHalfedge);
-        mHalfedgeToFace[mHalfedgesSize - 1] = face_index::invalid();
-        mHalfedgeToVertex[mHalfedgesSize - 1] = vertex_index::invalid();
-        mHalfedgeToNextHalfedge[mHalfedgesSize - 1] = halfedge_index::invalid();
-        mHalfedgeToPrevHalfedge[mHalfedgesSize - 1] = halfedge_index::invalid();
+        mHalfedgeToFace[mHalfedgesSize - 1] = face_index::invalid;
+        mHalfedgeToVertex[mHalfedgesSize - 1] = vertex_index::invalid;
+        mHalfedgeToNextHalfedge[mHalfedgesSize - 1] = halfedge_index::invalid;
+        mHalfedgeToPrevHalfedge[mHalfedgesSize - 1] = halfedge_index::invalid;
     }
 
     if (capacity_changed)

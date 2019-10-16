@@ -371,7 +371,7 @@ halfedge_index low_level_api_base<MeshT>::find_free_incident(halfedge_index in_b
         he = opposite(next_halfedge_of(he));
     } while (he != in_end);
 
-    return halfedge_index::invalid();
+    return halfedge_index::invalid;
 }
 
 template <class MeshT>
@@ -386,7 +386,7 @@ halfedge_index low_level_api_base<MeshT>::find_halfedge(vertex_index from, verte
 {
     auto he_begin = outgoing_halfedge_of(from);
     if (!he_begin.is_valid())
-        return halfedge_index::invalid(); // isolated vertex
+        return halfedge_index::invalid; // isolated vertex
 
     auto he = he_begin;
     do
@@ -400,7 +400,7 @@ halfedge_index low_level_api_base<MeshT>::find_halfedge(vertex_index from, verte
 
     } while (he != he_begin);
 
-    return halfedge_index::invalid(); // not found
+    return halfedge_index::invalid; // not found
 }
 
 template <class MeshT>

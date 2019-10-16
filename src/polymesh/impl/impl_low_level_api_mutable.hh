@@ -290,7 +290,7 @@ inline void low_level_api_mutable::remove_face(face_index f_idx) const
         POLYMESH_ASSERT(face_of(he) == f_idx);
 
         // set half-edge face to invalid
-        face_of(he) = face_index::invalid();
+        face_of(he) = face_index::invalid;
 
         // fix outgoing vertex half-edge
         // (vertex correctly reports is_boundary)
@@ -343,7 +343,7 @@ inline void low_level_api_mutable::remove_edge(edge_index e_idx) const
     if (v_in_to_out == h_out)
     {
         if (hi_in_next == h_out) // v_in_to becomes isolated
-            v_in_to_out = halfedge_index::invalid();
+            v_in_to_out = halfedge_index::invalid;
         else
             v_in_to_out = hi_in_next;
     }
@@ -352,7 +352,7 @@ inline void low_level_api_mutable::remove_edge(edge_index e_idx) const
     if (v_out_to_out == h_in)
     {
         if (hi_out_next == h_in) // v_out_to becomes isolated
-            v_out_to_out = halfedge_index::invalid();
+            v_out_to_out = halfedge_index::invalid;
         else
             v_out_to_out = hi_out_next;
     }
@@ -453,7 +453,7 @@ inline void low_level_api_mutable::set_removed(vertex_index idx) const
 inline void low_level_api_mutable::set_removed(face_index idx) const
 {
     POLYMESH_ASSERT(!is_removed(idx) && "cannot remove an already removed entry");
-    halfedge_of(idx) = halfedge_index::invalid();
+    halfedge_of(idx) = halfedge_index::invalid;
 
     // bookkeeping
     m.mRemovedFaces++;
@@ -463,8 +463,8 @@ inline void low_level_api_mutable::set_removed(face_index idx) const
 inline void low_level_api_mutable::set_removed(edge_index idx) const
 {
     POLYMESH_ASSERT(!is_removed(idx) && "cannot remove an already removed entry");
-    to_vertex_of(halfedge_of(idx, 0)) = vertex_index::invalid();
-    to_vertex_of(halfedge_of(idx, 1)) = vertex_index::invalid();
+    to_vertex_of(halfedge_of(idx, 0)) = vertex_index::invalid;
+    to_vertex_of(halfedge_of(idx, 1)) = vertex_index::invalid;
 
     // bookkeeping
     m.mRemovedHalfedges++;

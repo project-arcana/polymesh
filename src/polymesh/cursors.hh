@@ -22,7 +22,7 @@ struct primitive_index
 
     bool is_valid() const { return value >= 0; }
     bool is_invalid() const { return value < 0; }
-    static index_t invalid() { return {}; }
+    static const index_t invalid;
 
     bool operator<(index_t const& rhs) const { return value < rhs.value; }
     bool operator<=(index_t const& rhs) const { return value <= rhs.value; }
@@ -55,6 +55,9 @@ struct primitive_index
     template <class AttrT>
     AttrT const& operator[](attribute<AttrT> const* attr) const;
 };
+
+template <class tag>
+const typename primitive<tag>::index primitive_index<tag>::invalid = {};
 
 template <class tag>
 struct primitive_handle
