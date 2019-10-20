@@ -4,7 +4,7 @@
 
 #include <polymesh/Mesh.hh>
 
-#include "../operations.hh"
+#include "operations.hh"
 
 namespace polymesh
 {

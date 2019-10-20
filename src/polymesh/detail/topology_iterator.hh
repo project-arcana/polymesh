@@ -7,6 +7,8 @@
 
 /// CAUTION: these iterators do NOT work like normal iterators where you can make copies!
 ///          they are designed for direct consumption by range-based for ONLY!
+///
+/// TODO: move queue into begin iterator, use sentinel for end
 
 namespace polymesh
 {

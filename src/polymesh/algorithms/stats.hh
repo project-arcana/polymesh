@@ -3,8 +3,8 @@
 #include <iostream>
 #include <sstream>
 
-#include "../Mesh.hh"
-#include "../fields.hh"
+#include <polymesh/Mesh.hh>
+#include <polymesh/fields.hh>
 
 #include "components.hh"
 #include "properties.hh"

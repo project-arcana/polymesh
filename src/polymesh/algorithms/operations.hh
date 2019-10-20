@@ -2,9 +2,6 @@
 
 #include <polymesh/Mesh.hh>
 
-// Basic mesh operations, including:
-// - elementary subdivision
-// - intersections
 
 namespace polymesh
 {

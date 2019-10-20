@@ -1,4 +1,5 @@
 #include "delaunay.hh"
+
 #include <cassert>
 #include <polymesh/assert.hh>
 
@@ -76,7 +77,7 @@ struct IDelaBella
 
     virtual const DelaBella_Triangle* GetFirstDelaunayTriangle() const = 0; // valid only if Triangulate() > 0
     virtual const DelaBella_Triangle* GetFirstHullTriangle() const = 0;     // valid only if Triangulate() > 0
-    virtual const DelaBella_Vertex* GetFirstHullVertex() const = 0; // if Triangulate() < 0 it is list, otherwise closed contour!
+    virtual const DelaBella_Vertex* GetFirstHullVertex() const = 0;         // if Triangulate() < 0 it is list, otherwise closed contour!
 };
 
 // assuming BITS is max(X_BITS,Y_BITS)
@@ -106,10 +107,7 @@ typedef int64_t  Signed62;		// 4xBITS + 6	dot(vect,norm)
 // in order to expand xy range
 */
 
-static Unsigned28 s14sqr(const Signed14& s)
-{
-    return static_cast<Unsigned28>(static_cast<Signed29>(s * s));
-}
+static Unsigned28 s14sqr(const Signed14& s) { return static_cast<Unsigned28>(static_cast<Signed29>(s * s)); }
 
 struct Norm
 {
@@ -359,12 +357,12 @@ struct CDelaBella : IDelaBella
             // that way we'd fall into precission problems
 
             Norm LvH = (*v - *last).cross(*head - *last);
-            bool lvh = (f.n.x > 0 && LvH.x > 0) || (f.n.x < 0 && LvH.x < 0) || (f.n.y > 0 && LvH.y > 0)
-                       || (f.n.y < 0 && LvH.y < 0) || (f.n.z > 0 && LvH.z > 0) || (f.n.z < 0 && LvH.z < 0);
+            bool lvh = (f.n.x > 0 && LvH.x > 0) || (f.n.x < 0 && LvH.x < 0) || (f.n.y > 0 && LvH.y > 0) || (f.n.y < 0 && LvH.y < 0)
+                       || (f.n.z > 0 && LvH.z > 0) || (f.n.z < 0 && LvH.z < 0);
 
             Norm TvL = (*v - *tail).cross(*last - *tail);
-            bool tvl = (f.n.x > 0 && TvL.x > 0) || (f.n.x < 0 && TvL.x < 0) || (f.n.y > 0 && TvL.y > 0)
-                       || (f.n.y < 0 && TvL.y < 0) || (f.n.z > 0 && TvL.z > 0) || (f.n.z < 0 && TvL.z < 0);
+            bool tvl = (f.n.x > 0 && TvL.x > 0) || (f.n.x < 0 && TvL.x < 0) || (f.n.y > 0 && TvL.y > 0) || (f.n.y < 0 && TvL.y < 0)
+                       || (f.n.z > 0 && TvL.z > 0) || (f.n.z < 0 && TvL.z < 0);
 
             if (lvh && !tvl) // insert new f on top of e(2,0) = (last,head)
             {
@@ -974,7 +972,7 @@ CDelaBella::~CDelaBella()
 } // namespace delabella
 
 
-bool add_delauny_triangulation_delabella(Mesh& m, float const* pos)
+bool add_delaunay_triangulation_delabella(Mesh& m, float const* pos)
 {
     // mesh must be compact to make sure vertex indices dont change
     POLYMESH_ASSERT(m.is_compact());

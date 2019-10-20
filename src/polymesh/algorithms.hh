@@ -1,40 +1,36 @@
 #pragma once
 
-// TODO: include "algorithm/..."s
-
-// Derived mesh properties, including:
-// - valences
-// - edge angles
-// - face angles
-// - face centroids
-// - face area
-// - mesh volume
-// - face normal
-// - vertex normal
-// - curvature
-#include "algorithms/properties.hh"
-
-// Basic mesh operations, including:
-// - elementary subdivision
-// - intersections
-#include "algorithms/remeshing/triangulate.hh"
-
-// Mesh statistics
-#include "algorithms/components.hh"
-// WIP: #include "algorithms/stats.hh"
-
-// Geodesics
-// WIP: #include "algorithms/geodesic_fast_marching.hh"
-// WIP: #include "algorithms/geodesic_nnf.hh"
-
 // TODO:
-// - decimation
-// - subdivision
-// - smoothing
+// - vertex clustering
+// - more subdivision
+// - direct smoothing
 // - cutting
 // - intersections
 // - dualization
-// - triangulation
+// - better triangulation
 // - geodesics
-// - topological information (as free functions)
+// - more topological information (as free functions)
 // - subdivision-to-acute
+// - elementary subdivision
+// - intersections
+// - statistics
+
+#include "algorithms/components.hh"
+#include "algorithms/decimate.hh"
+#include "algorithms/deduplicate.hh"
+#include "algorithms/delaunay.hh"
+#include "algorithms/edge_split.hh"
+#include "algorithms/interpolation.hh"
+#include "algorithms/iteration.hh"
+#include "algorithms/normalize.hh"
+#include "algorithms/operations.hh"
+#include "algorithms/optimization.hh"
+#include "algorithms/properties.hh"
+#include "algorithms/sampling.hh"
+#include "algorithms/smoothing.hh"
+#include "algorithms/stats.hh"
+#include "algorithms/subdivision/loop.hh"
+#include "algorithms/subdivision/sqrt3.hh"
+#include "algorithms/topology.hh"
+#include "algorithms/tracing.hh"
+#include "algorithms/triangulate.hh"
