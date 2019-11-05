@@ -3,20 +3,20 @@
 A C++17 easy-to-use high-performance half-edge data structure with strong functional features.
 
 ```cpp
-    #include <polymesh/pm.hh>
-    #include <typed-geometry/tg-lean.hh> // some math library
+#include <polymesh/pm.hh>
+#include <typed-geometry/tg-lean.hh> // some math library
 
-    // declare mesh with single attribute
-    pm::Mesh m;
-    auto pos = pm::vertex_attribute<tg::pos3>(m);
+// declare mesh with single attribute
+pm::Mesh m;
+auto pos = pm::vertex_attribute<tg::pos3>(m);
 
-    // load from file
-    pm::load("/path/to/mesh.ext", m, pos);
+// load from file
+pm::load("/path/to/mesh.ext", m, pos);
 
-    // single iteration smoothing
-    auto smoothed_pos = pm::vertex_attribute<tg::pos3>(m);
-    for (auto v : m.vertices())
-        smoothed_pos[v] = v.adjacent_vertices().avg(pos);
+// single iteration smoothing
+auto smoothed_pos = pm::vertex_attribute<tg::pos3>(m);
+for (auto v : m.vertices())
+    smoothed_pos[v] = v.adjacent_vertices().avg(pos);
 ```
 
 ## Documentation
@@ -24,9 +24,9 @@ A C++17 easy-to-use high-performance half-edge data structure with strong functi
 for now the sphinx documentation must be built manually:
 
 ```
-    cd docs
-    make html
-    open _build/html/index.html
+cd docs
+make html
+open _build/html/index.html
 ```
 
 TODO: link to hosted version
