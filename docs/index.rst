@@ -3,14 +3,23 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome
+Polymesh Documentation
 ====================================
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   cookbook/cookbook.rst
+   getting-started
+   mesh-topology
+   attributes
+   vector-math
+   smart-ranges
+   properties
+   algorithms
+   serialization
+   cookbook
+   faq
    contributing
 
 
