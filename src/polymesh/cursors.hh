@@ -98,7 +98,11 @@ struct primitive_handle
 
     bool is_valid() const { return idx.is_valid(); }    ///< valid idx (but could be deleted in some iterators)
     bool is_invalid() const { return !idx.is_valid(); } ///< invalid idx
+    static const handle_t invalid;
 };
+
+template <class tag>
+const typename primitive<tag>::handle primitive_handle<tag>::invalid = {};
 
 // ======================== INDICES ========================
 
