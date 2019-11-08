@@ -171,6 +171,16 @@ halfedge_attribute<Pos3> barycentric_coordinates(Mesh const& m);
 template <class Pos3>
 bool is_delaunay(edge_handle e, vertex_attribute<Pos3> const& position);
 
+/// returns true if m.halfedges().collapse(h) is possible topologically
+/// NOTE: only works on triangles
+bool is_collapsible_topologically(halfedge_handle h);
+
+/// returns true if m.halfedges().collapse(h) will not result in any flipped normals when h.vertex_to() is set to new_pos
+/// NOTE: does NOT check is_collapsible_topologically
+/// NOTE: only works on triangles
+template <class Pos3>
+bool is_collapsible_without_flips(halfedge_handle h, Pos3 new_pos, vertex_attribute<Pos3> const& position);
+
 /// ======== IMPLEMENTATION ========
 
 inline bool is_boundary(vertex_handle v) { return v.is_boundary(); }
@@ -561,5 +571,75 @@ template <class Pos3>
 bool is_delaunay(edge_handle e, vertex_attribute<Pos3> const& position)
 {
     return e.is_boundary() || cotan_weight(e, position) >= 0;
+}
+
+inline bool is_collapsible_topologically(halfedge_handle h)
+{
+    auto v_from = h.vertex_from();
+
+    auto ignore_v0 = h.is_boundary() ? vertex_handle::invalid : h.next().vertex_to();
+    auto ignore_v1 = h.opposite().is_boundary() ? vertex_handle::invalid : h.opposite().next().vertex_to();
+
+    for (auto v : h.vertex_to().adjacent_vertices())
+    {
+        if (v == ignore_v0 || v == ignore_v1 || v == v_from)
+            continue;
+
+        if (v_from.adjacent_vertices().contains(v))
+            return false;
+    }
+
+    return true;
+}
+
+template <class Pos3>
+bool is_collapsible_without_flips(halfedge_handle h, Pos3 new_pos, vertex_attribute<Pos3> const& position)
+{
+    auto const v_to = h.vertex_to();
+    auto const v_from = h.vertex_from();
+
+    // check to-1-ring
+    {
+        auto const p_to = position[v_to];
+        auto const ignore_h0 = h;
+        auto const ignore_h1 = h.opposite().prev();
+
+        for (auto hh : v_to.incoming_halfedges())
+        {
+            if (hh == ignore_h0 || hh == ignore_h1 || hh.is_boundary())
+                continue;
+
+            auto p0 = position[hh.vertex_from()];
+            auto p1 = position[hh.next().vertex_to()];
+            auto const n_before = field3<Pos3>::cross(p0 - p_to, p1 - p_to);
+            auto const n_after = field3<Pos3>::cross(p0 - new_pos, p1 - new_pos);
+
+            if (field3<Pos3>::dot(n_before, n_after) < 0)
+                return false;
+        }
+    }
+
+    // check from-1-ring
+    {
+        auto const p_from = position[v_from];
+        auto const ignore_h0 = h;
+        auto const ignore_h1 = h.opposite().next();
+
+        for (auto hh : v_from.outgoing_halfedges())
+        {
+            if (hh == ignore_h0 || hh == ignore_h1 || hh.is_boundary())
+                continue;
+
+            auto p0 = position[hh.vertex_to()];
+            auto p1 = position[hh.next().vertex_to()];
+            auto const n_before = field3<Pos3>::cross(p0 - p_from, p1 - p_from);
+            auto const n_after = field3<Pos3>::cross(p0 - new_pos, p1 - new_pos);
+
+            if (field3<Pos3>::dot(n_before, n_after) < 0)
+                return false;
+        }
+    }
+
+    return true;
 }
 } // namespace polymesh
