@@ -376,6 +376,12 @@ struct edge_collection : smart_collection<Mesh*, edge_tag, iterator>
     /// Same as rotate_next but with the previous half-edge
     void rotate_prev(edge_handle e) const;
 
+    /// performs an edge flip
+    /// NOTE: does not work on boundaries
+    /// NOTE: only works if both faces are triangles
+    /// Preserves all attributes
+    void flip(edge_handle e) const;
+
     /// Removes an edge (and both adjacent faces, vertices are NOT removed)
     /// (marks them as removed, compactify mesh to actually remove them)
     void remove(edge_handle e) const;

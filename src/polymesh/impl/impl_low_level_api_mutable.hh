@@ -4,57 +4,21 @@
 
 namespace polymesh
 {
-inline vertex_index low_level_api_mutable::add_vertex() const
-{
-    return alloc_vertex();
-}
+inline vertex_index low_level_api_mutable::add_vertex() const { return alloc_vertex(); }
 
-inline vertex_index low_level_api_mutable::alloc_vertex() const
-{
-    return m.alloc_vertex();
-}
-inline face_index low_level_api_mutable::alloc_face() const
-{
-    return m.alloc_face();
-}
-inline edge_index low_level_api_mutable::alloc_edge() const
-{
-    return m.alloc_edge();
-}
-inline void low_level_api_mutable::alloc_primitives(int vertices, int faces, int halfedges) const
-{
-    m.alloc_primitives(vertices, faces, halfedges);
-}
+inline vertex_index low_level_api_mutable::alloc_vertex() const { return m.alloc_vertex(); }
+inline face_index low_level_api_mutable::alloc_face() const { return m.alloc_face(); }
+inline edge_index low_level_api_mutable::alloc_edge() const { return m.alloc_edge(); }
+inline void low_level_api_mutable::alloc_primitives(int vertices, int faces, int halfedges) const { m.alloc_primitives(vertices, faces, halfedges); }
 
-inline void low_level_api_mutable::reserve_vertices(int capacity) const
-{
-    m.reserve_vertices(capacity);
-}
-inline void low_level_api_mutable::reserve_edges(int capacity) const
-{
-    m.reserve_edges(capacity);
-}
-inline void low_level_api_mutable::reserve_halfedges(int capacity) const
-{
-    m.reserve_halfedges(capacity);
-}
-inline void low_level_api_mutable::reserve_faces(int capacity) const
-{
-    m.reserve_faces(capacity);
-}
+inline void low_level_api_mutable::reserve_vertices(int capacity) const { m.reserve_vertices(capacity); }
+inline void low_level_api_mutable::reserve_edges(int capacity) const { m.reserve_edges(capacity); }
+inline void low_level_api_mutable::reserve_halfedges(int capacity) const { m.reserve_halfedges(capacity); }
+inline void low_level_api_mutable::reserve_faces(int capacity) const { m.reserve_faces(capacity); }
 
-inline void low_level_api_mutable::permute_faces(const std::vector<int>& p) const
-{
-    m.permute_faces(p);
-}
-inline void low_level_api_mutable::permute_edges(const std::vector<int>& p) const
-{
-    m.permute_edges(p);
-}
-inline void low_level_api_mutable::permute_vertices(const std::vector<int>& p) const
-{
-    m.permute_vertices(p);
-}
+inline void low_level_api_mutable::permute_faces(const std::vector<int>& p) const { m.permute_faces(p); }
+inline void low_level_api_mutable::permute_edges(const std::vector<int>& p) const { m.permute_edges(p); }
+inline void low_level_api_mutable::permute_vertices(const std::vector<int>& p) const { m.permute_vertices(p); }
 
 namespace detail
 {
@@ -986,6 +950,15 @@ inline void low_level_api_mutable::edge_rotate_prev(edge_index e) const
     // fix boundary state
     fix_boundary_state_of(face_of(h0));
     fix_boundary_state_of(face_of(h1));
+}
+
+inline void low_level_api_mutable::edge_flip(edge_index e) const
+{
+    POLYMESH_ASSERT(!is_boundary(e) && "does not work on boundaries");
+    POLYMESH_ASSERT(m.handle_of(e).faceA().halfedges().size() == 3 && "only works for triangles");
+    POLYMESH_ASSERT(m.handle_of(e).faceB().halfedges().size() == 3 && "only works for triangles");
+
+    edge_rotate_next(e);
 }
 
 inline void low_level_api_mutable::halfedge_rotate_next(halfedge_index h) const

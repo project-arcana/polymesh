@@ -337,6 +337,8 @@ public:
     void edge_rotate_next(edge_index e) const;
     /// rotates an edge to prev
     void edge_rotate_prev(edge_index e) const;
+    /// performs an edge flip
+    void edge_flip(edge_index e) const;
     /// rotates a half-edge to next
     void halfedge_rotate_next(halfedge_index h) const;
     /// rotates a half-edge to prev

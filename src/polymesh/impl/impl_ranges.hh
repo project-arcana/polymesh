@@ -1014,6 +1014,12 @@ void edge_collection<iterator>::rotate_prev(edge_handle e) const
 }
 
 template <class iterator>
+void edge_collection<iterator>::flip(edge_handle e) const
+{
+    low_level_api(this->m).edge_flip(e.idx);
+}
+
+template <class iterator>
 vertex_handle halfedge_collection<iterator>::split(halfedge_handle h) const
 {
     return this->m->handle_of(low_level_api(this->m).halfedge_split(h.idx));
