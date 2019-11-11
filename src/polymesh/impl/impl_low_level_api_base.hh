@@ -299,7 +299,12 @@ bool low_level_api_base<MeshT>::can_add_face(const halfedge_handle* half_loop, i
     if (vcnt < 3)
         return false; // too few vertices
 
-    // TODO: check duplicated vertices
+    // check duplicated vertices
+    // TODO: a bit more performant
+    for (auto i = 0; i < vcnt; ++i)
+        for (auto j = i + 1; j < vcnt; ++j)
+            if (to_vertex_of(half_loop[i]) == to_vertex_of(half_loop[j]))
+                return false;
 
     // ensure that half-edges are adjacent at each vertex
     for (auto i = 0; i < vcnt; ++i)
@@ -329,7 +334,12 @@ bool low_level_api_base<MeshT>::can_add_face(const halfedge_index* half_loop, in
     if (vcnt < 3)
         return false; // too few vertices
 
-    // TODO: check duplicated vertices
+    // check duplicated vertices
+    // TODO: a bit more performant
+    for (auto i = 0; i < vcnt; ++i)
+        for (auto j = i + 1; j < vcnt; ++j)
+            if (to_vertex_of(half_loop[i]) == to_vertex_of(half_loop[j]))
+                return false;
 
     // ensure that half-edges are adjacent at each vertex
     for (auto i = 0; i < vcnt; ++i)

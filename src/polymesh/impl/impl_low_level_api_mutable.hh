@@ -1001,7 +1001,7 @@ inline void low_level_api_mutable::halfedge_rotate_prev(halfedge_index h) const
 {
     POLYMESH_ASSERT(m.handle_of(h).prev().prev().prev() != h && "does not work for triangles");
     POLYMESH_ASSERT(!m.handle_of(h).edge().is_boundary() && "does not work on boundaries");
-    POLYMESH_ASSERT(m.handle_of(h).vertex_from().adjacent_vertices().size() > 2 && "does not work on valence <= 2 vertices");
+    POLYMESH_ASSERT(m.handle_of(h).vertex_to().adjacent_vertices().size() > 2 && "does not work on valence <= 2 vertices");
 
     auto h0 = h;
     auto h1 = opposite(h);

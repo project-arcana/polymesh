@@ -100,6 +100,7 @@ void Mesh::alloc_primitives(int vertices, int faces, int halfedges)
 void Mesh::permute_vertices(std::vector<int> const& p)
 {
     POLYMESH_ASSERT(detail::is_valid_permutation(p));
+    POLYMESH_ASSERT(int(p.size()) == mVerticesSize);
 
     // calculate transpositions
     auto ts = detail::transpositions_of(p);
@@ -121,6 +122,7 @@ void Mesh::permute_vertices(std::vector<int> const& p)
 void Mesh::permute_faces(std::vector<int> const& p)
 {
     POLYMESH_ASSERT(detail::is_valid_permutation(p));
+    POLYMESH_ASSERT(int(p.size()) == mFacesSize);
 
     // calculate transpositions
     auto ts = detail::transpositions_of(p);
@@ -142,6 +144,7 @@ void Mesh::permute_faces(std::vector<int> const& p)
 void Mesh::permute_edges(std::vector<int> const& p)
 {
     POLYMESH_ASSERT(detail::is_valid_permutation(p));
+    POLYMESH_ASSERT(int(p.size() * 2) == mHalfedgesSize);
 
     std::vector<int> hp(p.size() * 2);
     for (auto i = 0u; i < p.size(); ++i)
