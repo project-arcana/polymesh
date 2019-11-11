@@ -1,12 +1,12 @@
 #include "optimization.hh"
 
-#include "../detail/permutation.hh"
-#include "../detail/random.hh"
-#include "../detail/union_find.hh"
+#include <polymesh/detail/permutation.hh>
+#include <polymesh/detail/random.hh>
+#include <polymesh/detail/union_find.hh>
 
-#include "../data/partitioning.hh"
+#include <polymesh/attributes/partitioning.hh>
 
-#include "../std/hash.hh"
+#include <polymesh/std/hash.hh>
 
 #include <unordered_map>
 
