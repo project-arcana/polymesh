@@ -173,13 +173,28 @@ bool is_delaunay(edge_handle e, vertex_attribute<Pos3> const& position);
 
 /// returns true if m.halfedges().collapse(h) is possible topologically
 /// NOTE: only works on triangles
-bool is_collapsible_topologically(halfedge_handle h);
+bool can_collapse(halfedge_handle h);
 
 /// returns true if m.halfedges().collapse(h) will not result in any flipped normals when h.vertex_to() is set to new_pos
-/// NOTE: does NOT check is_collapsible_topologically
+/// NOTE: ALSO checks can_collapse(h)
 /// NOTE: only works on triangles
 template <class Pos3>
-bool is_collapsible_without_flips(halfedge_handle h, Pos3 new_pos, vertex_attribute<Pos3> const& position);
+bool can_collapse_without_flips(halfedge_handle h, Pos3 new_pos, vertex_attribute<Pos3> const& position);
+
+/// returns true if m.edges().flip(e) would work
+bool can_flip(edge_handle e);
+
+/// returns true if m.edges().rotate_next(e) would work
+bool can_rotate_next(edge_handle e);
+
+/// returns true if m.edges().rotate_prev(e) would work
+bool can_rotate_prev(edge_handle e);
+
+/// returns true if m.halfedges().rotate_next(h) would work
+bool can_rotate_next(halfedge_handle h);
+
+/// returns true if m.halfedges().rotate_prev(h) would work
+bool can_rotate_prev(halfedge_handle h);
 
 /// ======== IMPLEMENTATION ========
 
@@ -573,7 +588,7 @@ bool is_delaunay(edge_handle e, vertex_attribute<Pos3> const& position)
     return e.is_boundary() || cotan_weight(e, position) >= 0;
 }
 
-inline bool is_collapsible_topologically(halfedge_handle h)
+inline bool can_collapse(halfedge_handle h)
 {
     auto v_from = h.vertex_from();
 
@@ -593,10 +608,13 @@ inline bool is_collapsible_topologically(halfedge_handle h)
 }
 
 template <class Pos3>
-bool is_collapsible_without_flips(halfedge_handle h, Pos3 new_pos, vertex_attribute<Pos3> const& position)
+bool can_collapse_without_flips(halfedge_handle h, Pos3 new_pos, vertex_attribute<Pos3> const& position)
 {
     auto const v_to = h.vertex_to();
     auto const v_from = h.vertex_from();
+
+    if (!can_collapse(h))
+        return false;
 
     // check to-1-ring
     {
@@ -642,4 +660,75 @@ bool is_collapsible_without_flips(halfedge_handle h, Pos3 new_pos, vertex_attrib
 
     return true;
 }
-} // namespace polymesh
+
+inline bool can_flip(edge_handle e)
+{
+    if (e.is_boundary())
+        return false;
+
+    if (e.halfedgeA().next().next().next() != e.halfedgeA())
+        return false;
+
+    if (e.halfedgeB().next().next().next() != e.halfedgeB())
+        return false;
+
+    return true;
+}
+
+inline bool can_rotate_next(edge_handle e)
+{
+    if (e.is_boundary())
+        return false;
+
+    if (e.vertexA().adjacent_vertices().size() <= 2)
+        return false;
+
+    if (e.vertexB().adjacent_vertices().size() <= 2)
+        return false;
+
+    return true;
+}
+
+inline bool can_rotate_prev(edge_handle e)
+{
+    if (e.is_boundary())
+        return false;
+
+    if (e.vertexA().adjacent_vertices().size() <= 2)
+        return false;
+
+    if (e.vertexB().adjacent_vertices().size() <= 2)
+        return false;
+
+    return true;
+}
+
+inline bool can_rotate_next(halfedge_handle h)
+{
+    if (h.edge().is_boundary())
+        return false;
+
+    if (h.vertex_to().adjacent_vertices().size() <= 2)
+        return false;
+
+    if (h.next().next().next() == h)
+        return false;
+
+    return true;
+}
+
+inline bool can_rotate_prev(halfedge_handle h)
+{
+    if (h.edge().is_boundary())
+        return false;
+
+    if (h.vertex_to().adjacent_vertices().size() <= 2)
+        return false;
+
+    if (h.prev().prev().prev() == h)
+        return false;
+
+    return true;
+}
+
+}
