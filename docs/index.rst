@@ -22,6 +22,7 @@ Polymesh Documentation
    misc
    cookbook
    faq
+   reference
    contributing
 
 
