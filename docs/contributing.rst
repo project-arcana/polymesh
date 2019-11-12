@@ -1,7 +1,16 @@
 Contributing
 ============
 
-Function parameter order guide
+How to Build the Documentation
+------------------------------
+
+* navigate to ``docs/``
+* execute ``doxygen`` to generate from-source part of the documentation
+* execute ``make html`` to build the Sphinx docs
+* open ``docs/_build/index.html``
+
+
+Function Parameter Order Guide
 ------------------------------
 
 The following types of parameters exist:
