@@ -4,7 +4,7 @@ A C++17 easy-to-use high-performance half-edge data structure with strong functi
 
 ```cpp
 #include <polymesh/pm.hh>
-#include <typed-geometry/tg-lean.hh> // some math library
+#include <typed-geometry/tg.hh> // some math library
 
 // declare mesh with single attribute
 pm::Mesh m;

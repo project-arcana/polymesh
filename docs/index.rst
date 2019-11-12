@@ -18,6 +18,8 @@ Polymesh Documentation
    properties
    algorithms
    serialization
+   objects
+   misc
    cookbook
    faq
    contributing
