@@ -8,11 +8,28 @@
 namespace polymesh
 {
 /// loads a mesh from a file
-template <class Vec3>
-bool load(std::string const& filename, Mesh& m, vertex_attribute<Vec3>& pos);
+template <class Pos3>
+bool load(std::string const& filename, Mesh& m, vertex_attribute<Pos3>& pos);
 /// saves a mesh to a file
-template <class Vec3>
-void save(std::string const& filename, Mesh& m, vertex_attribute<Vec3> const& pos);
+template <class Pos3>
+void save(std::string const& filename, Mesh& m, vertex_attribute<Pos3> const& pos);
+
+template <class Pos3>
+struct load_result
+{
+    unique_ptr<Mesh> mesh;
+    vertex_attribute<Pos3> pos;
+    explicit operator bool() const { return mesh != nullptr; }
+};
+
+template <class Pos3>
+load_result<Pos3> load(std::string const& filename)
+{
+    auto m = Mesh::create();
+    auto pos = vertex_attribute<Pos3>(*m);
+    load(filename, *m, pos);
+    return {std::move(m), std::move(pos)};
+}
 
 // ------- IMPLEMENTATION -------
 
@@ -24,43 +41,43 @@ template <class ScalarT>
 void save(std::string const& filename, Mesh& m, vertex_attribute<std::array<ScalarT, 3>> const& pos);
 } // namespace detail
 
-template <class Vec3>
-bool load(std::string const& filename, Mesh& m, vertex_attribute<Vec3>& pos)
+template <class Pos3>
+bool load(std::string const& filename, Mesh& m, vertex_attribute<Pos3>& pos)
 {
-    static_assert(sizeof(Vec3) == sizeof(float) * 3 || sizeof(Vec3) == sizeof(double) * 3, "position type must be 3 floats or 3 doubles");
+    static_assert(sizeof(Pos3) == sizeof(float) * 3 || sizeof(Pos3) == sizeof(double) * 3, "position type must be 3 floats or 3 doubles");
 
     bool ok;
-    if (sizeof(Vec3) == sizeof(float) * 3)
+    if (sizeof(Pos3) == sizeof(float) * 3)
     {
         auto tmp_pos = m.vertices().make_attribute<std::array<float, 3>>();
         ok = detail::load<float>(filename, m, tmp_pos);
-        std::memcpy(pos.data(), tmp_pos.data(), sizeof(Vec3) * m.vertices().size());
+        std::memcpy(pos.data(), tmp_pos.data(), sizeof(Pos3) * m.vertices().size());
     }
     else
     {
         auto tmp_pos = m.vertices().make_attribute<std::array<double, 3>>();
         ok = detail::load<double>(filename, m, tmp_pos);
-        std::memcpy(pos.data(), tmp_pos.data(), sizeof(Vec3) * m.vertices().size());
+        std::memcpy(pos.data(), tmp_pos.data(), sizeof(Pos3) * m.vertices().size());
     }
 
     return ok;
 }
 
-template <class Vec3>
-void save(std::string const& filename, Mesh& m, vertex_attribute<Vec3>& pos)
+template <class Pos3>
+void save(std::string const& filename, Mesh& m, vertex_attribute<Pos3>& pos)
 {
-    static_assert(sizeof(Vec3) == sizeof(float) * 3 || sizeof(Vec3) == sizeof(double) * 3, "position type must be 3 floats or 3 doubles");
+    static_assert(sizeof(Pos3) == sizeof(float) * 3 || sizeof(Pos3) == sizeof(double) * 3, "position type must be 3 floats or 3 doubles");
 
-    if (sizeof(Vec3) == sizeof(float) * 3)
+    if (sizeof(Pos3) == sizeof(float) * 3)
     {
         auto tmp_pos = m.vertices().make_attribute<std::array<float, 3>>();
-        std::memcpy(tmp_pos.data(), pos.data(), sizeof(Vec3) * m.vertices().size());
+        std::memcpy(tmp_pos.data(), pos.data(), sizeof(Pos3) * m.vertices().size());
         detail::save<float>(filename, m, tmp_pos);
     }
     else
     {
         auto tmp_pos = m.vertices().make_attribute<std::array<double, 3>>();
-        std::memcpy(tmp_pos.data(), pos.data(), sizeof(Vec3) * m.vertices().size());
+        std::memcpy(tmp_pos.data(), pos.data(), sizeof(Pos3) * m.vertices().size());
         detail::save<double>(filename, m, tmp_pos);
     }
 }

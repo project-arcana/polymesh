@@ -134,6 +134,7 @@ public:
 
     // public ctor
 public:
+    primitive_attribute() = default;
     primitive_attribute(Mesh const& mesh, AttrT const& def_value = AttrT());
 
     // members

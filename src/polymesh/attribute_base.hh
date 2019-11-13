@@ -20,13 +20,14 @@ struct primitive_attribute_base
 {
     // members
 protected:
-    Mesh const* mMesh;
+    Mesh const* mMesh = nullptr;
 
 private:
     primitive_attribute_base* mNextAttribute = nullptr;
     primitive_attribute_base* mPrevAttribute = nullptr;
 
 protected:
+    primitive_attribute_base() = default;
     primitive_attribute_base(Mesh const* mesh) : mMesh(mesh) {} // no registration, it's too early!
     virtual void resize_from(int old_size) = 0;
     virtual void clear_with_default() = 0;
