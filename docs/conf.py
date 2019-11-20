@@ -37,6 +37,8 @@ extensions = [
     'breathe',
 ]
 
+cpp_index_common_prefix = ['polymesh::']
+
 breathe_default_project = 'polymesh'
 
 # Add any paths that contain templates here, relative to this directory.

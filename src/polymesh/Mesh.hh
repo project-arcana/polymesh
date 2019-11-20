@@ -117,7 +117,7 @@ public:
     Mesh& operator=(Mesh const&) = delete;
     Mesh& operator=(Mesh&&) = delete;
 
-    /// Creates a new mesh and returns a shared_ptr to it
+    /// Creates a new mesh and returns a unique_ptr to it
     static unique_ptr<Mesh> create() { return make_unique<Mesh>(); }
 
     /// Clears this mesh and copies mesh topology, NOT attributes!

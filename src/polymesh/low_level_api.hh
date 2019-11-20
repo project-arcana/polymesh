@@ -189,11 +189,7 @@ struct low_level_attribute_api
     {
         MeshT mesh;
         auto attr = mesh.vertices().make_attribute_with_default(0.f);
-        auto attr_check = mesh.vertices().make_attribute_with_default(std::array<float, 32>());
-
         auto offset = int(size_t(&(attr.mData)) - size_t(&attr));
-        POLYMESH_ASSERT(offset == int(size_t(&(attr_check.mData)) - size_t(&attr_check)));
-
         return offset;
     }
 };

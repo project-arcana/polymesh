@@ -31,6 +31,14 @@ Quickstart
         smoothed_pos[v] = v.adjacent_vertices().avg(pos);
 
 
+Namespaces
+----------
+
+In its implementation, polymesh uses the ``polymesh::`` namespace.
+However, long namespace are cumbersome and by default ``pm::`` is provided as an alias.
+All examples will use the short version.
+
+
 CMake Integration
 -----------------
 
@@ -67,6 +75,9 @@ This makes it easy to extend and favors an include-what-you-use approach, reduci
 Working with meshes and attributes involves a lot of iteration.
 Often, aggregate statistics like averages, minimums, maximums, and mapped/filtered ranges are needed.
 Thus, polymesh provides a clean, composable, and powerful range API (see :doc:`mesh-topology` and :doc:`smart-ranges`).
+
+Polymesh is performance-oriented but still concerned with usability and safety.
+C++ Exceptions are not used but many assertions will trigger in Debug or RelWithDebInfo builds if the API is used wrongly.
 
 
 Header Structure

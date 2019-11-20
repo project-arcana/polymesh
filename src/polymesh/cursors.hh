@@ -156,8 +156,6 @@ struct vertex_handle : primitive_handle<vertex_tag>
     halfedge_handle any_incoming_halfedge() const; ///< invalid if isolated
     edge_handle any_edge() const;                  ///< invalid if isolated
 
-    // TODO: make all_faces and faces = all_faces.filter(is_valid)
-
     vertex_halfedge_in_ring incoming_halfedges() const;
     vertex_halfedge_out_ring outgoing_halfedges() const;
     vertex_edge_ring edges() const;
