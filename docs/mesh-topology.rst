@@ -1,6 +1,29 @@
 Mesh and Topology
 =================
 
+Motivating example: ::
+
+    // creates an empty mesh
+    pm::Mesh m;
+
+    // add some vertices
+    pm::vertex_handle v0 = m.vertices().add();
+    pm::vertex_handle v1 = m.vertices().add();
+    pm::vertex_handle v2 = m.vertices().add();
+
+    // add a face
+    pm::face_handle f = m.faces().add(v0, v1, v2);
+
+    // iterate over edges
+    for (pm::edges_handle e : m.edge())
+        std::cout << "v" << int(e.vertexA()) << " -> v" << int(e.vertexB()) << std::endl;
+
+    // split face
+    pm::vertex_handle v = m.faces().split(f);
+
+    // navigate the mesh
+    v = v.any_outgoing_halfedge().next().vertex_to();
+
 
 Mesh Class
 -------------
