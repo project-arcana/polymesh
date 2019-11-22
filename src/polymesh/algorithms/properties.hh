@@ -686,6 +686,11 @@ inline bool can_rotate_next(edge_handle e)
     if (e.vertexB().adjacent_vertices().size() <= 2)
         return false;
 
+    auto va_next = e.halfedgeA().next().vertex_to();
+    auto vb_next = e.halfedgeB().next().vertex_to();
+    if (va_next.adjacent_vertices().contains(vb_next))
+        return false;
+
     return true;
 }
 
@@ -698,6 +703,11 @@ inline bool can_rotate_prev(edge_handle e)
         return false;
 
     if (e.vertexB().adjacent_vertices().size() <= 2)
+        return false;
+
+    auto va_prev = e.halfedgeA().prev().vertex_from();
+    auto vb_prev = e.halfedgeB().prev().vertex_from();
+    if (va_prev.adjacent_vertices().contains(vb_prev))
         return false;
 
     return true;
