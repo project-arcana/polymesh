@@ -329,6 +329,25 @@ auto smart_range<this_t, ElementT>::aabb(FuncT&& f) const -> polymesh::minmax_t<
 }
 
 template <class this_t, class ElementT>
+template <class Generator, class FuncT>
+auto smart_range<this_t, ElementT>::random(Generator& g, FuncT&& f) const -> tmp::decayed_result_type_of<FuncT, ElementT>
+{
+    auto it = static_cast<this_t const*>(this)->begin();
+    POLYMESH_ASSERT(it.is_valid() && "requires non-empty range");
+    auto v = f(*it);
+    double cnt = 2;
+    ++it;
+    while (it.is_valid())
+    {
+        if (double(g()) * cnt < double(g.max()))
+            v = f(*it);
+        ++it;
+        cnt += 1;
+    }
+    return v;
+}
+
+template <class this_t, class ElementT>
 template <class FuncT>
 auto smart_range<this_t, ElementT>::minmax(FuncT&& f) const -> polymesh::minmax_t<tmp::decayed_result_type_of<FuncT, ElementT>>
 {

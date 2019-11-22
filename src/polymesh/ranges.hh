@@ -161,6 +161,11 @@ struct smart_range
     template <class PredT>
     auto filter(PredT&& p) -> filtered_range<ElementT, this_t&, PredT>;
 
+    /// returns a uniformly random sampled element from this range
+    /// complexity is O(n) (but does not allocate)
+    template <class Generator, class FuncT = tmp::identity>
+    auto random(Generator& g, FuncT&& f = {}) const -> tmp::decayed_result_type_of<FuncT, ElementT>;
+
     // TODO: (requires new ranges)
     // - filter (or where?)
     // - map
@@ -233,6 +238,7 @@ struct smart_collection : smart_range<smart_collection<mesh_ptr, tag, iterator>,
     end_iterator end() const { return {}; }
 
     /// returns a handle chosen uniformly at random
+    /// Complexity is usually O(1)
     /// NOTE: when only valid handles are allowed, this will use rejection sampling
     ///       and thus get very slow if a lot of data is invalid
     template <class Generator>
