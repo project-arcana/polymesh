@@ -116,7 +116,15 @@ They perform many security checks, handle special cases, and sometimes have to d
 Sometimes, algorithms want to manipulate the half-edge data structure directly and bypass the high-level API.
 This can be done by using the helper function :func:`polymesh::low_level_api` which returns a simple wrapper object that can be used for manipulating the internals of a :class:`polymesh::Mesh`.
 
-TODO
+The API is split into two parts, :class:`polymesh::low_level_api_base` for queries (const Mesh) and :class:`polymesh::low_level_api_mutable` for modifications (mutable Mesh).
+
+It goes without saying that using this API means leaving the hand-holding of the high-level API and there are no guarantees for what happens when the mesh is left in an inconsistent state.
+
+Example: ::
+
+    pm::Mesh m;
+    auto ll = low_level_api(m);
+    ll.to_vertex_of(m.halfedges()[0]) = m.vertices[](7);
 
 
 Copying a Mesh
