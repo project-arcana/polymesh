@@ -196,6 +196,12 @@ bool can_rotate_next(halfedge_handle h);
 /// returns true if m.halfedges().rotate_prev(h) would work
 bool can_rotate_prev(halfedge_handle h);
 
+/// returns true if m.edges().add_or_get(v_from, v_to) would work
+bool can_add_or_get_edge(vertex_handle v_from, vertex_handle v_to);
+
+/// returns true if m.edges().add_or_get(h_from, h_to) would work
+bool can_add_or_get_edge(halfedge_handle h_from, halfedge_handle h_to);
+
 /// ======== IMPLEMENTATION ========
 
 inline bool is_boundary(vertex_handle v) { return v.is_boundary(); }
@@ -737,6 +743,50 @@ inline bool can_rotate_prev(halfedge_handle h)
 
     if (h.prev().prev().prev() == h)
         return false;
+
+    return true;
+}
+
+inline bool can_add_or_get_edge(vertex_handle v_from, vertex_handle v_to)
+{
+    POLYMESH_ASSERT(v_from.mesh == v_to.mesh);
+    auto ll = low_level_api(v_from.mesh);
+
+    if (v_from == v_to)
+        return false; // no self-loops
+
+    if (ll.find_halfedge(v_from, v_to).is_valid())
+        return true; // existing
+
+    if (!v_from.is_isolated() && ll.find_free_incident(v_from).is_invalid())
+        return false; // from already full
+
+    if (!v_to.is_isolated() && ll.find_free_incident(v_to).is_invalid())
+        return false; // to already full
+
+    return true;
+}
+
+inline bool can_add_or_get_edge(halfedge_handle h_from, halfedge_handle h_to)
+{
+    POLYMESH_ASSERT(h_from.mesh == h_to.mesh);
+    auto ll = low_level_api(h_from.mesh);
+
+    auto v_from = h_from.vertex_to();
+    auto v_to = h_to.vertex_to();
+
+    if (v_from == v_to)
+        return false; // no self-loops
+
+    auto ex_he = ll.find_halfedge(v_from, v_to);
+    if (ex_he.is_valid())
+        return true; // existing
+
+    if (!ll.is_free(h_from))
+        return false; // cannot insert into face
+
+    if (!ll.is_free(h_to))
+        return false; // cannot insert into face
 
     return true;
 }

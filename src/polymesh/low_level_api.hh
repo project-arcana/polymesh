@@ -236,12 +236,12 @@ public:
     /// if edge already exists, returns it
     edge_index add_or_get_edge(halfedge_index h_from, halfedge_index h_to) const;
 
-    /// same as add_or_get_edge but returns the apattrriate half-edge
+    /// same as add_or_get_edge but returns the appropriate half-edge
     /// Assures:
     ///     return_value.from_vertex == v_from
     ///     return_value.to_vertex == v_to
     halfedge_index add_or_get_halfedge(vertex_index v_from, vertex_index v_to) const;
-    /// same as add_or_get_edge but returns the apattrriate half-edge
+    /// same as add_or_get_edge but returns the appropriate half-edge
     /// Assures:
     ///     return_value.from_vertex == h_from.to_vertex
     ///     return_value.to_vertex == h_to.to_vertex

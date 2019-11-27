@@ -172,15 +172,16 @@ inline halfedge_index low_level_api_mutable::add_or_get_halfedge(vertex_index v_
 
 inline edge_index low_level_api_mutable::add_or_get_edge(halfedge_index h_from, halfedge_index h_to) const
 {
-    POLYMESH_ASSERT(h_from != h_to);
-
     auto v_from = to_vertex_of(h_from);
     auto v_to = to_vertex_of(h_to);
+
+    POLYMESH_ASSERT(v_from != v_to);
 
     auto ex_he = find_halfedge(v_from, v_to);
     if (ex_he.is_valid())
     {
-        POLYMESH_ASSERT(prev_halfedge_of(ex_he) == h_from && prev_halfedge_of(opposite(ex_he)) == h_to);
+        // TODO: is this really required?
+        // POLYMESH_ASSERT(prev_halfedge_of(ex_he) == h_from && prev_halfedge_of(opposite(ex_he)) == h_to);
 
         // TODO: Maybe try rewriting an existing halfedge that does NOT yet have the right connection.
         return edge_of(ex_he);
