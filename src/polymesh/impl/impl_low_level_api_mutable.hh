@@ -289,7 +289,7 @@ inline void low_level_api_mutable::remove_edge(edge_index e_idx) const
     auto f1 = face_of(h_out);
 
     // remove adjacent faces
-    if (f0.is_valid())
+    if (f0.is_valid() && f0 != f1)
         remove_face(f0);
     if (f1.is_valid())
         remove_face(f1);
