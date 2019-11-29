@@ -87,6 +87,10 @@ inline face_index low_level_api_mutable::add_face(const halfedge_index* half_loo
         face_of(h0) = fidx;
     }
 
+    // set up face data
+    // BEFORE fixing boundary states
+    halfedge_of(fidx) = half_loop[0];
+
     // fix boundary states
     for (auto i = 0; i < vcnt; ++i)
     {
@@ -101,9 +105,6 @@ inline face_index low_level_api_mutable::add_face(const halfedge_index* half_loo
         if (f.is_valid())
             fix_boundary_state_of(f);
     }
-
-    // set up face data
-    halfedge_of(fidx) = half_loop[0];
 
     // fix new face
     fix_boundary_state_of(fidx);
