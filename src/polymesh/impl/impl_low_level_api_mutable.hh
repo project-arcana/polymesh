@@ -533,19 +533,26 @@ inline void low_level_api_mutable::edge_split(edge_index e, vertex_index v) cons
     connect_prev_next(e2h0, e1h0);
     connect_prev_next(e1h1, e2h1);
 
-    connect_prev_next(h0_prev, e2h0);
-    connect_prev_next(e1h0, h0_next);
-    connect_prev_next(h1_prev, e1h1);
-    connect_prev_next(e2h1, h1_next);
-
     // self-connected?
     if (h0_prev == h1)
     {
         connect_prev_next(e2h1, e2h0);
     }
-    if (h1_next == h0)
+    else
+    {
+        connect_prev_next(h0_prev, e2h0);
+        connect_prev_next(e2h1, h1_next);
+    }
+
+    // self-connected?
+    if (h0_next == h1)
     {
         connect_prev_next(e1h0, e1h1);
+    }
+    else
+    {
+        connect_prev_next(e1h0, h0_next);
+        connect_prev_next(h1_prev, e1h1);
     }
 
     // rewire vertices
