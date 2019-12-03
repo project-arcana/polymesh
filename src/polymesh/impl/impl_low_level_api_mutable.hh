@@ -793,9 +793,6 @@ inline void low_level_api_mutable::halfedge_collapse(halfedge_index h) const
     auto h0 = h;
     auto h1 = opposite(h);
 
-    POLYMESH_ASSERT(!is_boundary(h0) && "boundaries are not supported yet");
-    POLYMESH_ASSERT(!is_boundary(h1) && "boundaries are not supported yet");
-
     auto v_to = to_vertex_of(h);
     auto v_from = from_vertex_of(h);
 
@@ -807,58 +804,171 @@ inline void low_level_api_mutable::halfedge_collapse(halfedge_index h) const
     auto h1_prev = prev_halfedge_of(h1);
     auto h1_next = next_halfedge_of(h1);
 
-    // TODO: preserve adjacent non-triangles
-    POLYMESH_ASSERT(prev_halfedge_of(h0_prev) == h0_next && "non-triangle adjacent faces not supported yet");
-    POLYMESH_ASSERT(prev_halfedge_of(h1_prev) == h1_next && "non-triangle adjacent faces not supported yet");
+    auto is_to_wrapped = h0_next == h1;
+    auto is_from_wrapped = h1_next == h0;
 
-    // fix faces
-    auto h0_prev_opp = opposite(h0_prev);
-    auto h1_next_opp = opposite(h1_next);
-    auto fA = face_of(h0_prev_opp);
-    auto fB = face_of(h1_next_opp);
-    face_of(h0_next) = fA;
-    face_of(h1_prev) = fB;
-    if (halfedge_of(fA) == h0_prev_opp)
-        halfedge_of(fA) = h0_next;
-    if (halfedge_of(fB) == h1_next_opp)
-        halfedge_of(fB) = h1_prev;
+    auto is_h0_boundary = is_boundary(h0);
+    auto is_h1_boundary = is_boundary(h1);
 
-    // fix vertices
-    auto hv = h1;
-    do
+    auto is_h0_triangle = !is_h0_boundary && next_halfedge_of(h0_next) == h0_prev;
+    auto is_h1_triangle = !is_h1_boundary && next_halfedge_of(h1_next) == h1_prev;
+
+    auto is_valence_2_from = h0_prev == opposite(h1_next);
+
+    // special cases for self-connected edges
+    if (is_to_wrapped && is_from_wrapped) // complete wraparound
     {
-        // point to collapsed vertex
-        POLYMESH_ASSERT(to_vertex_of(hv) == v_from);
-        to_vertex_of(hv) = v_to;
+        POLYMESH_ASSERT(f0.is_invalid() && "self-connected cannot have face");
+        POLYMESH_ASSERT(f1.is_invalid() && "self-connected cannot have face");
 
-        // advance
-        hv = opposite(next_halfedge_of(hv));
-    } while (hv != h1);
+        outgoing_halfedge_of(v_to) = halfedge_index::invalid;
 
-    if (outgoing_halfedge_of(v_to) == h1)
-        outgoing_halfedge_of(v_to) = h0_next;
+        set_removed(v_from);
+        set_removed(edge_of(h));
+    }
+    else if (is_from_wrapped) // from is self-connected
+    {
+        POLYMESH_ASSERT(f0 == f1 && "how can they have different faces?");
 
-    auto vA = to_vertex_of(h0_next);
-    auto vB = to_vertex_of(h1_next);
-    if (outgoing_halfedge_of(vA) == h0_prev)
-        outgoing_halfedge_of(vA) = next_halfedge_of(h0_prev_opp);
-    if (outgoing_halfedge_of(vB) == h1_next_opp)
-        outgoing_halfedge_of(vB) = h1_prev;
+        connect_prev_next(h1_prev, h0_next);
+        auto& oh = outgoing_halfedge_of(v_to);
+        if (oh == h1)
+            oh = h0_next;
 
-    // fix next-prev
-    connect_prev_next(h1_prev, next_halfedge_of(h1_next_opp));
-    connect_prev_next(prev_halfedge_of(h1_next_opp), h1_prev);
+        if (f0.is_valid())
+        {
+            auto& fh = halfedge_of(f0);
+            if (fh == h0 || fh == h1)
+                fh = h0_next;
+        }
 
-    connect_prev_next(h0_next, next_halfedge_of(h0_prev_opp));
-    connect_prev_next(prev_halfedge_of(h0_prev_opp), h0_next);
+        set_removed(v_from);
+        set_removed(edge_of(h));
+    }
+    else if (is_to_wrapped) // to is self-connected
+    {
+        POLYMESH_ASSERT(f0 == f1 && "how can they have different faces?");
 
-    // mark for deletion
-    set_removed(v_from);
-    set_removed(f0);
-    set_removed(f1);
-    set_removed(edge_of(h));
-    set_removed(edge_of(h0_prev));
-    set_removed(edge_of(h1_next));
+        connect_prev_next(h0_prev, h1_next);
+        outgoing_halfedge_of(v_to) = h1_next;
+
+        auto h = opposite(h1_next);
+        while (h != h1)
+        {
+            to_vertex_of(h) = v_to;
+            h = opposite(next_halfedge_of(h));
+        }
+
+        if (f0.is_valid())
+        {
+            auto& fh = halfedge_of(f0);
+            if (fh == h0 || fh == h1)
+                fh = h0_next;
+        }
+
+        fix_boundary_state_of(v_to);
+
+        set_removed(v_from);
+        set_removed(edge_of(h));
+    }
+    else
+    {
+        auto h0_prev_opp = opposite(h0_prev);
+        auto h1_next_opp = opposite(h1_next);
+
+        // fix faces (only if triangle because then the triangle is removed)
+        if (is_h0_triangle)
+        {
+            auto fA = face_of(h0_prev_opp);
+
+            face_of(h0_next) = fA;
+
+            if (fA.is_valid() && halfedge_of(fA) == h0_prev_opp)
+                halfedge_of(fA) = h0_next;
+        }
+        if (is_h1_triangle)
+        {
+            auto fB = face_of(h1_next_opp);
+
+            face_of(h1_prev) = fB;
+
+            if (fB.is_valid() && halfedge_of(fB) == h1_next_opp)
+                halfedge_of(fB) = h1_prev;
+        }
+
+        // fix vertices
+        auto hv = h1;
+        do
+        {
+            // point to collapsed vertex
+            POLYMESH_ASSERT(to_vertex_of(hv) == v_from);
+            to_vertex_of(hv) = v_to;
+
+            // advance
+            hv = opposite(next_halfedge_of(hv));
+        } while (hv != h1);
+
+        // fix outgoing of v_to
+        if (outgoing_halfedge_of(v_to) == h1)
+            outgoing_halfedge_of(v_to) = h0_next;
+
+        // fix outgoing of opposite of h0/h1 (if triangle) and prev/next
+        if (is_h0_triangle)
+        {
+            auto vA = to_vertex_of(h0_next);
+            if (outgoing_halfedge_of(vA) == h0_prev)
+                outgoing_halfedge_of(vA) = next_halfedge_of(h0_prev_opp);
+
+            // fix next-prev
+            connect_prev_next(h0_next, next_halfedge_of(h0_prev_opp));
+            if (is_valence_2_from)
+                connect_prev_next(prev_halfedge_of(prev_halfedge_of(h0_prev_opp)), h0_next);
+            else
+                connect_prev_next(prev_halfedge_of(h0_prev_opp), h0_next);
+        }
+        else
+        {
+            if (!is_valence_2_from)
+                connect_prev_next(h0_prev, h0_next);
+        }
+        if (is_h1_triangle)
+        {
+            auto vB = to_vertex_of(h1_next);
+            if (outgoing_halfedge_of(vB) == h1_next_opp)
+                outgoing_halfedge_of(vB) = h1_prev;
+
+            // fix next-prev
+            if (is_valence_2_from)
+                connect_prev_next(h1_prev, next_halfedge_of(next_halfedge_of(h1_next_opp)));
+            else
+                connect_prev_next(h1_prev, next_halfedge_of(h1_next_opp));
+            connect_prev_next(prev_halfedge_of(h1_next_opp), h1_prev);
+        }
+        else
+        {
+            if (is_valence_2_from)
+                connect_prev_next(h1_prev, h0_next);
+            else
+                connect_prev_next(h1_prev, h1_next);
+        }
+
+        // vertex might be boundary now
+        fix_boundary_state_of(v_to);
+
+        // mark for deletion
+        set_removed(v_from);
+        set_removed(edge_of(h));
+        if (is_h0_triangle)
+        {
+            set_removed(f0);
+            set_removed(edge_of(h0_prev));
+        }
+        if (is_h1_triangle)
+        {
+            set_removed(f1);
+            set_removed(edge_of(h1_next));
+        }
+    }
 }
 
 inline void low_level_api_mutable::edge_rotate_next(edge_index e) const

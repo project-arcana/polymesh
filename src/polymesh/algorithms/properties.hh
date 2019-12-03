@@ -606,6 +606,7 @@ inline bool can_collapse(halfedge_handle h)
         if (v == ignore_v0 || v == ignore_v1 || v == v_from)
             continue;
 
+        // TODO: can be made faster by buffering these vertices
         if (v_from.adjacent_vertices().contains(v))
             return false;
     }
