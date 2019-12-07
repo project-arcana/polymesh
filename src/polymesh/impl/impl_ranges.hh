@@ -568,8 +568,11 @@ typename primitive<tag>::handle smart_collection<mesh_ptr, tag, iterator>::rando
     typename primitive<tag>::handle h = {this->m, typename primitive<tag>::index(int(g() % s))};
 
     if constexpr (iterator::is_valid_only_iterator)
+    {
+        POLYMESH_ASSERT(primitive<tag>::valid_size(*this->m) > 0 && "Cannot chose from empty mesh");
         while (h.is_removed())
             h = {this->m, typename primitive<tag>::index(int(g() % s))};
+    }
 
     return h;
 }
