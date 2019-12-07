@@ -849,7 +849,6 @@ inline void low_level_api_mutable::halfedge_collapse(halfedge_index h) const
     {
         POLYMESH_ASSERT(f0 == f1 && "how can they have different faces?");
 
-        connect_prev_next(h0_prev, h1_next);
         outgoing_halfedge_of(v_to) = h1_next;
 
         auto h = opposite(h1_next);
@@ -858,6 +857,8 @@ inline void low_level_api_mutable::halfedge_collapse(halfedge_index h) const
             to_vertex_of(h) = v_to;
             h = opposite(next_halfedge_of(h));
         }
+
+        connect_prev_next(h0_prev, h1_next);
 
         if (f0.is_valid())
         {
@@ -881,7 +882,7 @@ inline void low_level_api_mutable::halfedge_collapse(halfedge_index h) const
         {
             auto fA = face_of(h0_prev_opp);
 
-            face_of(h0_next) = fA;
+            face_of(h0_next) = fA == f1 ? face_index::invalid : fA;
 
             if (fA.is_valid() && halfedge_of(fA) == h0_prev_opp)
                 halfedge_of(fA) = h0_next;
@@ -890,7 +891,7 @@ inline void low_level_api_mutable::halfedge_collapse(halfedge_index h) const
         {
             auto fB = face_of(h1_next_opp);
 
-            face_of(h1_prev) = fB;
+            face_of(h1_prev) = fB == f0 ? face_index::invalid : fB;
 
             if (fB.is_valid() && halfedge_of(fB) == h1_next_opp)
                 halfedge_of(fB) = h1_prev;
@@ -966,7 +967,8 @@ inline void low_level_api_mutable::halfedge_collapse(halfedge_index h) const
         if (is_h1_triangle)
         {
             set_removed(f1);
-            set_removed(edge_of(h1_next));
+            if (!is_removed(edge_of(h1_next)))
+                set_removed(edge_of(h1_next));
         }
     }
 }
