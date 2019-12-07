@@ -874,8 +874,10 @@ inline void low_level_api_mutable::halfedge_collapse(halfedge_index h) const
     }
     else
     {
+        auto h0_next_opp = opposite(h0_next);
         auto h0_prev_opp = opposite(h0_prev);
         auto h1_next_opp = opposite(h1_next);
+        auto h1_prev_opp = opposite(h1_prev);
 
         // fix faces (only if triangle because then the triangle is removed)
         if (is_h0_triangle)
@@ -929,7 +931,11 @@ inline void low_level_api_mutable::halfedge_collapse(halfedge_index h) const
         }
         else
         {
-            if (!is_valence_2_from)
+            if (is_valence_2_from && is_h1_triangle)
+            {
+                // left empty?
+            }
+            else
                 connect_prev_next(h0_prev, h0_next);
         }
         if (is_h1_triangle)
@@ -947,14 +953,31 @@ inline void low_level_api_mutable::halfedge_collapse(halfedge_index h) const
         }
         else
         {
-            if (is_valence_2_from)
+            if (is_valence_2_from && is_h0_triangle)
                 connect_prev_next(h1_prev, h0_next);
             else
                 connect_prev_next(h1_prev, h1_next);
         }
 
-        // vertex might be boundary now
-        fix_boundary_state_of(v_to);
+        // fix boundary states
+        if (is_boundary(v_from) && !is_boundary(v_to))
+            fix_boundary_state_of(v_to);
+
+        if (is_boundary(h0_next))
+            if (auto f = face_of(h0_next_opp); f.is_valid())
+                halfedge_of(f) = h0_next_opp;
+
+        if (is_boundary(h0_next_opp))
+            if (auto f = face_of(h0_next); f.is_valid())
+                halfedge_of(f) = h0_next;
+
+        if (is_boundary(h1_prev))
+            if (auto f = face_of(h1_prev_opp); f.is_valid())
+                halfedge_of(f) = h1_prev_opp;
+
+        if (is_boundary(h1_prev_opp))
+            if (auto f = face_of(h1_prev); f.is_valid())
+                halfedge_of(f) = h1_prev;
 
         // mark for deletion
         set_removed(v_from);
