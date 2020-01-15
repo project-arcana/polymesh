@@ -8,7 +8,7 @@
 namespace polymesh
 {
 template <class ScalarT>
-void write_obj(std::string const& filename, Mesh const& mesh, vertex_attribute<std::array<ScalarT, 3>> const& position);
+void write_obj(std::string const& filename, vertex_attribute<std::array<ScalarT, 3>> const& position);
 template <class ScalarT>
 bool read_obj(std::string const& filename, Mesh& mesh, vertex_attribute<std::array<ScalarT, 3>>& position);
 
@@ -20,12 +20,10 @@ struct obj_writer
     ~obj_writer();
 
     void write_object_name(std::string object_name);
-    void write_mesh(Mesh const& mesh,
-                    vertex_attribute<std::array<ScalarT, 4>> const& position,
+    void write_mesh(vertex_attribute<std::array<ScalarT, 4>> const& position,
                     halfedge_attribute<std::array<ScalarT, 3>> const* tex_coord = nullptr,
                     halfedge_attribute<std::array<ScalarT, 3>> const* normal = nullptr);
-    void write_mesh(Mesh const& mesh,
-                    vertex_attribute<std::array<ScalarT, 3>> const& position,
+    void write_mesh(vertex_attribute<std::array<ScalarT, 3>> const& position,
                     vertex_attribute<std::array<ScalarT, 2>> const* tex_coord = nullptr,
                     vertex_attribute<std::array<ScalarT, 3>> const* normal = nullptr);
 

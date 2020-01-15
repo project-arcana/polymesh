@@ -1,16 +1,16 @@
 #include "obj.hh"
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 
 namespace polymesh
 {
 template <class ScalarT>
-void write_obj(std::string const& filename, Mesh const& mesh, vertex_attribute<std::array<ScalarT, 3>> const& position)
+void write_obj(std::string const& filename, vertex_attribute<std::array<ScalarT, 3>> const& position)
 {
     obj_writer<ScalarT> obj(filename);
-    obj.write_mesh(mesh, position);
+    obj.write_mesh(position);
 }
 
 template <class ScalarT>
@@ -47,11 +47,12 @@ void obj_writer<ScalarT>::write_object_name(std::string object_name)
 }
 
 template <class ScalarT>
-void obj_writer<ScalarT>::write_mesh(const Mesh& mesh,
-                                     vertex_attribute<std::array<ScalarT, 3>> const& position,
+void obj_writer<ScalarT>::write_mesh(vertex_attribute<std::array<ScalarT, 3>> const& position,
                                      vertex_attribute<std::array<ScalarT, 2>> const* tex_coord,
                                      vertex_attribute<std::array<ScalarT, 3>> const* normal)
 {
+    auto const& mesh = position.mesh();
+
     auto base_v = vertex_idx;
     auto base_t = texture_idx;
     auto base_n = normal_idx;
@@ -102,11 +103,12 @@ void obj_writer<ScalarT>::write_mesh(const Mesh& mesh,
 }
 
 template <class ScalarT>
-void obj_writer<ScalarT>::write_mesh(const Mesh& mesh,
-                                     vertex_attribute<std::array<ScalarT, 4>> const& position,
+void obj_writer<ScalarT>::write_mesh(vertex_attribute<std::array<ScalarT, 4>> const& position,
                                      halfedge_attribute<std::array<ScalarT, 3>> const* tex_coord,
                                      halfedge_attribute<std::array<ScalarT, 3>> const* normal)
 {
+    auto const& mesh = position.mesh();
+
     auto base_v = vertex_idx;
     auto base_t = texture_idx;
     auto base_n = normal_idx;
@@ -375,12 +377,12 @@ void obj_reader<ScalarT>::parse(std::istream& in, Mesh& mesh)
     }
 }
 
-template void write_obj<float>(std::string const& filename, Mesh const& mesh, vertex_attribute<std::array<float, 3>> const& position);
+template void write_obj<float>(std::string const& filename, vertex_attribute<std::array<float, 3>> const& position);
 template bool read_obj<float>(std::string const& filename, Mesh& mesh, vertex_attribute<std::array<float, 3>>& position);
 template struct obj_reader<float>;
 template struct obj_writer<float>;
 
-template void write_obj<double>(std::string const& filename, Mesh const& mesh, vertex_attribute<std::array<double, 3>> const& position);
+template void write_obj<double>(std::string const& filename, vertex_attribute<std::array<double, 3>> const& position);
 template bool read_obj<double>(std::string const& filename, Mesh& mesh, vertex_attribute<std::array<double, 3>>& position);
 template struct obj_reader<double>;
 template struct obj_writer<double>;

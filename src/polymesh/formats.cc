@@ -48,22 +48,22 @@ bool polymesh::detail::load(const std::string& filename, polymesh::Mesh& m, vert
 }
 
 template <class ScalarT>
-void polymesh::detail::save(const std::string& filename, polymesh::Mesh& m, vertex_attribute<std::array<ScalarT, 3>> const& pos)
+void polymesh::detail::save(std::string const& filename, vertex_attribute<std::array<ScalarT, 3>> const& pos)
 {
     auto ext = filename.substr(filename.rfind('.') + 1);
     std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
 
     if (ext == "obj")
     {
-        return write_obj(filename, m, pos);
+        return write_obj(filename, pos);
     }
     else if (ext == "off")
     {
-        return write_off(filename, m, pos);
+        return write_off(filename, pos);
     }
     else if (ext == "stl")
     {
-        return write_stl_binary(filename, m, pos);
+        return write_stl_binary(filename, pos);
     }
     else
     {
@@ -74,5 +74,5 @@ void polymesh::detail::save(const std::string& filename, polymesh::Mesh& m, vert
 template bool polymesh::detail::load<float>(std::string const& filename, Mesh& m, vertex_attribute<std::array<float, 3>>& pos);
 template bool polymesh::detail::load<double>(std::string const& filename, Mesh& m, vertex_attribute<std::array<double, 3>>& pos);
 
-template void polymesh::detail::save<float>(std::string const& filename, Mesh& m, vertex_attribute<std::array<float, 3>> const& pos);
-template void polymesh::detail::save<double>(std::string const& filename, Mesh& m, vertex_attribute<std::array<double, 3>> const& pos);
+template void polymesh::detail::save<float>(std::string const& filename, vertex_attribute<std::array<float, 3>> const& pos);
+template void polymesh::detail::save<double>(std::string const& filename, vertex_attribute<std::array<double, 3>> const& pos);
