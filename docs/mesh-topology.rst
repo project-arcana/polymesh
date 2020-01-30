@@ -15,7 +15,7 @@ Motivating example: ::
     pm::face_handle f = m.faces().add(v0, v1, v2);
 
     // iterate over edges
-    for (pm::edges_handle e : m.edge())
+    for (pm::edge_handle e : m.edge())
         std::cout << "v" << int(e.vertexA()) << " -> v" << int(e.vertexB()) << std::endl;
 
     // split face
