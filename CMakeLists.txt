@@ -11,8 +11,7 @@ file(GLOB_RECURSE SOURCE_FILES "src/*.cc")
 file(GLOB_RECURSE HEADER_FILES "src/*.hh")
 
 if(${CMAKE_VERSION} VERSION_GREATER "3.8.0")
-    arcana_source_group(SOURCE_FILES)
-    arcana_source_group(HEADER_FILES)
+    arcana_source_group(SOURCE_FILES HEADER_FILES)
 endif()
 
 if (POLYMESH_ENABLE_UNITY_BUILD)
