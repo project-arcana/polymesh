@@ -94,8 +94,8 @@ void obj_writer<ScalarT>::write_mesh(vertex_attribute<std::array<ScalarT, 3>> co
                 *out << base_t + i;
             if (normal)
             {
-                *out << base_n + i;
                 *out << "/";
+                *out << base_n + i;
             }
         }
         *out << "\n";
@@ -151,8 +151,8 @@ void obj_writer<ScalarT>::write_mesh(vertex_attribute<std::array<ScalarT, 4>> co
                 *out << base_t + hi;
             if (normal)
             {
-                *out << base_n + hi;
                 *out << "/";
+                *out << base_n + hi;
             }
         }
         *out << "\n";
