@@ -82,6 +82,9 @@ bool read_off(std::istream& input, Mesh& mesh, vertex_attribute<std::array<Scala
             vs[vi] = mesh[vertex_index(v)];
         }
 
+        // ignore face colors
+        input.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
         if (!mesh.faces().can_add(vs))
         {
             ++non_manifold;
