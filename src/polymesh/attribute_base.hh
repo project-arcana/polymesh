@@ -53,6 +53,12 @@ public:
         deregister_attr();
     }
 
-    Mesh const& mesh() const { return *mMesh; }
+    /// returns the mesh that this attribute is attached to.
+    /// NOTE: must only be called if the attribute is properly attached
+    Mesh const& mesh() const
+    {
+        POLYMESH_ASSERT(mMesh && "not attached to a mesh");
+        return *mMesh;
+    }
 };
 } // namespace polymesh

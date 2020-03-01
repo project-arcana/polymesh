@@ -79,6 +79,9 @@ Attributes
 .. doxygenstruct:: polymesh::primitive_attribute
     :members:
 
+.. doxygenstruct:: polymesh::primitive_attribute_base
+    :members:
+
 Low-Level API
 -------------
 

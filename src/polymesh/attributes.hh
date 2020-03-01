@@ -88,7 +88,9 @@ public:
 
     // methods
 public:
+    /// sets all attribute values to the provided value
     void clear(AttrT const& value);
+    /// sets all attribute values to the default value
     void clear();
 
     /// returns a new attribute where the given function was applied to each entry
