@@ -5,10 +5,18 @@ How to Build the Documentation
 ------------------------------
 
 * navigate to ``docs/``
+* optionally execute ``pip install -r requirements.txt`` to install required dependencies
 * execute ``doxygen`` to generate from-source part of the documentation
 * execute ``make html`` to build the Sphinx docs
 * open ``docs/_build/index.html``
 
+Types of Contribution
+---------------------
+
+* Any typo fix is heavily welcome. It does not matter if the PR changes only a single character.
+* Updates to the documentation, especially the FAQ or the Cookbook are always welcome. If you are unsure about the scope, style, or anything: just open an issue first to discuss what should be changed.
+* Extending existing formats or adding a new format. Be sure to read :doc:`serialization` and add your format to the generic load/save in ``formats.cc``.
+* Adding new algorithms or changing core aspects of polymesh should probably be discussed in an issue before but we are always happy to extend the library.
 
 Function Parameter Order Guide
 ------------------------------
