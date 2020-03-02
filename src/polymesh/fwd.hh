@@ -4,10 +4,22 @@ namespace polymesh
 {
 class Mesh;
 
-struct vertex_tag;
-struct face_tag;
-struct edge_tag;
-struct halfedge_tag;
+/// a tag class used to represent the primitive type "vertex"
+struct vertex_tag
+{
+};
+/// a tag class used to represent the primitive type "face"
+struct face_tag
+{
+};
+/// a tag class used to represent the primitive type "edge"
+struct edge_tag
+{
+};
+/// a tag class used to represent the primitive type "halfedge"
+struct halfedge_tag
+{
+};
 
 template <class AttrT>
 struct vertex_attribute;

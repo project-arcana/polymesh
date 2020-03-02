@@ -27,6 +27,9 @@ struct weighted_sample
 template <class ElementT, class RangeT, class PredT>
 struct filtered_range;
 
+/// Base class for "smart ranges"
+/// (i.e. collections with plenty of helpers that encourage a functional programming style)
+/// NOTE: this class uses CRTP to reduce runtime overhead
 template <class this_t, class ElementT>
 struct smart_range
 {

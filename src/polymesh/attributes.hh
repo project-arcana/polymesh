@@ -10,6 +10,8 @@
 #include "ranges.hh"
 #include "tmp.hh"
 
+namespace polymesh
+{
 /** Attributes
  *
  * Golden rule:
@@ -28,9 +30,6 @@
  *
  * Currently an attribute has 40 bytes + sizeof(AttrT) overhead
  */
-
-namespace polymesh
-{
 template <class tag, class AttrT>
 struct primitive_attribute : primitive_attribute_base<tag>, smart_range<primitive_attribute<tag, AttrT>, AttrT>
 {

@@ -25,7 +25,7 @@ inline low_level_api_mutable low_level_api(Mesh* m);
  *
  * Usage:
  *      auto ll = low_level_api(myMesh);
- *      ll.<something>();
+ *      ll.something();
  */
 template <class MeshT>
 struct low_level_api_base

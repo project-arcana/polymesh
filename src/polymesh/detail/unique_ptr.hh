@@ -6,6 +6,8 @@
 namespace polymesh
 {
 /**
+ * A lightweight std::unique_ptr replacement
+ *
  * changes to std::unique_ptr<T>:
  * - no custom deleter
  * - no allocators

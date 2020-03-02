@@ -95,3 +95,19 @@ Helper
 ------
 
 .. doxygenfunction:: polymesh::copy
+
+.. doxygenstruct:: polymesh::unique_ptr
+
+.. doxygenstruct:: polymesh::unique_array
+
+
+Internals
+---------
+
+.. doxygenstruct:: polymesh::vertex_tag
+
+.. doxygenstruct:: polymesh::face_tag
+
+.. doxygenstruct:: polymesh::edge_tag
+
+.. doxygenstruct:: polymesh::halfedge_tag

@@ -19,17 +19,17 @@ namespace polymesh
 /**
  * @brief Half-edge Mesh Data Structure
  *
- *  * Primitives are accessed via the smart collections mesh.<primitive>()
- *    (where <primitive> can be vertices, edges, faces, or halfedges)
+ *  * Primitives are accessed via the smart collections mesh.[primitive]()
+ *    (where [primitive] can be vertices, edges, faces, or halfedges)
  *
- *  * Primitives can be added via <primitive>().add()
+ *  * Primitives can be added via [primitive]().add()
  *    (added primitives are at the end of the collection)
  *
- *  * Primitives can be removed via <primitive>().remove(...)
+ *  * Primitives can be removed via [primitive]().remove(...)
  *    (removed primitives are invalidated (flagged for removal). call compactify() to remove them)
  *
- *  * `for (auto h : <primitive>())` iterates over _all_ primitives, including invalid ones
- *    (`for (auto h : valid_<primitive>())` skips over invalid ones)
+ *  * `for (auto h : [primitive]())` iterates over _all_ primitives, including invalid ones
+ *    (`for (auto h : valid_[primitive]())` skips over invalid ones)
  *
  *  * low-level operations can be performed by accessing low_level_api(mesh)
  *
@@ -46,8 +46,8 @@ public:
     /// smart collections for primitives
     /// Also primary interfaces for querying size and adding primitives
     ///
-    /// <primitive>() contains only valid (non-removed) primitives
-    /// all_<primitive>() contains also primitives that are flagged for removal (but is faster)
+    /// [primitive]() contains only valid (non-removed) primitives
+    /// all_[primitive]() contains also primitives that are flagged for removal (but is faster)
     /// use compactify() to guarantee that no removed ones exist
     ///
     /// NOTE: adding primitives does NOT invalidate ranges. (newly added ones are NOT processed though)
