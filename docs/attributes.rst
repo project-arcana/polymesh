@@ -71,7 +71,17 @@ For example, ``m.vertices().avg(pos)`` computes the average vertex position.
 Integrating Mesh and Attributes
 -------------------------------
 
-TODO: by deriving
+Sometimes, it is useful to have a class that represents a mesh with a set of default attributes.
+An easy way to achieve this is to derive from :class:`polymesh::Mesh` and declare the attributes as members: ::
+
+    class MyMesh : public pm::Mesh
+    {
+        pm::vertex_attribute<tg::pos3> pos{*this};
+        pm::vertex_attribute<tg::dir3> normal{*this};
+        pm::halfedge_attribute<tg::pos2> texCoords{*this};
+    };
+
+Note that attributes should be initialized with ``{*this}`` to attach them to the mesh.
 
 
 Advanced Attributes

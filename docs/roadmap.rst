@@ -17,3 +17,4 @@ Long Term
 * add more formats
 * add more objects
 * re-add binary polymesh format with arbitrary attributes
+* sparse attributes
