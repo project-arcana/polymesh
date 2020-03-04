@@ -29,7 +29,7 @@ Extracting Edges as Segments
     // pm::vertex_attribute<tg::pos3> pos;
     
     // functional style
-    auto edges0 = m.edges().map([&](pm::edge_handle e) {
+    auto edges = m.edges().map([&](pm::edge_handle e) {
             return tg::segment3(pos[e.vertexA()], pos[e.vertexB()]);
         }).to_vector();
     
@@ -38,7 +38,7 @@ Extracting Edges as Segments
     // classical style
     std::vector<tg::segment3> edges;
     edges.reserve(m.edges().size());
-    for (auto const& e : m.edges())
+    for (auto e : m.edges())
         edges.emplace_back(pos[e.vertexA()], pos[e.vertexB()]);
 
 
