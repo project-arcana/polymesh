@@ -93,6 +93,7 @@ For example, given a ``face_handle f``, ``f.vertices()`` returns an iterable sma
 For all operations, see class references for :class:`polymesh::vertex_handle`, :class:`polymesh::face_handle`, :class:`polymesh::edge_handle`, and :class:`polymesh::halfedge_handle`.
 For more information about the ranges, see :doc:`smart-ranges`.
 
+.. _primitive-collection:
 
 Primitive Collections
 ---------------------

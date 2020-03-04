@@ -7,7 +7,6 @@
 
 #include "formats/obj.hh"
 #include "formats/off.hh"
-#include "formats/pm.hh"
 #include "formats/stl.hh"
 
 template <class ScalarT>

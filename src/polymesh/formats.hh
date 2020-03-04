@@ -51,13 +51,13 @@ bool load(std::string const& filename, Mesh& m, vertex_attribute<Pos3>& pos)
     {
         auto tmp_pos = m.vertices().make_attribute<std::array<float, 3>>();
         ok = detail::load<float>(filename, m, tmp_pos);
-        std::memcpy(pos.data(), tmp_pos.data(), sizeof(Pos3) * m.vertices().size());
+        std::memcpy(pos.data(), tmp_pos.data(), sizeof(Pos3) * m.all_vertices().size());
     }
     else
     {
         auto tmp_pos = m.vertices().make_attribute<std::array<double, 3>>();
         ok = detail::load<double>(filename, m, tmp_pos);
-        std::memcpy(pos.data(), tmp_pos.data(), sizeof(Pos3) * m.vertices().size());
+        std::memcpy(pos.data(), tmp_pos.data(), sizeof(Pos3) * m.all_vertices().size());
     }
 
     return ok;
@@ -72,13 +72,13 @@ void save(std::string const& filename, vertex_attribute<Pos3> const& pos)
     if (sizeof(Pos3) == sizeof(float) * 3)
     {
         auto tmp_pos = m.vertices().template make_attribute<std::array<float, 3>>();
-        std::memcpy(tmp_pos.data(), pos.data(), sizeof(Pos3) * m.vertices().size());
+        std::memcpy(tmp_pos.data(), pos.data(), sizeof(Pos3) * m.all_vertices().size());
         detail::save<float>(filename, tmp_pos);
     }
     else
     {
         auto tmp_pos = m.vertices().template make_attribute<std::array<double, 3>>();
-        std::memcpy(tmp_pos.data(), pos.data(), sizeof(Pos3) * m.vertices().size());
+        std::memcpy(tmp_pos.data(), pos.data(), sizeof(Pos3) * m.all_vertices().size());
         detail::save<double>(filename, tmp_pos);
     }
 }

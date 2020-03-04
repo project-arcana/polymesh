@@ -1,14 +1,23 @@
 cmake_minimum_required(VERSION 3.0)
 project(PolyMesh)
 
+include(cmake/UnityBuild.cmake)
+include(cmake/SourceGroup.cmake)
+
 option(POLYMESH_ENABLE_ASSERTIONS "if true, enables assertions (even in RelWithDebug, not in Release)" ON)
+option(POLYMESH_ENABLE_UNITY_BUILD "If enabled, compiles this library as a single compilation unit" ON)
 
 file(GLOB_RECURSE SOURCE_FILES "src/*.cc")
 file(GLOB_RECURSE HEADER_FILES "src/*.hh")
 
 if(${CMAKE_VERSION} VERSION_GREATER "3.8.0")
-    source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src" FILES ${SOURCE_FILES} ${HEADER_FILES})
+    arcana_source_group(SOURCE_FILES HEADER_FILES)
 endif()
+
+if (POLYMESH_ENABLE_UNITY_BUILD)
+    arcana_enable_unity_build(polymesh SOURCE_FILES 100 cc)
+endif()
+
 add_library(polymesh STATIC ${SOURCE_FILES} ${HEADER_FILES})
 set_property(TARGET polymesh PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_include_directories(polymesh PUBLIC src/)

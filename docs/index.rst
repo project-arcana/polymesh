@@ -19,11 +19,13 @@ Polymesh Documentation
    algorithms
    serialization
    objects
+   performance
    misc
    cookbook
    faq
    reference
    contributing
+   roadmap
 
 
 Indices and tables

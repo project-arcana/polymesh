@@ -79,6 +79,9 @@ Attributes
 .. doxygenstruct:: polymesh::primitive_attribute
     :members:
 
+.. doxygenstruct:: polymesh::primitive_attribute_base
+    :members:
+
 Low-Level API
 -------------
 
@@ -92,3 +95,19 @@ Helper
 ------
 
 .. doxygenfunction:: polymesh::copy
+
+.. doxygenstruct:: polymesh::unique_ptr
+
+.. doxygenstruct:: polymesh::unique_array
+
+
+Internals
+---------
+
+.. doxygenstruct:: polymesh::vertex_tag
+
+.. doxygenstruct:: polymesh::face_tag
+
+.. doxygenstruct:: polymesh::edge_tag
+
+.. doxygenstruct:: polymesh::halfedge_tag
