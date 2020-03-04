@@ -47,21 +47,12 @@ Add Triangle Faces to Mesh
 
 ::
 
+    // given:
+    // std::vector<tg::triangle3> tris;
+
     pm::Mesh m;
     auto pos = pm::vertex_attribute<tg::pos3>(m);
     
-    const auto n = 10;
-    std::vector<tg::triangle3> tris;
-    tris.reserve(n);
-
-    // some box to sample random positions
-    const auto box = tg::box3(tg::aabb3({-n, -n, -n}, {n, n, n}));
-    
-    tg::rng rng;
-    // create random triangles
-    for (auto i = 0u; i < n; ++i)
-        tris.emplace_back(tg::triangle3(tg::uniform(rng, box), tg::uniform(rng, box), tg::uniform(rng, box)));
-
     for (auto const& tri : tris)
     {
         /// add vertices to topology
