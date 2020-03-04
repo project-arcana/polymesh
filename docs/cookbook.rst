@@ -38,8 +38,8 @@ Extracting Edges as Segments
     // classical style
     std::vector<tg::segment3> edges;
     edges.reserve(m.edges().size());
-    for (auto const& e : m.edges().to_vector())
-        edges.emplace_back(tg::segment3(pos[e.vertexA()], pos[e.vertexB()]));
+    for (auto const& e : m.edges())
+        edges.emplace_back(pos[e.vertexA()], pos[e.vertexB()]);
 
 
 Add Triangle Faces to Mesh
