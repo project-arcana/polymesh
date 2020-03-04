@@ -47,6 +47,19 @@ bool is_triangle(face_handle f);
 /// returns true iff face is a quad
 bool is_quad(face_handle f);
 
+/// returns the edge between two vertices
+/// (returns invalid handle if edge not found)
+/// (O(valence) running time)
+edge_handle edge_between(vertex_handle v0, vertex_handle v1);
+
+/// returns the halfedge between two vertices
+/// (returns invalid handle if halfedge not found)
+/// (O(valence) running time)
+halfedge_handle halfedge_from_to(vertex_handle v_from, vertex_handle v_to);
+
+/// returns true iff there is an edge between v0 and v1
+bool are_adjacent(vertex_handle v0, vertex_handle v1);
+
 /// returns true iff all faces are triangles
 bool is_triangle_mesh(Mesh const& m);
 /// returns true iff all faces are quads
@@ -226,6 +239,30 @@ inline int valence(vertex_handle v) { return v.adjacent_vertices().size(); }
 
 inline bool is_triangle(face_handle f) { return f.halfedges().size() == 3; }
 inline bool is_quad(face_handle f) { return f.halfedges().size() == 4; }
+
+inline edge_handle edge_between(vertex_handle v0, vertex_handle v1)
+{
+    for (auto h : v0.outgoing_halfedges())
+        if (h.vertex_to() == v1)
+            return h.edge();
+    return {};
+}
+
+inline halfedge_handle halfedge_from_to(vertex_handle v_from, vertex_handle v_to)
+{
+    for (auto h : v_from.outgoing_halfedges())
+        if (h.vertex_to() == v_to)
+            return h;
+    return {};
+}
+
+inline bool are_adjacent(vertex_handle v0, vertex_handle v1)
+{
+    for (auto h : v0.outgoing_halfedges())
+        if (h.vertex_to() == v1)
+            return true;
+    return false;
+}
 
 inline bool is_triangle_mesh(Mesh const& m) { return m.faces().all(is_triangle); }
 inline bool is_quad_mesh(Mesh const& m) { return m.faces().all(is_quad); }
