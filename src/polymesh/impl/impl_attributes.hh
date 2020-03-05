@@ -439,9 +439,9 @@ void primitive_attribute<tag, AttrT>::compute(FuncT&& f)
 
 template <class tag, class AttrT>
 template <class FuncT>
-auto primitive_attribute<tag, AttrT>::view(FuncT&& f) const -> readonly_property<primitive_attribute<tag, AttrT> const&, FuncT>
+auto primitive_attribute<tag, AttrT>::view(FuncT&& f) const -> attribute_view<primitive_attribute<tag, AttrT> const&, FuncT>
 {
-    return readonly_property<primitive_attribute<tag, AttrT> const&, FuncT>(*this, f);
+    return attribute_view<primitive_attribute<tag, AttrT> const&, FuncT>(*this, std::forward<FuncT>(f));
 }
 
 } // namespace polymesh

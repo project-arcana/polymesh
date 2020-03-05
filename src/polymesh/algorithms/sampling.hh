@@ -8,7 +8,7 @@
 #include <polymesh/Mesh.hh>
 #include <polymesh/assert.hh>
 
-#include "properties.hh"
+#include <polymesh/properties.hh>
 
 namespace polymesh
 {

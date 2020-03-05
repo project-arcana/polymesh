@@ -25,7 +25,6 @@
 #include "algorithms/normalize.hh"
 #include "algorithms/operations.hh"
 #include "algorithms/optimization.hh"
-#include "algorithms/properties.hh"
 #include "algorithms/sampling.hh"
 #include "algorithms/smoothing.hh"
 #include "algorithms/stats.hh"

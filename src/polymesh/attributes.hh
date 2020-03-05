@@ -3,12 +3,12 @@
 #include <cstddef>
 #include <vector>
 
-#include "attribute_base.hh"
-#include "cursors.hh"
-#include "detail/unique_array.hh"
-#include "properties.hh"
-#include "ranges.hh"
-#include "tmp.hh"
+#include <polymesh/attribute_base.hh>
+#include <polymesh/cursors.hh>
+#include <polymesh/detail/unique_array.hh>
+#include <polymesh/ranges.hh>
+#include <polymesh/tmp.hh>
+#include <polymesh/view.hh>
 
 namespace polymesh
 {
@@ -106,7 +106,7 @@ public:
     void compute(FuncT&& f);
 
     template <class FuncT>
-    auto view(FuncT&& f) const -> readonly_property<primitive_attribute<tag, AttrT> const&, FuncT>;
+    auto view(FuncT&& f) const -> attribute_view<primitive_attribute<tag, AttrT> const&, FuncT>;
 #ifndef _MSC_VER // cannot overload this apparently
     template <class FuncT>
     void view(FuncT&& f) && = delete;

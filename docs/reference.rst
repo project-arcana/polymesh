@@ -40,6 +40,8 @@ Handles and Indices
 .. doxygenstruct:: polymesh::halfedge_handle
     :members:
 
+.. _ranges-ref:
+
 Ranges and Collections
 ----------------------
 

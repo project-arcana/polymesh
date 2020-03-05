@@ -7,3 +7,5 @@
     * `<vector>`
     * ...
 * `Mesh::copy` and `Mesh::create` now work on `pm::unique_ptr`
+* `properties.hh` was renamed to `view.hh`
+* `algorithms/properties.hh` was moved to `properties.hh`

@@ -3,7 +3,7 @@
 #include <queue>
 
 #include <polymesh/Mesh.hh>
-#include <polymesh/algorithms/properties.hh>
+#include <polymesh/properties.hh>
 
 namespace polymesh
 {
