@@ -139,8 +139,8 @@ void decimate(pm::Mesh& m, //
     std::priority_queue<entry> queue;
 
     auto gen = 0;
-    auto edge_gen = m.halfedges().make_attribute_with_default(0);
-    auto vreach = m.vertices().make_attribute_with_default(-1);
+    auto edge_gen = m.halfedges().make_attribute(0);
+    auto vreach = m.vertices().make_attribute(-1);
 
     auto const enqueue = [&](pm::halfedge_handle h) {
         auto const v_to = h.vertex_to();

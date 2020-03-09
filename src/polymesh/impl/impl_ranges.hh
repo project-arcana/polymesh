@@ -506,10 +506,11 @@ typename smart_collection<mesh_ptr, tag, iterator>::handle smart_collection<mesh
 
 template <class mesh_ptr, class tag, class iterator>
 template <class AttrT>
-typename primitive<tag>::template attribute<AttrT> smart_collection<mesh_ptr, tag, iterator>::make_attribute() const
+typename primitive<tag>::template attribute<AttrT> smart_collection<mesh_ptr, tag, iterator>::make_attribute(AttrT const& def_value) const
 {
-    return typename primitive<tag>::template attribute<AttrT>(m, AttrT());
+    return typename primitive<tag>::template attribute<AttrT>(m, def_value);
 }
+
 template <class mesh_ptr, class tag, class iterator>
 template <class AttrT>
 typename primitive<tag>::template attribute<AttrT> smart_collection<mesh_ptr, tag, iterator>::make_attribute_with_default(AttrT const& def_value) const
@@ -537,19 +538,12 @@ typename primitive<tag>::template attribute<AttrT> smart_collection<mesh_ptr, ta
 
 template <class mesh_ptr, class tag, class iterator>
 template <class FuncT, class AttrT>
-typename primitive<tag>::template attribute<AttrT> smart_collection<mesh_ptr, tag, iterator>::make_attribute(FuncT&& f, AttrT const& def_value) const
+typename primitive<tag>::template attribute<AttrT> smart_collection<mesh_ptr, tag, iterator>::map(FuncT&& f, AttrT const& def_value) const
 {
-    auto attr = make_attribute_with_default<AttrT>(def_value);
+    auto attr = make_attribute<AttrT>(def_value);
     for (auto&& h : *this)
         attr[h] = f(h);
     return attr; // copy elison
-}
-
-template <class mesh_ptr, class tag, class iterator>
-template <class FuncT, class AttrT>
-typename primitive<tag>::template attribute<AttrT> smart_collection<mesh_ptr, tag, iterator>::map(FuncT&& f, AttrT const& def_value) const
-{
-    return this->make_attribute(f, def_value);
 }
 
 template <class mesh_ptr, class tag, class iterator>

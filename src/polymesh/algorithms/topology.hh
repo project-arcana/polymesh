@@ -18,7 +18,7 @@ inline face_handle farthest_face(face_handle f)
     std::vector<face_index> q_next;
 
     auto const& m = *f.mesh;
-    auto visited = m.faces().make_attribute_with_default(false);
+    auto visited = m.faces().make_attribute(false);
 
     q_curr.push_back(f.idx);
 

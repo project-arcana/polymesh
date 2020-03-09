@@ -6,7 +6,7 @@ using namespace polymesh;
 
 vertex_attribute<int> polymesh::vertex_components(const Mesh& m, int* comps)
 {
-    auto comp = m.vertices().make_attribute_with_default(-1);
+    auto comp = m.vertices().make_attribute(-1);
 
     auto c_cnt = 0;
     for (auto seed : m.vertices())
@@ -40,7 +40,7 @@ vertex_attribute<int> polymesh::vertex_components(const Mesh& m, int* comps)
 
 face_attribute<int> polymesh::face_components(const Mesh& m, int* comps)
 {
-    auto comp = m.faces().make_attribute_with_default(-1);
+    auto comp = m.faces().make_attribute(-1);
 
     auto c_cnt = 0;
     for (auto seed : m.faces())

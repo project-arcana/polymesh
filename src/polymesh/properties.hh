@@ -526,7 +526,7 @@ template <class Pos3, class Scalar>
 vertex_attribute<Scalar> vertex_voronoi_areas(vertex_attribute<Pos3> const& position)
 {
     auto const& m = position.mesh();
-    vertex_attribute<Scalar> areas = m.vertices().make_attribute_with_default(Scalar(0));
+    vertex_attribute<Scalar> areas = m.vertices().make_attribute(Scalar(0));
 
     for (auto f : m.faces())
     {
@@ -544,7 +544,7 @@ vertex_attribute<typename field3<Pos3>::vec_t> vertex_normals_uniform(vertex_att
 {
     auto const& m = position.mesh();
     auto fnormals = m.faces().map([&](face_handle f) { return triangle_normal(f, position); });
-    auto normals = m.vertices().make_attribute_with_default(field3<Pos3>::make_vec(0, 0, 0));
+    auto normals = m.vertices().make_attribute(field3<Pos3>::make_vec(0, 0, 0));
 
     for (auto f : m.faces())
         for (auto v : f.vertices())
@@ -565,7 +565,7 @@ vertex_attribute<typename field3<Pos3>::vec_t> vertex_normals_by_area(vertex_att
 {
     auto const& m = position.mesh();
     auto fnormals = m.faces().map([&](face_handle f) { return triangle_normal_unorm(f, position); });
-    auto normals = m.vertices().make_attribute_with_default(field3<Pos3>::make_vec(0, 0, 0));
+    auto normals = m.vertices().make_attribute(field3<Pos3>::make_vec(0, 0, 0));
 
     for (auto f : m.faces())
         for (auto v : f.vertices())

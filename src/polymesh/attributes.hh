@@ -232,9 +232,9 @@ struct halfedge_attribute final : primitive_attribute<halfedge_tag, AttrT>
 };
 
 template <class AttrT, class Collection>
-auto attribute(Collection const& c, AttrT const& defaultValue = {}) -> decltype(c.make_attribute_with_default(defaultValue))
+auto attribute(Collection const& c, AttrT const& defaultValue = {}) -> decltype(c.make_attribute(defaultValue))
 {
-    return c.make_attribute_with_default(defaultValue);
+    return c.make_attribute(defaultValue);
 }
 
 } // namespace polymesh
