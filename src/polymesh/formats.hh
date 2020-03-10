@@ -45,6 +45,7 @@ template <class Pos3>
 bool load(std::string const& filename, Mesh& m, vertex_attribute<Pos3>& pos)
 {
     static_assert(sizeof(Pos3) == sizeof(float) * 3 || sizeof(Pos3) == sizeof(double) * 3, "position type must be 3 floats or 3 doubles");
+    POLYMESH_ASSERT(&m == &pos.mesh() && "wrong mesh");
 
     bool ok;
     if (sizeof(Pos3) == sizeof(float) * 3)
