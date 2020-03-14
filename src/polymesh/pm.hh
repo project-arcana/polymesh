@@ -9,3 +9,5 @@
 #include <polymesh/formats.hh>
 
 #include <polymesh/objects.hh>
+
+#include <polymesh/hash.hh>
