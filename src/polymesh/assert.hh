@@ -33,7 +33,7 @@ struct assertion_info
     int line;
 };
 
-POLYMESH_COLD_FUNC POLYMESH_DONT_INLINE void assertion_failed(assertion_info const& info);
+[[noreturn]] POLYMESH_COLD_FUNC POLYMESH_DONT_INLINE void assertion_failed(assertion_info const& info);
 } // namespace detail
 
 /// handler that is called whenever an assertion is violated
