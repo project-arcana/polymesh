@@ -1016,6 +1016,18 @@ void edge_collection<iterator>::split(edge_handle e, vertex_handle v) const
 }
 
 template <class iterator>
+vertex_handle edge_collection<iterator>::split_and_triangulate(edge_handle e) const
+{
+    return this->m->handle_of(low_level_api(this->m).edge_split_and_triangulate(e.idx));
+}
+
+template <class iterator>
+void edge_collection<iterator>::split_and_triangulate(edge_handle e, vertex_handle v) const
+{
+    low_level_api(this->m).edge_split_and_triangulate(e.idx, v.idx);
+}
+
+template <class iterator>
 void vertex_collection<iterator>::collapse(vertex_handle v) const
 {
     low_level_api(this->m).vertex_collapse(v.idx);

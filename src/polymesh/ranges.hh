@@ -354,7 +354,7 @@ struct edge_collection : smart_collection<Mesh*, edge_tag, iterator>
     /// Adds an edge between two existing, distinct vertices
     /// if edge already exists, returns it
     edge_handle add_or_get(vertex_handle v_from, vertex_handle v_to) const;
-    /// Adds an edge between two existing, distict halfedges
+    /// Adds an edge between two existing, distinct halfedges
     /// if edge already exists, returns it
     edge_handle add_or_get(halfedge_handle h_from, halfedge_handle h_to) const;
 
@@ -371,6 +371,16 @@ struct edge_collection : smart_collection<Mesh*, edge_tag, iterator>
     vertex_handle split(edge_handle e) const;
     /// same as before but splits at a given ISOLATED vertex
     void split(edge_handle e, vertex_handle v) const;
+
+    /// Splits this edge in half by inserting a vertex (which is returned)
+    /// All adjacent faces are triangulated
+    /// Works on boundaries
+    /// NOTE:
+    ///   - on triangle meshes, this corresponds to a 2-4 split
+    ///   - is currently only implemented for triangles
+    vertex_handle split_and_triangulate(edge_handle e) const;
+    /// same as before but splits at a given ISOLATED vertex
+    void split_and_triangulate(edge_handle e, vertex_handle v) const;
 
     /// Moves both half-edges vertices to their next half-edge vertex
     /// Equivalent to an edge flip if both faces are triangular

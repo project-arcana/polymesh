@@ -487,6 +487,117 @@ inline void low_level_api_mutable::face_split(face_index f, vertex_index v) cons
     } while (h != h_begin);
 }
 
+inline vertex_index low_level_api_mutable::edge_split_and_triangulate(edge_index e) const
+{
+    auto v = add_vertex();
+    edge_split_and_triangulate(e, v);
+    return v;
+}
+
+inline void low_level_api_mutable::edge_split_and_triangulate(edge_index e, vertex_index v_new) const
+{
+    POLYMESH_ASSERT(is_isolated(v_new) && "new vertex must be isolated");
+
+    POLYMESH_ASSERT((is_boundary(halfedge_of(e, 0)) || next_halfedge_of(next_halfedge_of(halfedge_of(e, 0))) == prev_halfedge_of(halfedge_of(e, 0)))
+                    && "only implemented for triangles currently");
+    POLYMESH_ASSERT((is_boundary(halfedge_of(e, 1)) || next_halfedge_of(next_halfedge_of(halfedge_of(e, 1))) == prev_halfedge_of(halfedge_of(e, 1)))
+                    && "only implemented for triangles currently");
+
+    // split halfedge
+    auto h = halfedge_of(e, 0);
+    halfedge_split(h, v_new);
+
+    // triangulate result
+    if (is_boundary(v_new))
+    {
+        auto const f_new = alloc_face();
+        auto const e_new = alloc_edge();
+        auto const h0_new = halfedge_of(e_new, 0);
+        auto const h1_new = halfedge_of(e_new, 1);
+
+        auto const h_old = is_boundary(h) ? opposite(next_halfedge_of(h)) : h;
+        auto const f_old = face_of(h_old);
+        auto const v_opp = from_vertex_of(prev_halfedge_of(h_old));
+        auto const h_f_new = next_halfedge_of(h_old);
+
+        POLYMESH_ASSERT(f_old.is_valid());
+
+        // fix topo
+        to_vertex_of(h0_new) = v_opp;
+        to_vertex_of(h1_new) = v_new;
+
+        halfedge_of(f_old) = h_old;
+        halfedge_of(f_new) = h_f_new;
+
+        face_of(h0_new) = f_old;
+        face_of(h1_new) = f_new;
+        face_of(h_f_new) = f_new;
+        face_of(next_halfedge_of(h_f_new)) = f_new;
+
+        connect_prev_next(h_old, h0_new);
+        connect_prev_next(h1_new, h_f_new);
+        connect_prev_next(h0_new, prev_halfedge_of(h_old));
+        connect_prev_next(next_halfedge_of(h_f_new), h1_new);
+    }
+    else
+    {
+        auto const f_0_new = alloc_face();
+        auto const f_1_new = alloc_face();
+        auto const e_0_new = alloc_edge();
+        auto const e_1_new = alloc_edge();
+        auto const h00 = halfedge_of(e_0_new, 0);
+        auto const h01 = halfedge_of(e_0_new, 1);
+        auto const h10 = halfedge_of(e_1_new, 0);
+        auto const h11 = halfedge_of(e_1_new, 1);
+
+        auto const f_0_old = face_of(h);
+        auto const f_1_old = opposite_face_of(h);
+
+        auto const v0 = from_vertex_of(prev_halfedge_of(h));
+        auto const v1 = to_vertex_of(next_halfedge_of(opposite(h)));
+
+        auto const h_prev = prev_halfedge_of(h);
+        auto const h_next = next_halfedge_of(h);
+        auto const h_next_opp = opposite(h_next);
+        auto const h_opp_next = next_halfedge_of(opposite(h));
+        auto const h_next_next = next_halfedge_of(h_next);
+        auto const h_opp_next_next = next_halfedge_of(h_opp_next);
+
+        // fix topo
+        to_vertex_of(h00) = v0;
+        to_vertex_of(h01) = v_new;
+        to_vertex_of(h10) = v_new;
+        to_vertex_of(h11) = v1;
+
+        halfedge_of(f_0_old) = h_prev;
+        halfedge_of(f_0_new) = h_next_next;
+        halfedge_of(f_1_old) = h_opp_next;
+        halfedge_of(f_1_new) = h_opp_next_next;
+
+        face_of(h00) = f_0_old;
+        face_of(h01) = f_0_new;
+        face_of(h10) = f_1_old;
+        face_of(h11) = f_1_new;
+
+        face_of(h_next) = f_0_new;
+        face_of(h_next_next) = f_0_new;
+        face_of(h_next_opp) = f_1_new;
+        face_of(h_opp_next_next) = f_1_new;
+
+        connect_prev_next(h, h00);
+        connect_prev_next(h00, h_prev);
+
+        connect_prev_next(h_next_next, h01);
+        connect_prev_next(h01, h_next);
+
+        connect_prev_next(h_opp_next, h10);
+        connect_prev_next(h10, opposite(h));
+
+        connect_prev_next(h_next_opp, h11);
+        connect_prev_next(h11, h_opp_next_next);
+    }
+}
+
 inline vertex_index low_level_api_mutable::edge_split(edge_index e) const
 {
     auto v = add_vertex();
