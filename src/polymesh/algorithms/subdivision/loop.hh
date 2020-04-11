@@ -2,8 +2,8 @@
 
 #include <polymesh/Mesh.hh>
 
-namespace polymesh {
-
+namespace polymesh
+{
 /// Performs a loop subdivision step (topology only)
 void subdivide_loop(Mesh& m);
 

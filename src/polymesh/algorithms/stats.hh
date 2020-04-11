@@ -6,8 +6,8 @@
 #include <polymesh/Mesh.hh>
 #include <polymesh/fields.hh>
 
-#include "components.hh"
 #include <polymesh/properties.hh>
+#include "components.hh"
 
 namespace polymesh
 {

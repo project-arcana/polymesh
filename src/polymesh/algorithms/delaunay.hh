@@ -1,8 +1,8 @@
 #pragma once
 
 #include <polymesh/Mesh.hh>
-#include <polymesh/properties.hh>
 #include <polymesh/detail/delaunay.hh>
+#include <polymesh/properties.hh>
 
 namespace polymesh
 {

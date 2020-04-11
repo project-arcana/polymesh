@@ -8,7 +8,7 @@ namespace polymesh
 namespace detail
 {
 // from https://en.wikipedia.org/wiki/Xorshift
-inline uint64_t xorshift64star(uint64_t &state)
+inline uint64_t xorshift64star(uint64_t& state)
 {
     uint64_t x = state; /* The state must be seeded with a nonzero value. */
     x ^= x >> 12;       // a
