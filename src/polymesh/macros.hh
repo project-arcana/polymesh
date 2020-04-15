@@ -55,8 +55,8 @@
 #define POLYMESH_DETAIL_MACRO_JOIN(arg1, arg2) arg1##arg2
 #define POLYMESH_MACRO_JOIN(arg1, arg2) POLYMESH_DETAIL_MACRO_JOIN(arg1, arg2)
 
-#define POLYMESH_UNUSED(expr) \
-    do                        \
-    {                         \
-        void(sizeof(bool((expr))));   \
+#define POLYMESH_UNUSED(expr)       \
+    do                              \
+    {                               \
+        void(sizeof(bool((expr)))); \
     } while (false) // force ;
