@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'polymesh'
-copyright = '2019, Philip Trettner'
+copyright = '2020, Philip Trettner'
 author = 'Philip Trettner'
 
 # The full version, including alpha/beta/rc tags

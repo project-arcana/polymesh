@@ -25,7 +25,7 @@ for now the sphinx documentation must be built manually:
 
 ```
 cd docs
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 doxygen
 make html
 open _build/html/index.html
