@@ -1,3 +1,7 @@
 .wy-side-nav-search {
     background-color: #F44336 !important;
 }
+
+dl.cpp a.reference {
+    margin-right: 4px;
+}

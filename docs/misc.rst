@@ -6,6 +6,8 @@ Assertions
 
 TODO
 
+.. _simple-graphs-ref:
+
 Simple Graphs
 -------------
 

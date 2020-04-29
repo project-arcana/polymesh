@@ -7,6 +7,8 @@ Mesh
 .. doxygenclass:: polymesh::Mesh
     :members:
 
+.. _handles-ref:
+
 Handles and Indices
 -------------------
 
@@ -83,6 +85,60 @@ Attributes
 
 .. doxygenstruct:: polymesh::primitive_attribute_base
     :members:
+
+.. _topological-properties-ref:
+
+Topological Properties
+----------------------
+
+.. doxygenfunction:: polymesh::is_vertex_boundary
+
+.. doxygenfunction:: polymesh::is_face_boundary
+
+.. doxygenfunction:: polymesh::is_edge_boundary
+
+.. doxygenfunction:: polymesh::is_halfedge_boundary
+
+.. doxygenfunction:: polymesh::is_vertex_isolated
+
+.. doxygenfunction:: polymesh::is_edge_isolated
+
+.. doxygenfunction:: polymesh::valence
+
+.. doxygenfunction:: polymesh::is_triangle
+
+.. doxygenfunction:: polymesh::is_quad
+
+.. doxygenfunction:: polymesh::edge_between
+
+.. doxygenfunction:: polymesh::halfedge_from_to
+
+.. doxygenfunction:: polymesh::are_adjacent
+
+.. doxygenfunction:: polymesh::is_triangle_mesh
+
+.. doxygenfunction:: polymesh::is_quad_mesh
+
+.. doxygenfunction:: polymesh::euler_characteristic
+
+.. doxygenfunction:: polymesh::is_closed_mesh
+
+.. doxygenfunction:: polymesh::can_collapse
+
+.. doxygenfunction:: polymesh::can_flip
+
+.. doxygenfunction:: can_rotate_next(edge_handle)
+
+.. doxygenfunction:: can_rotate_prev(edge_handle)
+
+.. doxygenfunction:: can_rotate_next(halfedge_handle)
+
+.. doxygenfunction:: can_rotate_prev(halfedge_handle)
+
+.. doxygenfunction:: can_add_or_get_edge(vertex_handle, vertex_handle)
+
+.. doxygenfunction:: can_add_or_get_edge(halfedge_handle, halfedge_handle)
+
 
 Low-Level API
 -------------

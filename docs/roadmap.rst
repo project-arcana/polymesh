@@ -17,3 +17,4 @@ Long Term
 * add more objects
 * re-add binary polymesh format with arbitrary attributes
 * sparse attributes
+* better support for 2D meshes

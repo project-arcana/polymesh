@@ -19,24 +19,35 @@
 // e.g. valence(v) is the same as v[valence]
 namespace polymesh
 {
+
+//
+// ------------ Topological Properties ------------
+//
+
 /// returns true if the vertex lies at a boundary
 bool is_boundary(vertex_handle v);
+/// returns true if the vertex lies at a boundary
 bool is_vertex_boundary(vertex_handle v);
 /// returns true if the face lies at a boundary
 bool is_boundary(face_handle f);
+/// returns true if the face lies at a boundary
 bool is_face_boundary(face_handle f);
 /// returns true if the edge lies at a boundary
 bool is_boundary(edge_handle e);
+/// returns true if the edge lies at a boundary
 bool is_edge_boundary(edge_handle e);
 /// returns true if the half-edge lies at a boundary (NOTE: a half-edge is boundary if it has no face)
 bool is_boundary(halfedge_handle h);
+/// returns true if the half-edge lies at a boundary (NOTE: a half-edge is boundary if it has no face)
 bool is_halfedge_boundary(halfedge_handle h);
 
 /// returns true if the vertex has no neighbors
 bool is_isolated(vertex_handle v);
+/// returns true if the vertex has no neighbors
 bool is_vertex_isolated(vertex_handle v);
 /// returns true if the edge has no neighboring faces
 bool is_isolated(edge_handle e);
+/// returns true if the edge has no neighboring faces
 bool is_edge_isolated(edge_handle e);
 
 /// returns the vertex valence (number of adjacent vertices)
@@ -71,6 +82,35 @@ int euler_characteristic(Mesh const& m);
 /// returns true iff the mesh is closed (has no boundary)
 /// isolated vertices are ignored
 bool is_closed_mesh(Mesh const& m);
+
+/// returns true if m.halfedges().collapse(h) is possible topologically
+/// NOTE: only works on triangles
+bool can_collapse(halfedge_handle h);
+
+/// returns true if m.edges().flip(e) would work
+bool can_flip(edge_handle e);
+
+/// returns true if m.edges().rotate_next(e) would work
+bool can_rotate_next(edge_handle e);
+
+/// returns true if m.edges().rotate_prev(e) would work
+bool can_rotate_prev(edge_handle e);
+
+/// returns true if m.halfedges().rotate_next(h) would work
+bool can_rotate_next(halfedge_handle h);
+
+/// returns true if m.halfedges().rotate_prev(h) would work
+bool can_rotate_prev(halfedge_handle h);
+
+/// returns true if m.edges().add_or_get(v_from, v_to) would work
+bool can_add_or_get_edge(vertex_handle v_from, vertex_handle v_to);
+
+/// returns true if m.edges().add_or_get(h_from, h_to) would work
+bool can_add_or_get_edge(halfedge_handle h_from, halfedge_handle h_to);
+
+//
+// ------------ Geometrical Properties ------------
+//
 
 /// returns the area of the (flat) polygonal face
 template <class Pos3, class Scalar = typename field3<Pos3>::scalar_t>
@@ -184,36 +224,11 @@ halfedge_attribute<Pos3> barycentric_coordinates(Mesh const& m);
 template <class Pos3>
 bool is_delaunay(edge_handle e, vertex_attribute<Pos3> const& position);
 
-/// returns true if m.halfedges().collapse(h) is possible topologically
-/// NOTE: only works on triangles
-bool can_collapse(halfedge_handle h);
-
 /// returns true if m.halfedges().collapse(h) will not result in any flipped normals when h.vertex_to() is set to new_pos
 /// NOTE: ALSO checks can_collapse(h)
 /// NOTE: only works on triangles
 template <class Pos3>
 bool can_collapse_without_flips(halfedge_handle h, Pos3 new_pos, vertex_attribute<Pos3> const& position);
-
-/// returns true if m.edges().flip(e) would work
-bool can_flip(edge_handle e);
-
-/// returns true if m.edges().rotate_next(e) would work
-bool can_rotate_next(edge_handle e);
-
-/// returns true if m.edges().rotate_prev(e) would work
-bool can_rotate_prev(edge_handle e);
-
-/// returns true if m.halfedges().rotate_next(h) would work
-bool can_rotate_next(halfedge_handle h);
-
-/// returns true if m.halfedges().rotate_prev(h) would work
-bool can_rotate_prev(halfedge_handle h);
-
-/// returns true if m.edges().add_or_get(v_from, v_to) would work
-bool can_add_or_get_edge(vertex_handle v_from, vertex_handle v_to);
-
-/// returns true if m.edges().add_or_get(h_from, h_to) would work
-bool can_add_or_get_edge(halfedge_handle h_from, halfedge_handle h_to);
 
 /// ======== IMPLEMENTATION ========
 

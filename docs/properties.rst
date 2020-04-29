@@ -38,10 +38,40 @@ Motivating example: ::
 Topological Properties
 ----------------------
 
-TODO
+The topological are independent of the geometric interpretation of a mesh and thus also work for :ref:`simple-graphs-ref`.
+Some of these properties are just free function versions of members available in :ref:`handles-ref` to make it slightly easier to use them with :doc:`smart-ranges`:
+
+.. doxygenfunction:: polymesh::is_vertex_isolated
+
+::
+
+    // number of isolated vertices
+    auto isolated_cnt = m.vertices().count(pm::is_vertex_isolated);
+
+Other properties are helpful when checking if certain topological operations are allowed:
+
+.. doxygenfunction:: polymesh::can_collapse
+
+And some properties compute otherwise useful mesh information such as
+
+.. doxygenfunction:: polymesh::euler_characteristic
+
+All defined properties can be found in :ref:`topological-properties-ref` or directly in ``<polymesh/properties.hh>``.
 
 
 Geometric Properties
 --------------------
+
+While topological properties can be computed directly ony a ``pm::Mesh``, geometric properties usually require at least one attribute, such as per-vertex positions.
+These properties are written in a generic, sometimes peculiar way.
+For example:
+
+::
+
+    template <class Pos3, class Scalar = typename field3<Pos3>::scalar_t>
+    Scalar face_area(face_handle f, vertex_attribute<Pos3> const& position);
+
+This ``pm::face_area`` function takes a ``face_handle`` and a 3D position attribute and compute the area of the polygonal face (assuming that it is planar).
+The ``Scalar`` template parameter defaults to the scalar type of the position attribute but can be explicitly provided if the result is desired in a different type (e.g. a ``float`` based position but a ``double`` face area).
 
 TODO
