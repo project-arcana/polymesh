@@ -10,6 +10,8 @@ Some properties transform complete attributes, like ``pm::vertex_normals_by_area
 Property functions live in the ``polymesh::`` namespace and can thus often be found via `argument-dependent lookup <https://en.cppreference.com/w/cpp/language/adl>`_.
 For example, ``valence(v)`` is the same as ``pm::valence(v)`` for ``pm::vertex_handle v``.
 
+All defined properties can be found in :ref:`topological-properties-ref`, :ref:`geometric-properties-ref`, or directly in ``<polymesh/properties.hh>``.
+
 Motivating example: ::
 
     #include <polymesh/properties.hh>
@@ -56,7 +58,7 @@ And some properties compute otherwise useful mesh information such as
 
 .. doxygenfunction:: polymesh::euler_characteristic
 
-All defined properties can be found in :ref:`topological-properties-ref` or directly in ``<polymesh/properties.hh>``.
+All defined topological properties can be found in :ref:`topological-properties-ref` or directly in ``<polymesh/properties.hh>``.
 
 
 Geometric Properties
@@ -74,4 +76,30 @@ For example:
 This ``pm::face_area`` function takes a ``face_handle`` and a 3D position attribute and compute the area of the polygonal face (assuming that it is planar).
 The ``Scalar`` template parameter defaults to the scalar type of the position attribute but can be explicitly provided if the result is desired in a different type (e.g. a ``float`` based position but a ``double`` face area).
 
-TODO
+Similar to the topological ones, there are per-primitive properties, like 
+
+.. doxygenfunction:: polymesh::edge_length(edge_handle, vertex_attribute<Pos3> const&)
+
+and there are properties that compute new attributes for the whole mesh, like
+
+.. doxygenfunction:: polymesh::cotan_weights
+
+Polymesh tries to support (planar) polygons where possible, though some computations are considerably faster when specialized on triangles.
+Generally, ``face_`` versions work on polygons while ``triangle_`` versions assume a triangular face.
+For example 
+
+.. doxygenfunction:: polymesh::face_centroid
+
+versus
+
+.. doxygenfunction:: polymesh::triangle_centroid
+
+Finally, some properties answer geometry-related queries, like
+
+.. doxygenfunction:: polymesh::is_delaunay
+
+or
+
+.. doxygenfunction:: polymesh::can_collapse_without_flips
+
+All defined geometric properties can be found in :ref:`geometric-properties-ref` or directly in ``<polymesh/properties.hh>``.

@@ -139,6 +139,62 @@ Topological Properties
 
 .. doxygenfunction:: can_add_or_get_edge(halfedge_handle, halfedge_handle)
 
+.. _geometric-properties-ref:
+
+Geometric Properties
+--------------------
+
+.. doxygenfunction:: polymesh::face_area
+
+.. doxygenfunction:: polymesh::face_centroid
+
+.. doxygenfunction:: polymesh::face_normal
+
+.. doxygenfunction:: polymesh::triangle_area
+
+.. doxygenfunction:: polymesh::triangle_centroid
+
+.. doxygenfunction:: polymesh::triangle_normal
+
+.. doxygenfunction:: polymesh::triangle_normal_unorm
+
+.. doxygenfunction:: polymesh::bary_interpolate
+
+.. doxygenfunction:: polymesh::edge_length(edge_handle, vertex_attribute<Pos3> const&)
+
+.. doxygenfunction:: polymesh::edge_length(halfedge_handle, vertex_attribute<Pos3> const&)
+
+.. doxygenfunction:: polymesh::edge_vector
+
+.. doxygenfunction:: polymesh::edge_dir
+
+.. doxygenfunction:: polymesh::angle_to_next
+
+.. doxygenfunction:: polymesh::angle_to_prev
+
+.. doxygenfunction:: polymesh::angle_defect
+
+.. doxygenfunction:: polymesh::cotan_weight
+
+.. doxygenfunction:: polymesh::vertex_voronoi_areas
+
+.. doxygenfunction:: polymesh::vertex_normals_uniform
+
+.. doxygenfunction:: polymesh::vertex_normals_by_area
+
+.. doxygenfunction:: polymesh::face_normals
+
+.. doxygenfunction:: polymesh::triangle_normals
+
+.. doxygenfunction:: polymesh::triangle_areas
+
+.. doxygenfunction:: polymesh::cotan_weights
+
+.. doxygenfunction:: polymesh::barycentric_coordinates
+
+.. doxygenfunction:: polymesh::is_delaunay
+
+.. doxygenfunction:: polymesh::can_collapse_without_flips
 
 Low-Level API
 -------------
