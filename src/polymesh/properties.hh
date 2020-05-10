@@ -19,7 +19,6 @@
 // e.g. valence(v) is the same as v[valence]
 namespace polymesh
 {
-
 //
 // ------------ Topological Properties ------------
 //
