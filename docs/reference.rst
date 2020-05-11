@@ -160,6 +160,8 @@ Geometric Properties
 
 .. doxygenfunction:: polymesh::bary_interpolate
 
+.. doxygenfunction:: polymesh::barycoords_of
+
 .. doxygenfunction:: polymesh::edge_length(edge_handle, vertex_attribute<Pos3> const&)
 
 .. doxygenfunction:: polymesh::edge_length(halfedge_handle, vertex_attribute<Pos3> const&)
@@ -195,6 +197,24 @@ Geometric Properties
 .. doxygenfunction:: polymesh::is_delaunay
 
 .. doxygenfunction:: polymesh::can_collapse_without_flips
+
+.. _algorithms-ref:
+
+Algorithms
+----------
+
+.. doxygenfunction:: polymesh::vertex_components
+
+.. doxygenfunction:: polymesh::face_components
+
+.. doxygenfunction:: polymesh::vertex_component
+
+.. doxygenfunction:: polymesh::face_component(face_handle)
+
+.. doxygenfunction:: polymesh::face_component(vertex_handle)
+
+.. doxygenfunction:: polymesh::deduplicate
+
 
 Low-Level API
 -------------

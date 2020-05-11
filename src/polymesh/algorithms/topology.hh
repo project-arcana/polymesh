@@ -10,7 +10,7 @@ namespace polymesh
 /// (i.e. the last face that would be visited in a BFS)
 face_handle farthest_face(face_handle f);
 
-/// ======== IMPLEMENTATION ========
+// ======== IMPLEMENTATION ========
 
 inline face_handle farthest_face(face_handle f)
 {

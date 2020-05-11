@@ -9,7 +9,7 @@ namespace polymesh
 template <class VertexF>
 void subdivide_sqrt3(Mesh& m, VertexF&& vf);
 
-/// ======== IMPLEMENTATION ========
+// ======== IMPLEMENTATION ========
 
 template <class VertexF>
 void subdivide_sqrt3(Mesh& m, VertexF&& vf)

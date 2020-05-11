@@ -106,7 +106,7 @@ private:
     attribute<enum_t> entries;
 };
 
-/// ======== IMPLEMENTATION ========
+// ======== IMPLEMENTATION ========
 
 template <class enum_t, class mesh_ptr, class tag, class iterator>
 flags<enum_t, tag> make_flags(smart_collection<mesh_ptr, tag, iterator> const& c, enum_t initial_value)

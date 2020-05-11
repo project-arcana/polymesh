@@ -84,7 +84,7 @@ private:
     int partitions;
 };
 
-/// ======== IMPLEMENTATION ========
+// ======== IMPLEMENTATION ========
 
 template <class mesh_ptr, class tag, class iterator>
 partitioning<tag> make_partitioning(smart_collection<mesh_ptr, tag, iterator> const& c)

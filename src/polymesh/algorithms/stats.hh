@@ -18,7 +18,7 @@ namespace polymesh
 template <class Vec3 = void>
 void print_stats(std::ostream& out, Mesh const& m, vertex_attribute<Vec3> const* position = nullptr);
 
-/// ======== IMPLEMENTATION ========
+// ======== IMPLEMENTATION ========
 template <class Vec3>
 void print_stats(std::ostream& out, Mesh const& m, vertex_attribute<Vec3> const* position)
 {

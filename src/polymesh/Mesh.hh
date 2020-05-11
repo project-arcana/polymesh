@@ -236,7 +236,7 @@ private:
 };
 } // namespace polymesh
 
-/// ======== IMPLEMENTATIONS ========
+// ======== IMPLEMENTATIONS ========
 
 #include "impl/impl_attributes.hh"
 #include "impl/impl_cursors.hh"

@@ -23,9 +23,11 @@ detail::bfs_range<vertex_tag> vertex_component(vertex_handle v);
 
 /// returns a range that iterates over all connected faces in BFS order
 detail::bfs_range<face_tag> face_component(face_handle f);
+
+/// returns a range that iterates over all connected faces in BFS order
 detail::bfs_range<face_tag> face_component(vertex_handle v);
 
-/// ======== IMPLEMENTATION ========
+// ======== IMPLEMENTATION ========
 
 inline detail::bfs_range<vertex_tag> vertex_component(vertex_handle v) { return {v}; }
 inline detail::bfs_range<face_tag> face_component(face_handle f) { return {f}; }

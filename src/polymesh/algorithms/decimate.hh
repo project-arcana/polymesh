@@ -76,7 +76,7 @@ struct decimate_config
     }
 };
 
-/*
+/**
  * Error-function-based incremental decimation
  *
  * Initial per-vertex errors must be provided in vertex_errors
@@ -97,6 +97,7 @@ void decimate(pm::Mesh& m, //
               pm::vertex_attribute<ErrorF>& errors,
               ConfigT const& config);
 
+/// calls decimate with a default configuration that decimates until a target vertex count is reached
 template <class Pos3, class ErrorF>
 void decimate_down_to(pm::Mesh& m, //
                       pm::vertex_attribute<Pos3>& pos,
@@ -106,6 +107,7 @@ void decimate_down_to(pm::Mesh& m, //
     return decimate(m, pos, errors, decimate_config<Pos3, ErrorF>::down_to(target_vertex_cnt));
 }
 
+/// calls decimate with a default configuration that decimates until a target error value is reached
 template <class Pos3, class ErrorF, class ErrorValueT>
 void decimate_up_to_error(pm::Mesh& m, //
                           pm::vertex_attribute<Pos3>& pos,

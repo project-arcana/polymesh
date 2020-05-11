@@ -16,7 +16,7 @@ namespace polymesh
 template <class Scalar = float, class EdgeLengthF>
 std::pair<halfedge_handle, float> trace_step(halfedge_handle h, EdgeLengthF&& edge_length, Scalar x, Scalar d1_sqr, Scalar d2_sqr);
 
-/// ======== IMPLEMENTATION ========
+// ======== IMPLEMENTATION ========
 
 template <class Scalar, class EdgeLengthF>
 std::pair<halfedge_handle, float> trace_step(halfedge_handle h, EdgeLengthF&& edge_length, Scalar x, Scalar d1_sqr, Scalar d2_sqr)

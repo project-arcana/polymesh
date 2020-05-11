@@ -18,7 +18,7 @@ auto add_cube(Mesh& m, CubeF&& cf) -> decltype(cf(vertex_handle{}, int{}, int{},
 template <class Pos3>
 auto add_cube(Mesh& m, vertex_attribute<Pos3>& pos) -> vertex_handle;
 
-/// ======== IMPLEMENTATION ========
+// ======== IMPLEMENTATION ========
 
 template <class Pos3>
 auto add_cube(Mesh& m, vertex_attribute<Pos3>& pos) -> vertex_handle

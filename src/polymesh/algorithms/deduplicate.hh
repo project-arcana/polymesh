@@ -23,10 +23,12 @@ namespace polymesh
 /// CAUTION: currently only works on faces and will remove isolated vertices/edges
 ///
 /// returns number of removed vertices (-1 if deduplication failed (e.g. due to non-manifoldness))
+///
+/// TODO: use a function_ref and implement this in a .cc
 template <class KeyF>
 int deduplicate(Mesh& m, KeyF&& kf);
 
-/// ======== IMPLEMENTATION ========
+// ======== IMPLEMENTATION ========
 
 template <class KeyF>
 int deduplicate(Mesh& m, KeyF&& kf)

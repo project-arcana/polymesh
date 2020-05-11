@@ -19,7 +19,7 @@ bool is_valid_permutation(std::vector<int> const& p);
 /// p[curr_idx] = new_idx
 std::vector<std::pair<int, int>> transpositions_of(std::vector<int> const& p);
 
-/// ======== IMPLEMENTATION ========
+// ======== IMPLEMENTATION ========
 
 inline bool is_valid_permutation(std::vector<int> const& p)
 {

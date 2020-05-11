@@ -13,7 +13,7 @@ void remove_faces(Mesh& m);
 /// NOTE: does NOT compactify!
 void remove_edges_and_faces(Mesh& m);
 
-/// ======== IMPLEMENTATION ========
+// ======== IMPLEMENTATION ========
 
 inline void remove_faces(Mesh& m)
 {

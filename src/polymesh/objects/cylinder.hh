@@ -13,7 +13,7 @@ namespace polymesh::objects
 template <class CylinderF>
 auto add_cylinder(Mesh& m, CylinderF&& qf, int segments, bool closed = true) -> decltype(qf(vertex_handle{}, float{}, float{}), vertex_handle{});
 
-/// ======== IMPLEMENTATION ========
+// ======== IMPLEMENTATION ========
 
 template <class CylinderF>
 auto add_cylinder(Mesh& m, CylinderF&& qf, int segments, bool closed) -> decltype(qf(vertex_handle{}, float{}, float{}), vertex_handle{})

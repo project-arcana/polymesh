@@ -14,7 +14,7 @@ namespace objects
 template <class QuadF>
 auto add_quad(Mesh& m, QuadF&& qf, int w = 1, int h = 1) -> decltype(qf(vertex_handle{}, float{}, float{}), vertex_handle{});
 
-/// ======== IMPLEMENTATION ========
+// ======== IMPLEMENTATION ========
 
 template <class QuadF>
 auto add_quad(Mesh& m, QuadF&& qf, int w, int h) -> decltype(qf(vertex_handle{}, float{}, float{}), vertex_handle{})

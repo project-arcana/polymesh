@@ -143,6 +143,12 @@ typename field3<Pos3>::vec_t triangle_normal_unorm(face_handle f, vertex_attribu
 template <class Pos3>
 Pos3 bary_interpolate(face_handle f, Pos3 bary, vertex_attribute<Pos3> const& position);
 
+/// calculates the barycentric coordinates of a given point p within a face f
+/// NOTE: asserts that f is triangular
+/// NOTE: also works for other points in the same plane as f
+template <class Pos3, class Scalar = typename field3<Pos3>::scalar_t>
+Pos3 barycoords_of(face_handle f, vertex_attribute<Pos3> const& positions, Pos3 p);
+
 /// returns the length of an edge
 template <class Pos3, class Scalar = typename field3<Pos3>::scalar_t>
 Scalar edge_length(edge_handle e, vertex_attribute<Pos3> const& position);
@@ -229,7 +235,7 @@ bool is_delaunay(edge_handle e, vertex_attribute<Pos3> const& position);
 template <class Pos3>
 bool can_collapse_without_flips(halfedge_handle h, Pos3 new_pos, vertex_attribute<Pos3> const& position);
 
-/// ======== IMPLEMENTATION ========
+// ======== IMPLEMENTATION ========
 
 inline bool is_boundary(vertex_handle v) { return v.is_boundary(); }
 inline bool is_vertex_boundary(vertex_handle v) { return v.is_boundary(); }
@@ -534,6 +540,36 @@ Pos3 bary_interpolate(face_handle f, Pos3 bary, vertex_attribute<Pos3> const& po
     auto v1 = h.next().vertex_to()[position];
     auto v2 = h.next().next().vertex_to()[position];
     return (v0 * bary[0] + v1 * bary[1] + v2 * bary[2]) / field3<Pos3>::scalar(1);
+}
+
+template <class Pos3, class Scalar>
+Pos3 barycoords_of(face_handle f, vertex_attribute<Pos3> const& positions, Pos3 p)
+{
+    POLYMESH_ASSERT(f.vertices().size() == 3 && "only supports triangles");
+
+    auto ps = f.vertices().to_array<3>(positions);
+
+    auto e10 = ps[1] - ps[0];
+    auto e21 = ps[2] - ps[1];
+
+    auto n = field3<Pos3>::cross(e10, e21);
+
+    auto signed_area = [&](Pos3 const& v0, Pos3 const& v1, Pos3 const& v2) {
+        auto d1 = v1 - v0;
+        auto d2 = v2 - v0;
+
+        auto a = field3<Pos3>::cross(d1, d2);
+
+        return field3<Pos3>::dot(a, n);
+    };
+
+    auto a = signed_area(ps[0], ps[1], ps[2]);
+    auto a0 = signed_area(p, ps[1], ps[2]);
+    auto a1 = signed_area(p, ps[2], ps[0]);
+    auto a2 = signed_area(p, ps[0], ps[1]);
+
+    auto inv_a = Scalar(1) / a;
+    return field3<Pos3>::make_pos(a0 * inv_a, a1 * inv_a, a2 * inv_a);
 }
 
 template <class Pos3, class Scalar>

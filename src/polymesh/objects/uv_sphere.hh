@@ -13,7 +13,7 @@ namespace polymesh::objects
 template <class SphereF>
 auto add_uv_sphere(Mesh& m, SphereF&& qf, int cnt_longitude, int cnt_latitude) -> decltype(qf(vertex_handle{}, float{}, float{}), vertex_handle{});
 
-/// ======== IMPLEMENTATION ========
+// ======== IMPLEMENTATION ========
 
 template <class SphereF>
 auto add_uv_sphere(Mesh& m, SphereF&& qf, int cnt_longitude, int cnt_latitude) -> decltype(qf(vertex_handle{}, float{}, float{}), vertex_handle{})

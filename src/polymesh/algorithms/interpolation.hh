@@ -49,7 +49,7 @@ T interpolate(handle_t h, attr_t<T> const& attr, W const* ws, int wcnt);
 template <class T, class WeightFuncT, class handle_t, template <class> class attr_t, class Enabled = decltype(std::declval<WeightFuncT>()(0, typename primitive<typename attr_t<T>::tag_t>::handle{}))>
 T interpolate(handle_t h, attr_t<T> const& attr, WeightFuncT&& wh);
 
-/// ======== IMPLEMENTATION ========
+// ======== IMPLEMENTATION ========
 
 namespace detail
 {
