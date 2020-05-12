@@ -43,6 +43,7 @@ Functions returning a mesh with new ownership should use ``std::unique_ptr<pm::M
 
 :func:`polymesh::Mesh::create` is a static helper function to create a ``unique_ptr<Mesh>`` though the typical way to just use ``pm::Mesh`` as a member or as a local variable.
 
+.. _memory-model:
 
 Memory Model
 ------------

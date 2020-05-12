@@ -5,7 +5,7 @@
 
 namespace polymesh
 {
-// Applies a translation and a uniform rescaling such that the mesh is centerd at (0,0,0) and withing the [-1 .. 1] cube
+/// Applies a translation and a uniform rescaling such that the mesh is centerd at (0,0,0) and within the [-1 .. 1] cube
 template <class Pos3>
 void normalize(vertex_attribute<Pos3>& pos)
 {

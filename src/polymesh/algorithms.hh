@@ -15,6 +15,7 @@
 // - intersections
 // - statistics
 
+#include "algorithms/cache-optimization.hh"
 #include "algorithms/components.hh"
 #include "algorithms/decimate.hh"
 #include "algorithms/deduplicate.hh"
@@ -24,7 +25,6 @@
 #include "algorithms/iteration.hh"
 #include "algorithms/normalize.hh"
 #include "algorithms/operations.hh"
-#include "algorithms/optimization.hh"
 #include "algorithms/sampling.hh"
 #include "algorithms/smoothing.hh"
 #include "algorithms/stats.hh"

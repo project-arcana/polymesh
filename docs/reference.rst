@@ -215,6 +215,40 @@ Algorithms
 
 .. doxygenfunction:: polymesh::deduplicate
 
+.. doxygenfunction:: polymesh::make_delaunay
+
+.. doxygenfunction:: polymesh::create_delaunay_triangulation
+
+.. doxygenfunction:: polymesh::split_edges
+
+.. doxygenfunction:: polymesh::split_edges_trimesh
+
+.. doxygenfunction:: polymesh::normal_estimation(face_attribute<Vec3> const&, IsHardEdgeF&&)
+
+.. doxygenfunction:: polymesh::normal_estimation(vertex_attribute<Pos3> const&, IsHardEdgeF&&)
+
+.. doxygenfunction:: polymesh::normalize
+
+.. doxygenfunction:: polymesh::remove_faces
+
+.. doxygenfunction:: polymesh::remove_edges_and_faces
+
+.. doxygenfunction:: polymesh::optimize_for_face_traversal
+
+.. doxygenfunction:: polymesh::optimize_for_vertex_traversal
+
+.. doxygenfunction:: polymesh::optimize_edges_for_faces
+
+.. doxygenfunction:: polymesh::optimize_vertices_for_faces
+
+.. doxygenfunction:: polymesh::optimize_edges_for_vertices
+
+.. doxygenfunction:: polymesh::optimize_faces_for_vertices
+
+.. doxygenfunction:: polymesh::cache_coherent_face_layout
+
+.. doxygenfunction:: polymesh::cache_coherent_vertex_layout
+
 
 Low-Level API
 -------------
