@@ -23,6 +23,8 @@ namespace polymesh
  *
  * Usage:
  *  auto centroid = interpolate(face, pos, 1, 1, 1)
+ *
+ * TODO: switch to span-based API
  */
 
 template <class T, class W, class handle_t, template <class> class attr_t>
@@ -314,7 +316,7 @@ T interpolate_attr(edge_handle e, vertex_attribute<T> const& attr, WeightFuncT&&
 template <class T, class W, class handle_t, class tag>
 T interpolate_attr(handle_t h, typename primitive<tag>::template attribute<T> const& attr, W const* ws, int wcnt)
 {
-    return interpolate_attr(h, attr, [&](int idx, typename primitive<tag>::handle h) {
+    return interpolate_attr(h, attr, [&](int idx, typename primitive<tag>::handle) {
         if (idx >= wcnt)
             return W{};
         return ws[idx];

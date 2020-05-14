@@ -18,3 +18,8 @@ Long Term
 * re-add binary polymesh format with arbitrary attributes
 * sparse attributes
 * better support for 2D meshes
+
+Documentation
+-------------
+
+* preserve line breaks in doxygen

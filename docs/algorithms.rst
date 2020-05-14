@@ -7,6 +7,9 @@ As most built-in geometry-related methods, the algorithms tend to be very generi
 
 A reference of all algorithms can be found in :ref:`algorithms-ref`.
 
+.. note:: the collection of algorithms still has many missing / improvable parts. :doc:`contributing` is heavily welcome.
+
+
 Components
 ----------
 
@@ -198,7 +201,168 @@ An incomplete collection of algorithms that reorder the internal memory layout t
 .. doxygenfunction:: polymesh::optimize_for_vertex_traversal
 
 
+Triangulation
+-------------
 
-TODO: preserve line breaks in doxygen
+An incomplete collection of algorithms for triangulating polygonal meshes.
 
-TODO: decimate, subdivision, interpolation, iteration, sampling, smoothing, stats, topology, tracing, triangulate
+::
+
+    #include <polymesh/algorithms/triangulate.hh>
+
+    pm::Mesh m;
+    load(...);
+
+    // naively triangulates each polygonal face using a fan of triangles
+    pm::triangulate_naive(m);
+
+
+.. doxygenfunction:: polymesh::triangulate_naive
+
+
+Topology
+--------
+
+An incomplete collection of topology-related functions.
+
+::
+
+    #include <polymesh/algorithms/topology.hh>
+
+    pm::Mesh m;
+    load(...);
+
+    pm::face_handle f = m.faces()[...];
+
+    // find the topologically farthest face from f
+    pm::face_handle ff = pm::farthest_face(f);
+
+
+.. doxygenfunction:: polymesh::farthest_face
+
+
+Smoothing
+---------
+
+An incomplete collection of mesh smoothing functions.
+
+::
+
+    #include <polymesh/algorithms/smoothing.hh>
+
+    pm::Mesh m;
+    auto pos = m.vertices().make_attribute<tg::pos3>();
+    load(...);
+
+    // performs 10 iterations of uniform smoothing (each vertex is moved halfway to its neighbors average)
+    for (auto i = 0; i < 10; ++i)
+        pos = smoothing_iteration(pos);
+
+    // performs 10 iterations of cotan-weighted smoothing
+    auto weights = pm::cotan_weights(pos);
+    for (auto i = 0; i < 10; ++i)
+        pos = smoothing_iteration(pos, weights);
+
+    // performs 10 iterations of cotan-weighted smoothing but keeping boundaries fixed
+    auto weights = pm::cotan_weights(pos);
+    for (auto i = 0; i < 10; ++i)
+        pos = smoothing_iteration(pos, weights, [](pm::vertex_handle v) { return v.is_boundary() ? 0.f : 0.5f; });
+
+Smoothing is implemented with a generic interface that allows to customize smoothing weights and the factor used for moving vertices.
+
+.. doxygenfunction:: polymesh::smoothing_iteration
+
+
+Debug Stats
+-----------
+
+A small helper for printing debug stat information of a mesh.
+
+::
+
+    #include <polymesh/algorithms/stats.hh>
+
+    pm::Mesh m;
+    auto pos = m.vertices().make_attribute<tg::pos3>();
+    load(...);
+
+    // prints topological and geometrical debug information to std::cout
+    pm::print_stats(std::cout, m, &pos);
+
+.. doxygenfunction:: polymesh::print_stats
+
+
+Interpolation
+-------------
+
+Helper functions for generic interpolation of attributes for handles.
+
+::
+
+    #include <polymesh/algorithms/interpolation.hh>
+
+    pm::Mesh m;
+    auto pos = m.vertices().make_attribute<tg::pos3>();
+    load(...);
+
+    pm::face_handle f = m.faces()[...];
+
+    // computes the centroid of a face (assuming it is a triangle)
+    auto tri_centroid = pm::interpolate(f, pos, 1, 1, 1);
+
+    // computes the centroid of a polygon
+    auto poly_centroid = pm::interpolate(f, pos, [](auto) { return 1; });
+
+See :ref:`algorithms-ref` for all overloads, the most generic one takes a weighting function.
+
+.. note:: ``polymesh::interpolate`` currently crashes the Sphinx documentation system. Please check ``polymesh/interpolation.hh`` directly instead.
+
+
+Decimation
+----------
+
+An incomplete collection of decimation algorithms.
+
+::
+
+    #include <polymesh/algorithms/decimate.hh>
+
+    pm::Mesh m;
+    auto pos = m.vertices().make_attribute<tg::pos3>();
+    load(...);
+
+    // build error quadrics, e.g. by averaging tg::triangle_quadric of neighboring faces
+    auto errors = pm::vertex_attribute<tg::quadric3>(...);
+
+    // decimates the mesh down to 1000 vertices (or until no halfedge collapse can be performed anymore)
+    pm::decimate_down_to(m, pos, errors, 1000);
+
+Currently, only incremental decimation is available, though with a quite generic interface:
+
+.. doxygenfunction:: polymesh::decimate
+
+.. doxygenfunction:: polymesh::decimate_down_to
+
+.. doxygenfunction:: polymesh::decimate_up_to_error
+
+
+Subdivision
+-----------
+
+An incomplete collection of subdivision algorithms.
+
+::
+
+    #include <polymesh/algorithms/subdivision/sqrt3.hh>
+
+    pm::Mesh m;
+    auto pos = m.vertices().make_attribute<tg::pos3>();
+    load(...);
+
+    // performs a single sqrt-3 subdivision
+    pm::subdivide_sqrt3(m, [&](pm::vertex_handle v_new, pm::vertex_handle v0, pm::vertex_handle v1, pm::vertex_handle v2) {
+        // simplest stencil for now: average
+        pos[v_new] = (pos[v0] + pos[v1] + pos[v2]) / 3;
+    });
+
+.. doxygenfunction:: polymesh::subdivide_sqrt3

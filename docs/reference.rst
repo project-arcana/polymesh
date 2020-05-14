@@ -249,6 +249,20 @@ Algorithms
 
 .. doxygenfunction:: polymesh::cache_coherent_vertex_layout
 
+.. doxygenfunction:: polymesh::triangulate_naive
+
+.. doxygenfunction:: polymesh::farthest_face
+
+.. doxygenfunction:: polymesh::smoothing_iteration
+
+.. doxygenfunction:: polymesh::print_stats
+
+.. doxygenfunction:: polymesh::decimate
+
+.. doxygenfunction:: polymesh::decimate_down_to
+
+.. doxygenfunction:: polymesh::decimate_up_to_error
+
 
 Low-Level API
 -------------
