@@ -14,7 +14,7 @@ namespace objects
 template <class CubeF>
 auto add_cube(Mesh& m, CubeF&& cf) -> decltype(cf(vertex_handle{}, int{}, int{}, int{}), vertex_handle{});
 
-/// same as before but directly fills a position attribute
+/// same as add_cube but directly fills a position attribute
 template <class Pos3>
 auto add_cube(Mesh& m, vertex_attribute<Pos3>& pos) -> vertex_handle;
 

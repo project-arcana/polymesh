@@ -56,6 +56,8 @@ pygments_style = 'sphinx'
 primary_domain = "cpp"
 highlight_language = "cpp"
 
+todo_include_todos = True
+
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for

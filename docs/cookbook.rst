@@ -4,6 +4,8 @@ Polymesh Cookbook
 This chapter collects various simple recipes and samples that answer common "How do I do XYZ?" questions.
 `Typed Geometry <https://graphics.rwth-aachen.de:9000/ptrettner/typed-geometry>`_ is used as math library.
 
+.. note:: Many examples are already given in the :doc:`algorithms` and  :doc:`objects` chapters.
+
 
 Loading a Mesh from a File
 --------------------------

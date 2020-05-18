@@ -201,6 +201,8 @@ An incomplete collection of algorithms that reorder the internal memory layout t
 .. doxygenfunction:: polymesh::optimize_for_vertex_traversal
 
 
+.. _algo-triangulation:
+
 Triangulation
 -------------
 

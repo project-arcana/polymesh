@@ -4,7 +4,23 @@ Misc
 Assertions
 ----------
 
-TODO
+::
+
+    #include <polymesh/assert.hh>
+
+    POLYMESH_ASSERT(1 + 2 == 3);
+
+These assertions are a slightly improved version of the `C++ Assertions <https://en.cppreference.com/w/cpp/error/assert>`_.
+By default, they are available in ``Debug`` and in ``Release with Debug Info`` modes, only disabled in a pure ``Release``.
+Using ``unlikely`` and ``cold`` functions, each assertion has minimal impact on the non-error code path.
+The only overhead is evaluating the condition and a single, perfectly predicted conditional branch.
+The assembly for the "assertion failed" path is generated outside of the usual function code.
+
+Behavior on assertion failure can be customized using:
+
+.. doxygenfunction:: polymesh::set_assertion_handler
+
+
 
 .. _simple-graphs-ref:
 

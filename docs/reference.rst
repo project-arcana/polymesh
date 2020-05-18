@@ -263,6 +263,24 @@ Algorithms
 
 .. doxygenfunction:: polymesh::decimate_up_to_error
 
+.. _objects-ref:
+
+Objects
+-------
+
+.. doxygenfunction:: polymesh::objects::add_quad
+
+.. doxygenfunction:: polymesh::objects::add_cube(Mesh&, CubeF&&)
+
+.. doxygenfunction:: polymesh::objects::add_cube(Mesh&, vertex_attribute<Pos3>&)
+
+.. doxygenfunction:: polymesh::objects::add_uv_sphere
+
+.. doxygenfunction:: polymesh::objects::add_cylinder
+
+.. doxygenfunction:: polymesh::objects::add_cone
+
+
 
 Low-Level API
 -------------
