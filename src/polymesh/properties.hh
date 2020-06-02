@@ -487,7 +487,7 @@ Scalar angle_sum(vertex_handle v, vertex_attribute<Pos3> const& position)
 template <class Pos3, class Scalar>
 Scalar angle_defect(vertex_handle v, vertex_attribute<Pos3> const& position)
 {
-    return 2 * M_PI - angle_sum(v, position);
+    return Scalar(2 * 3.14159265358979323846) - angle_sum(v, position);
 }
 
 template <class Pos3, class Scalar>
