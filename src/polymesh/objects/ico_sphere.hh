@@ -14,7 +14,7 @@ namespace polymesh::objects
 /// Adds a (subdivided) ico_sphere to the given mesh
 /// sf is called with (v, x, y, z), with vertex handle v and coordinates (x,y,z) on the unit sphere
 template <class SphereF>
-void add_ico_sphere(Mesh& m, SphereF&& sf, int subdiv = 0)
+vertex_handle add_ico_sphere(Mesh& m, SphereF&& sf, int subdiv = 0)
 {
     POLYMESH_ASSERT(subdiv >= 0);
 
@@ -25,5 +25,6 @@ void add_ico_sphere(Mesh& m, SphereF&& sf, int subdiv = 0)
     {
         sf(vertex_index(last_vertex_count + i).of(m), positions[i].x, positions[i].y, positions[i].z);
     }
+    return vertex_index(last_vertex_count).of(m);
 }
 }
