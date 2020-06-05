@@ -1,7 +1,7 @@
 #pragma once
 
-namespace polymesh::detail {
-
+namespace polymesh::detail
+{
 template <class ScalarT>
 struct pos3
 {
