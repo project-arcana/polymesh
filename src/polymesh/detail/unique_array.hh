@@ -26,12 +26,10 @@ struct unique_array
     }
     unique_array& operator=(unique_array&& rhs) noexcept
     {
-        if (this != &rhs)
-        {
-            delete[] ptr;
-            ptr = rhs.ptr;
-            rhs.ptr = nullptr;
-        }
+        // self-move results in moved-from state
+        delete[] ptr;
+        ptr = rhs.ptr;
+        rhs.ptr = nullptr;
 
         return *this;
     }
