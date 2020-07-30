@@ -769,6 +769,7 @@ template <class iterator>
 face_handle face_collection<iterator>::add(vertex_handle v0, vertex_handle v1, vertex_handle v2) const
 {
     POLYMESH_ASSERT(v0.is_valid() && v1.is_valid() && v2.is_valid());
+    POLYMESH_ASSERT(!v0.is_removed() && !v1.is_removed() && !v2.is_removed());
     halfedge_index hs[3] = {
         low_level_api(this->m).add_or_get_halfedge(v2.idx, v0.idx), //
         low_level_api(this->m).add_or_get_halfedge(v0.idx, v1.idx), //
@@ -781,6 +782,7 @@ template <class iterator>
 face_handle face_collection<iterator>::add(vertex_handle v0, vertex_handle v1, vertex_handle v2, vertex_handle v3) const
 {
     POLYMESH_ASSERT(v0.is_valid() && v1.is_valid() && v2.is_valid() && v3.is_valid());
+    POLYMESH_ASSERT(!v0.is_removed() && !v1.is_removed() && !v2.is_removed() && !v3.is_removed());
     halfedge_index hs[4] = {
         low_level_api(this->m).add_or_get_halfedge(v3.idx, v0.idx), //
         low_level_api(this->m).add_or_get_halfedge(v0.idx, v1.idx), //
@@ -794,6 +796,7 @@ template <class iterator>
 face_handle face_collection<iterator>::add(halfedge_handle h0, halfedge_handle h1, halfedge_handle h2) const
 {
     POLYMESH_ASSERT(h0.is_valid() && h1.is_valid() && h2.is_valid());
+    POLYMESH_ASSERT(!h0.is_removed() && !h1.is_removed() && !h2.is_removed());
     halfedge_index hs[3] = {h0.idx, h1.idx, h2.idx};
     return this->m->handle_of(low_level_api(this->m).add_face(hs, 3));
 }
@@ -802,6 +805,7 @@ template <class iterator>
 face_handle face_collection<iterator>::add(halfedge_handle h0, halfedge_handle h1, halfedge_handle h2, halfedge_handle h3) const
 {
     POLYMESH_ASSERT(h0.is_valid() && h1.is_valid() && h2.is_valid() && h3.is_valid());
+    POLYMESH_ASSERT(!h0.is_removed() && !h1.is_removed() && !h2.is_removed() && !h3.is_removed());
     halfedge_index hs[4] = {h0.idx, h1.idx, h2.idx, h3.idx};
     return this->m->handle_of(low_level_api(this->m).add_face(hs, 4));
 }
@@ -814,6 +818,7 @@ face_handle face_collection<iterator>::add(const vertex_handle (&v_handles)[N]) 
     for (auto i = 0u; i < N; ++i)
     {
         POLYMESH_ASSERT(v_handles[i].is_valid());
+        POLYMESH_ASSERT(!v_handles[i].is_removed());
         hs[i] = low_level_api(this->m).add_or_get_halfedge(v_handles[(i + N - 1) % N].idx, v_handles[i].idx);
     }
     return this->m->handle_of(low_level_api(this->m).add_face(hs, N));
@@ -827,6 +832,7 @@ face_handle face_collection<iterator>::add(const halfedge_handle (&half_loop)[N]
     for (auto i = 0u; i < N; ++i)
     {
         POLYMESH_ASSERT(half_loop[i].is_valid());
+        POLYMESH_ASSERT(!half_loop[i].is_removed());
         hs[i] = half_loop[i].idx;
     }
     return this->m->handle_of(low_level_api(this->m).add_face(hs, N));
