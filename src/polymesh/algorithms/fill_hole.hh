@@ -22,12 +22,6 @@ void fill_hole(Mesh& m, vertex_attribute<Pos3> const& position, halfedge_handle 
     // In this implementation, the weight is equal to the triangle area.
     // To extract the correct triangulation after the table of weights has been computed, a chosen triangle is also associated with each entry in the table.
 
-    // candidate triangle of the boundary, each corner is an index into the boundary
-    struct indexed_triangle
-    {
-        int a, b, c;
-    };
-
     std::vector<pm::vertex_index> boundary;
     { // fill boundary
         auto current = boundary_start;
@@ -43,7 +37,7 @@ void fill_hole(Mesh& m, vertex_attribute<Pos3> const& position, halfedge_handle 
     auto const table_size = (n * (n - 1)) / 2;
 
     auto weights = std::vector<float>();
-    auto chosen_triangle = std::vector<indexed_triangle>();
+    auto chosen_triangle = std::vector<int>();
     weights.resize(table_size);
     chosen_triangle.resize(table_size);
 
@@ -60,9 +54,9 @@ void fill_hole(Mesh& m, vertex_attribute<Pos3> const& position, halfedge_handle 
         return weights[index_of(x, y)];
     };
 
-    auto const triangle_at = [&](int x, int y) -> indexed_triangle {
+    auto const triangle_at = [&](int x, int y) -> int {
         if (x + 2 == y) // only one unique triangle can be chosen here
-            return {x, x + 1, y};
+            return x + 1;
         return chosen_triangle[index_of(x, y)];
     };
 
@@ -88,14 +82,14 @@ void fill_hole(Mesh& m, vertex_attribute<Pos3> const& position, halfedge_handle 
             // find the optimal triangulation for the boundary from vertex x to vertex y.
 
             auto min_weight = weight_at(x, x + 1) + triangle_area(x, x + 1, y) + weight_at(x + 1, y);
-            indexed_triangle t = {x, x + 1, y};
+            int t = x + 1;
             for (auto k = 2; x + k < y; ++k)
             {
                 auto const w = weight_at(x, x + k) + triangle_area(x, x + k, y) + weight_at(x + k, y);
                 if (w < min_weight)
                 {
                     min_weight = w;
-                    t = {x, x + k, y};
+                    t = x + k;
                 }
             }
 
@@ -105,19 +99,18 @@ void fill_hole(Mesh& m, vertex_attribute<Pos3> const& position, halfedge_handle 
     }
 
     // backtrack the chosen triangles
-    std::vector<indexed_triangle> stack;
-    stack.push_back(triangle_at(0, n));
+    std::vector<std::pair<int, int>> stack;
+    stack.push_back({0, n});
     while (!stack.empty())
     {
-        auto const t = stack.back();
+        auto const [a, c] = stack.back();
         stack.pop_back();
-        m.faces().add(boundary[t.a].of(m), boundary[t.b].of(m), boundary[t.c].of(m));
-        if (t.a + 1 < t.b)
-            stack.push_back(triangle_at(t.a, t.b));
-        if (t.b + 1 < t.c)
-            stack.push_back(triangle_at(t.b, t.c));
+        auto const b = triangle_at(a, c);
+        m.faces().add(boundary[a].of(m), boundary[b].of(m), boundary[c].of(m));
+        if (a + 1 < b)
+            stack.push_back({a, b});
+        if (b + 1 < c)
+            stack.push_back({b, c});
     }
 }
-
-
 }
