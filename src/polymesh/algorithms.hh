@@ -21,6 +21,7 @@
 #include "algorithms/deduplicate.hh"
 #include "algorithms/delaunay.hh"
 #include "algorithms/edge_split.hh"
+#include "algorithms/fill_hole.hh"
 #include "algorithms/interpolation.hh"
 #include "algorithms/iteration.hh"
 #include "algorithms/normalize.hh"
