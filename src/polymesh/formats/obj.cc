@@ -345,11 +345,13 @@ void obj_reader<ScalarT>::parse(std::istream& in, Mesh& mesh)
             int i0, i1;
             line >> i0;
             line >> i1;
+            mesh.edges().add_or_get(mesh[vertex_index(i0 - 1)], mesh[vertex_index(i1 - 1)]);
+
             while (line.good())
             {
-                mesh.edges().add_or_get(mesh[vertex_index(i0 - 1)], mesh[vertex_index(i1 - 1)]);
                 i0 = i1;
                 line >> i1;
+                mesh.edges().add_or_get(mesh[vertex_index(i0 - 1)], mesh[vertex_index(i1 - 1)]);
             }
         }
 
