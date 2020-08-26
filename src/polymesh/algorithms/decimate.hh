@@ -26,6 +26,7 @@ namespace polymesh
  *   should_stop(pm::Mesh const& m, error_value_t curr_error) -> bool
  *   eval(Pos3 const& p, ErrorF const& e) -> error_value_t
  *   merge(ErrorF const& a, ErrorF const& b) -> ErrorF
+ *   is_collapse_allowed(pm::halfedge_handle h) -> bool
  *   collapsed_pos(pm::halfedge_handle h, ErrorF const& e) -> Pos3
  */
 template <class Pos3, class ErrorF>
@@ -55,6 +56,9 @@ struct decimate_config
 
     /// merges two error functions (can be static or member function)
     static ErrorF merge(ErrorF const& a, ErrorF const& b) { return a + b; }
+
+    /// returns whether
+    static bool is_collapse_allowed(pm::halfedge_handle /* h */) { return true; }
 
     /// returns the position after collapsing the halfedge (can be static or member function)
     static Pos3 collapsed_pos(pm::halfedge_handle /* h */, ErrorF const& e) { return closest_point(e); }
@@ -145,6 +149,9 @@ void decimate(pm::Mesh& m, //
     auto vreach = m.vertices().make_attribute(-1);
 
     auto const enqueue = [&](pm::halfedge_handle h) {
+        if (!config.is_collapse_allowed(h))
+            return;
+
         auto const v_to = h.vertex_to();
         auto const v_from = h.vertex_from();
 
