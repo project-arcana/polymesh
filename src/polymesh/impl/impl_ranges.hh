@@ -889,24 +889,15 @@ bool face_collection<iterator>::can_add(std::vector<halfedge_index> const& half_
 template <class iterator>
 bool face_collection<iterator>::can_add(vertex_handle v0, vertex_handle v1, vertex_handle v2) const
 {
-    halfedge_index hs[3] = {
-        low_level_api(this->m).add_or_get_halfedge(v2.idx, v0.idx), //
-        low_level_api(this->m).add_or_get_halfedge(v0.idx, v1.idx), //
-        low_level_api(this->m).add_or_get_halfedge(v1.idx, v2.idx), //
-    };
-    return low_level_api(this->m).can_add_face(hs, 3);
+    vertex_index vs[3] = {v0.idx, v1.idx, v2.idx};
+    return low_level_api(this->m).can_add_face(vs, 3);
 }
 
 template <class iterator>
 bool face_collection<iterator>::can_add(vertex_handle v0, vertex_handle v1, vertex_handle v2, vertex_handle v3) const
 {
-    halfedge_index hs[4] = {
-        low_level_api(this->m).add_or_get_halfedge(v3.idx, v0.idx), //
-        low_level_api(this->m).add_or_get_halfedge(v0.idx, v1.idx), //
-        low_level_api(this->m).add_or_get_halfedge(v1.idx, v2.idx), //
-        low_level_api(this->m).add_or_get_halfedge(v2.idx, v3.idx), //
-    };
-    return low_level_api(this->m).can_add_face(hs, 4);
+    vertex_index vs[4] = {v0.idx, v1.idx, v2.idx, v3.idx};
+    return low_level_api(this->m).can_add_face(vs, 4);
 }
 
 template <class iterator>
