@@ -487,6 +487,65 @@ inline void low_level_api_mutable::face_split(face_index f, vertex_index v) cons
     } while (h != h_begin);
 }
 
+inline halfedge_index low_level_api_mutable::face_cut(face_index f, halfedge_index h0, halfedge_index h1) const
+{
+    // must be non-adjacent halfedges
+    POLYMESH_ASSERT(h0 != h1);
+    POLYMESH_ASSERT(next_halfedge_of(h0) != h1);
+    POLYMESH_ASSERT(prev_halfedge_of(h0) != h1);
+
+    // add face and edge
+    auto nf = alloc_face();
+    auto ne = alloc_edge();
+    auto nh0 = halfedge_of(ne, 0);
+    auto nh1 = halfedge_of(ne, 1);
+
+    halfedge_of(f) = nh0;
+    halfedge_of(nf) = nh1;
+
+    auto h0_next = next_halfedge_of(h0);
+    auto h1_next = next_halfedge_of(h1);
+
+    // rewire faces
+    {
+        auto h = h0_next;
+        do
+        {
+            if (is_boundary(opposite(h)))
+                halfedge_of(nf) = h;
+            face_of(h) = nf;
+        } while (h != h1);
+
+        face_of(nh0) = f;
+        face_of(nh1) = nf;
+    }
+
+    // fix face halfedge of f (nf is already fixed)
+    {
+        auto h = h1_next;
+        do
+        {
+            if (is_boundary(opposite(h)))
+            {
+                halfedge_of(f) = h;
+                break;
+            }
+        } while (h != h0);
+    }
+
+    // vertices
+    to_vertex_of(nh0) = to_vertex_of(h1);
+    to_vertex_of(nh1) = to_vertex_of(h0);
+
+    // connect halfedges
+    connect_prev_next(h1, nh1);
+    connect_prev_next(nh1, h0_next);
+    connect_prev_next(h0, nh0);
+    connect_prev_next(nh0, h1_next);
+
+    return nh0;
+}
+
 inline vertex_index low_level_api_mutable::edge_split_and_triangulate(edge_index e) const
 {
     auto v = add_vertex();

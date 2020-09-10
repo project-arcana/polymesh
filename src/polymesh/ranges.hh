@@ -332,6 +332,13 @@ struct face_collection : smart_collection<Mesh*, face_tag, iterator>
     /// same as before but splits at a given ISOLATED vertex
     void split(face_handle f, vertex_handle v) const;
 
+    /// Cuts a face topologically into two parts
+    /// Inserts an edge between h0.vertex_to() and h1.vertex_to()
+    /// Creates a new face as well
+    /// The returned halfedge is of the new edge and goes from h0.vertex_to() to h1.vertex_to()
+    /// (and thus points towards f)
+    halfedge_handle cut(face_handle f, halfedge_handle h0, halfedge_handle h1) const;
+
     /// Fills the half-edge ring of a given boundary half-edge
     /// Returns the new face
     face_handle fill(halfedge_handle h) const;

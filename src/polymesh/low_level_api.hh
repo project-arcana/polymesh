@@ -318,6 +318,9 @@ public:
     /// splits a half-edge at a given ISOLATED vertex
     void halfedge_split(halfedge_index h, vertex_index v) const;
 
+    /// cuts a face along two given vertices (indicated by halfedges)
+    halfedge_index face_cut(face_index f, halfedge_index h0, halfedge_index h1) const;
+
     /// fills a face
     face_index face_fill(halfedge_index h) const;
 

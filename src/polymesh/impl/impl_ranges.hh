@@ -495,6 +495,7 @@ void smart_collection<mesh_ptr, tag, iterator>::reserve(int capacity) const
 template <class mesh_ptr, class tag, class iterator>
 typename smart_collection<mesh_ptr, tag, iterator>::handle smart_collection<mesh_ptr, tag, iterator>::operator[](int idx) const
 {
+    POLYMESH_ASSERT(idx < iterator::primitive_size(*m));
     return (*m)[index(idx)];
 }
 
@@ -986,6 +987,12 @@ template <class iterator>
 vertex_handle face_collection<iterator>::split(face_handle f) const
 {
     return this->m->handle_of(low_level_api(this->m).face_split(f.idx));
+}
+
+template <class iterator>
+halfedge_handle face_collection<iterator>::cut(face_handle f, halfedge_handle h0, halfedge_handle h1) const
+{
+    return this->m->handle_of(low_level_api(this->m).face_cut(f.idx, h0.idx, h1.idx));
 }
 
 template <class iterator>
