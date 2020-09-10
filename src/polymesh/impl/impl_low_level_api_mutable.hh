@@ -508,9 +508,10 @@ inline halfedge_index low_level_api_mutable::face_cut(face_index f, halfedge_ind
 
     // rewire faces
     {
-        auto h = h0_next;
+        auto h = h0;
         do
         {
+            h = next_halfedge_of(h);
             if (is_boundary(opposite(h)))
                 halfedge_of(nf) = h;
             face_of(h) = nf;
@@ -522,9 +523,10 @@ inline halfedge_index low_level_api_mutable::face_cut(face_index f, halfedge_ind
 
     // fix face halfedge of f (nf is already fixed)
     {
-        auto h = h1_next;
+        auto h = h1;
         do
         {
+            h = next_halfedge_of(h);
             if (is_boundary(opposite(h)))
             {
                 halfedge_of(f) = h;
