@@ -435,9 +435,11 @@ struct halfedge_collection : smart_collection<Mesh*, halfedge_tag, iterator>
     /// O(valence) computation
     [[deprecated("use pm::are_adjacent instead")]] bool exists(vertex_handle v_from, vertex_handle v_to) const;
 
-    /// Collapsed the given half-edge by removing it, keeping the to_vertex, and creating new triangles
+    /// Collapsed the given half-edge by removing it, keeping the to_vertex
     /// Preserves half-edge properties but not face or vertex ones
-    /// Similar to a vertex collapse of the `from` vertex with triangulation towards `to`
+    /// This function never creates, only deletes faces, edges, vertices (depending on case)
+    /// NOTE: this should work for all topologies as long as the result is manifold
+    ///       can be checked with pm::can_collapse(h)
     void collapse(halfedge_handle h) const;
 
     /// Splits this half-edge in half by inserting a vertex (which is returned)
