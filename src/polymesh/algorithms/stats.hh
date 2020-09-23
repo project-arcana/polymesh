@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iostream>
 #include <sstream>
 
 #include <polymesh/Mesh.hh>
@@ -15,12 +14,12 @@ namespace polymesh
 /// - number of primitives
 /// - components
 /// - aabb
-template <class Vec3 = void>
-void print_stats(std::ostream& out, Mesh const& m, vertex_attribute<Vec3> const* position = nullptr);
+template <class Vec3 = void, class OutStream>
+void print_stats(OutStream& out, Mesh const& m, vertex_attribute<Vec3> const* position = nullptr);
 
 // ======== IMPLEMENTATION ========
-template <class Vec3>
-void print_stats(std::ostream& out, Mesh const& m, vertex_attribute<Vec3> const* position)
+template <class Vec3, class OutStream>
+void print_stats(OutStream& out, Mesh const& m, vertex_attribute<Vec3> const* position)
 {
     auto ln = "\n";
 
