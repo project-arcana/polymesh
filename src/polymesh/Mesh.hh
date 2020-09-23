@@ -28,8 +28,8 @@ namespace polymesh
  *  * Primitives can be removed via [primitive]().remove(...)
  *    (removed primitives are invalidated (flagged for removal). call compactify() to remove them)
  *
- *  * `for (auto h : [primitive]())` iterates over _all_ primitives, including invalid ones
- *    (`for (auto h : valid_[primitive]())` skips over invalid ones)
+ *  * `for (auto h : [primitive]())` iterates over primitives (skipping invalid ones)
+ *    (`for (auto h : valid_[primitive]())` is slightly faster and includes invalid ones)
  *
  *  * low-level operations can be performed by accessing low_level_api(mesh)
  *

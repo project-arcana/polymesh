@@ -108,7 +108,7 @@ A quick guide for which ``#include <...>`` directives are commonly needed:
     Umbrella header for all built-in mesh algorithms. 
     Individual algorithms can be found in ``polymesh/algorithms/*``.
 
-``polymesh/algorithms/properties.hh``
+``polymesh/properties.hh``
     Basic topological and geometrical properties like face area, valence, and angle defect.
 
 ``polymesh/objects.hh``
