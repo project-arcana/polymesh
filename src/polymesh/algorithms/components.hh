@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Mesh.hh"
+#include <polymesh/Mesh.hh>
 #include "../detail/primitive_set.hh"
 #include "../detail/topology_iterator.hh"
 

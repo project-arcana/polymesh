@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <utility>
 
 namespace polymesh
@@ -98,6 +99,50 @@ struct constant_rational
         return ScalarT(Nom) / ScalarT(Denom);
     }
 };
+
+namespace detail
+{
+template <class Container, class ElementT>
+auto contiguous_range_test(Container* c) -> decltype(static_cast<ElementT*>(c->data()), static_cast<size_t>(c->size()), 0);
+template <class Container, class ElementT>
+char contiguous_range_test(...);
+
+template <class Container, class ElementT, class = void>
+struct is_range_t : std::false_type
+{
+};
+template <class ElementT, size_t N>
+struct is_range_t<ElementT[N], ElementT> : std::true_type
+{
+};
+template <class ElementT, size_t N>
+struct is_range_t<ElementT[N], ElementT const> : std::true_type
+{
+};
+template <class ElementT, size_t N>
+struct is_range_t<ElementT (&)[N], ElementT> : std::true_type
+{
+};
+template <class ElementT, size_t N>
+struct is_range_t<ElementT (&)[N], ElementT const> : std::true_type
+{
+};
+template <class Container, class ElementT>
+struct is_range_t<Container,
+                  ElementT,
+                  std::void_t<                                                              //
+                      decltype(static_cast<ElementT&>(*std::declval<Container>().begin())), //
+                      decltype(std::declval<Container>().end())                             //
+                      >> : std::true_type
+{
+};
+}
+
+template <class Container, class ElementT>
+static constexpr bool is_contiguous_range = sizeof(detail::contiguous_range_test<Container, ElementT>(nullptr)) == sizeof(int);
+
+template <class Container, class ElementT>
+static constexpr bool is_range = detail::is_range_t<Container, ElementT>::value;
 
 } // namespace tmp
 } // namespace polymesh

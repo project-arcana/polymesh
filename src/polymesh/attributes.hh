@@ -73,6 +73,8 @@ public:
 
     int size() const;
     int capacity() const;
+    size_t byte_size() const override { return size() * sizeof(AttrT); }
+    size_t allocated_byte_size() const override { return capacity() * sizeof(AttrT); }
 
     attribute_iterator<primitive_attribute> begin() { return {0, size(), *this}; }
     attribute_iterator<primitive_attribute const&> begin() const { return {0, size(), *this}; }
@@ -146,8 +148,6 @@ protected:
 protected:
     void resize_from(int old_size) override;
     void clear_with_default() override;
-    size_t byte_size() const override { return size() * sizeof(AttrT); }
-    size_t allocated_byte_size() const override { return capacity() * sizeof(AttrT); }
 
     void apply_remapping(std::vector<int> const& map) override;
     void apply_transpositions(std::vector<std::pair<int, int>> const& ts) override;
@@ -231,6 +231,13 @@ struct halfedge_attribute final : primitive_attribute<halfedge_tag, AttrT>
     friend struct smart_collection;
 };
 
+/**
+ * creates a new attribute from a primitive collection.
+ *
+ * Usage:
+ *
+ *   auto pos = attribute(m.vertices(), tg::pos3::zero);
+ */
 template <class AttrT, class Collection>
 auto attribute(Collection const& c, AttrT const& defaultValue = {}) -> decltype(c.make_attribute(defaultValue))
 {

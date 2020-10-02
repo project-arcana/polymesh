@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Mesh.hh"
+#include <polymesh/Mesh.hh>
 #include "../fields.hh"
 
 namespace polymesh

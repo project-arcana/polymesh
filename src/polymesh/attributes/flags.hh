@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../attributes.hh"
+#include <polymesh/attributes.hh>
 
 namespace polymesh
 {

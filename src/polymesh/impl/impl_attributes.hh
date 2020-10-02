@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Mesh.hh"
+#include <polymesh/Mesh.hh>
 
 namespace polymesh
 {
@@ -189,7 +189,7 @@ primitive_attribute<tag, AttrT>& primitive_attribute<tag, AttrT>::operator=(prim
         if (new_capacity == 0)
             this->mData.reset();
         else
-            this->mData.reset(new AttrT[new_capacity]);
+            this->mData.reset(new AttrT[new_capacity]());
     }
 
     // copy ALL data (valid and defaulted)
@@ -234,7 +234,7 @@ void primitive_attribute<tag, AttrT>::resize_from(int old_size)
     POLYMESH_ASSERT(shared_size <= new_capacity && "size cannot exceed capacity");
 
     // alloc new data
-    auto new_data = new_capacity > 0 ? new AttrT[new_capacity] : nullptr;
+    auto new_data = new_capacity > 0 ? new AttrT[new_capacity]() : nullptr;
 
     // copy shared region to new data
     std::copy_n(this->mData.get(), shared_size, new_data);

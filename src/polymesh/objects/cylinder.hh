@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Mesh.hh"
+#include <polymesh/Mesh.hh>
 
 namespace polymesh::objects
 {

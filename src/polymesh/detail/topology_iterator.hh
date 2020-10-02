@@ -2,7 +2,7 @@
 
 #include <queue>
 
-#include "../Mesh.hh"
+#include <polymesh/Mesh.hh>
 #include "primitive_set.hh"
 
 /// CAUTION: these iterators do NOT work like normal iterators where you can make copies!

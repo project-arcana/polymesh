@@ -4,7 +4,7 @@
 #include <iosfwd>
 #include <string>
 
-#include "../Mesh.hh"
+#include <polymesh/Mesh.hh>
 
 namespace polymesh
 {

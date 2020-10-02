@@ -11,7 +11,7 @@ struct unique_array
     using element_type = T;
 
     unique_array() = default;
-    explicit unique_array(int size) { ptr = new T[size]; }
+    explicit unique_array(int size) { ptr = new T[size](); }
     ~unique_array()
     {
         delete[] ptr;

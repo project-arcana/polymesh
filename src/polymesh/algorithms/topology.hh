@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "../Mesh.hh"
+#include <polymesh/Mesh.hh>
 
 namespace polymesh
 {

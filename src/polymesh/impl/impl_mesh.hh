@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Mesh.hh"
+#include <polymesh/Mesh.hh>
 #include "../assert.hh"
 #include "../detail/split_vector.hh"
 
