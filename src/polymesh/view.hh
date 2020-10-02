@@ -5,6 +5,19 @@
 
 namespace polymesh
 {
+/**
+ * Builds a non-owning view on an attribute
+ * Does preserve references where possible
+ *
+ * Usage:
+ *
+ *   pm::Mesh m;
+ *   auto pos = m.vertices().make_attribute<tg::pos3>();
+ *
+ *   // does NOT allocate memory, is only a view on pos
+ *   auto z_view = pos.view([](tg::pos3& p) -> float& { return p.z; });
+ *   z_view[v] = 8; // writes through to pos
+ */
 template <class CollectionT, class FuncT>
 struct attribute_view
 {
