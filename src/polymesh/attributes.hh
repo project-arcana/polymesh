@@ -108,11 +108,13 @@ public:
     void compute(FuncT&& f);
 
     template <class FuncT>
-    auto view(FuncT&& f) const -> attribute_view<primitive_attribute<tag, AttrT> const&, FuncT>;
-#ifndef _MSC_VER // cannot overload this apparently
+    auto view(FuncT&& f) & -> attribute_view<primitive_attribute<tag, AttrT>&, FuncT>;
+    template <class FuncT>
+    auto view(FuncT&& f) const& -> attribute_view<primitive_attribute<tag, AttrT> const&, FuncT>;
     template <class FuncT>
     void view(FuncT&& f) && = delete;
-#endif
+    template <class FuncT>
+    void view(FuncT&& f) const&& = delete;
 
     // template <class ReadT, class WriteT>
     // auto view(ReadT&& r, WriteT&& w) -> readwrite_property<primitive_attribute<tag, AttrT>, ReadT, WriteT>;
