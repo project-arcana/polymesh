@@ -6,21 +6,24 @@ polymesh::unique_array<polymesh::detail::pos3f> polymesh::detail::add_unit_dodec
 {
     polymesh::unique_array<pos3f> position(20);
 
-    auto const phi = (1 + std::sqrt(5.0f)) / 2.0f;
-    auto const phi_inv = 1 / phi;
+    auto phi = (1 + std::sqrt(5.0f)) / 2.0f;
+    auto phi_inv = 1 / phi;
+    auto const sqrt3inv = 1 / std::sqrt(3.0f);
+    phi *= sqrt3inv;
+    phi_inv *= sqrt3inv;
 
     pm::vertex_handle vs[20];
     for (size_t i = 0; i < 20; ++i)
         vs[i] = m.vertices().add();
 
-    position[0] = {1, 1, 1};
-    position[1] = {1, 1, -1};
-    position[2] = {1, -1, 1};
-    position[3] = {1, -1, -1};
-    position[4] = {-1, 1, 1};
-    position[5] = {-1, 1, -1};
-    position[6] = {-1, -1, 1};
-    position[7] = {-1, -1, -1};
+    position[0] = {sqrt3inv, sqrt3inv, sqrt3inv};
+    position[1] = {sqrt3inv, sqrt3inv, -sqrt3inv};
+    position[2] = {sqrt3inv, -sqrt3inv, sqrt3inv};
+    position[3] = {sqrt3inv, -sqrt3inv, -sqrt3inv};
+    position[4] = {-sqrt3inv, sqrt3inv, sqrt3inv};
+    position[5] = {-sqrt3inv, sqrt3inv, -sqrt3inv};
+    position[6] = {-sqrt3inv, -sqrt3inv, sqrt3inv};
+    position[7] = {-sqrt3inv, -sqrt3inv, -sqrt3inv};
 
     position[8] = {0, phi, phi_inv};
     position[9] = {0, phi, -phi_inv};
