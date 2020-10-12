@@ -12,12 +12,13 @@ unique_array<pos3f> add_unit_dodecahedron_impl(Mesh& m);
 
 namespace polymesh::objects
 {
-/// Adds a (subdivided) ico_sphere to the given mesh
+/// Adds a dodecahedron to the given mesh.
+/// Note: This will not triangulate the mesh!
 /// sf is called with (v, x, y, z), with vertex handle v and coordinates (x,y,z) on the unit sphere
 template <class SphereF>
 vertex_handle add_dodecahedron(Mesh& m, SphereF&& sf);
 
-/// same as add_cube but directly fills a position attribute
+/// same as add_dodecahedron but directly fills a position attribute
 template <class Pos3>
 vertex_handle add_dodecahedron(Mesh& m, vertex_attribute<Pos3>& pos);
 
