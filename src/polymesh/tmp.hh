@@ -103,9 +103,11 @@ struct constant_rational
 namespace detail
 {
 template <class Container, class ElementT>
-auto contiguous_range_test(Container* c) -> decltype(static_cast<ElementT*>(c->data()), static_cast<size_t>(c->size()), 0);
+auto contiguous_range_test(int) -> decltype(static_cast<ElementT*>(std::declval<Container>().data()), //
+                                            static_cast<size_t>(std::declval<Container>().size()),
+                                            std::true_type{});
 template <class Container, class ElementT>
-char contiguous_range_test(...);
+std::false_type contiguous_range_test(char);
 
 template <class Container, class ElementT, class = void>
 struct is_range_t : std::false_type
@@ -139,7 +141,7 @@ struct is_range_t<Container,
 }
 
 template <class Container, class ElementT>
-static constexpr bool is_contiguous_range = sizeof(detail::contiguous_range_test<Container, ElementT>(nullptr)) == sizeof(int);
+static constexpr bool is_contiguous_range = decltype(detail::contiguous_range_test<Container, ElementT>(0))::value;
 
 template <class Container, class ElementT>
 static constexpr bool is_range = detail::is_range_t<Container, ElementT>::value;

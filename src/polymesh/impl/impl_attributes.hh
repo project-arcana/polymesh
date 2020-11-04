@@ -63,7 +63,7 @@ AttrT const& edge_attribute<AttrT>::operator()(halfedge_handle h) const
 }
 
 template <class tag, class AttrT>
-void primitive_attribute<tag, AttrT>::copy_from(std::vector<AttrT> const& data)
+void primitive_attribute<tag, AttrT>::copy_from(span<AttrT const> data)
 {
     std::copy_n(data.data(), std::min(int(data.size()), this->size()), this->data());
 }

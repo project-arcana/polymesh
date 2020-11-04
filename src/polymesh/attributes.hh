@@ -7,6 +7,7 @@
 #include <polymesh/cursors.hh>
 #include <polymesh/detail/unique_array.hh>
 #include <polymesh/ranges.hh>
+#include <polymesh/span.hh>
 #include <polymesh/tmp.hh>
 #include <polymesh/view.hh>
 
@@ -121,8 +122,8 @@ public:
     // template <class ReadT, class WriteT>
     // void view(ReadT&& r, WriteT&& w) && = delete;
 
-    /// copies as much data as possible from the given vector
-    void copy_from(std::vector<AttrT> const& data);
+    /// copies as much data as possible from the given range of data
+    void copy_from(span<AttrT const> data);
     /// copies as much data as possible from the given array
     void copy_from(AttrT const* data, int cnt);
     /// copies as much data as possible from the given attribute
