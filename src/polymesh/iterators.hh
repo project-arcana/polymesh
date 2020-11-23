@@ -100,7 +100,7 @@ struct attribute_iterator : smart_iterator<attribute_iterator<AttributeT>>
 // ================= FILTER + MAP =================
 
 template <class IteratorT, class PredT>
-struct filtering_iterator final
+struct filtering_iterator final : smart_iterator<filtering_iterator<IteratorT, PredT>>
 {
     IteratorT it;
     PredT pred;
