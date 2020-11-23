@@ -102,6 +102,12 @@ struct attribute_iterator : smart_iterator<attribute_iterator<AttributeT>>
 template <class IteratorT, class PredT>
 struct filtering_iterator final : smart_iterator<filtering_iterator<IteratorT, PredT>>
 {
+    filtering_iterator(IteratorT it, PredT p) : it(std::forward<IteratorT>(it)), pred(std::forward<PredT>(p))
+    {
+        if (it.is_valid())
+            advance(); // skip initially false elements
+    }
+
     IteratorT it;
     PredT pred;
 

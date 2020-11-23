@@ -185,6 +185,8 @@ struct filtered_range : smart_range<filtered_range<ElementT, RangeT, PredT>, Ele
 {
     using IteratorT = decltype(std::declval<RangeT>().begin());
 
+    filtered_range(IteratorT it, PredT p) : it_begin(std::forward<IteratorT>(it)), pred(std::forward<PredT>(p)) {}
+
     filtering_iterator<IteratorT, PredT> begin() const { return {it_begin, pred}; }
     end_iterator end() const { return {}; }
 
