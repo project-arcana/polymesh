@@ -70,7 +70,17 @@ bool read_stl(const std::string& filename, Mesh& mesh, vertex_attribute<std::arr
     if (!file.good())
         return false;
 
-    return read_stl(file, mesh, position, normals);
+    if (is_ascii_stl(file))
+    {
+        return read_stl_ascii(file, mesh, position, normals);
+    }
+    else
+    {
+        // Windows interprets binary files differently from ascii which messes with the parsing.
+        // Therefore we create a new stream in binary mode.
+        file = std::ifstream(filename, std::ios::binary);
+        return read_stl_binary(file, mesh, position, normals);
+    }
 }
 
 template <class ScalarT>
@@ -99,9 +109,10 @@ bool read_stl_binary(std::istream& input, Mesh& mesh, vertex_attribute<std::arra
     // }
 
     uint32_t n_triangles;
-    input.read((char*)&n_triangles, sizeof(n_triangles));
+    input.read(reinterpret_cast<char*>(&n_triangles), sizeof(n_triangles));
 
-    size_t fs_expect = 80 + sizeof(n_triangles) + n_triangles * (sizeof(std::array<ScalarT, 3>) * 4 + sizeof(uint16_t));
+    // note: binary stl always stores 32bit floats
+    size_t fs_expect = 80 + sizeof(n_triangles) + n_triangles * (sizeof(std::array<float, 3>) * 4 + sizeof(uint16_t));
     if (fs_expect != fs_real)
     {
         std::cerr << "Expected file size mismatch: " << fs_expect << " vs " << fs_real << " bytes (file corrupt or wrong format?)" << std::endl;
@@ -125,12 +136,25 @@ bool read_stl_binary(std::istream& input, Mesh& mesh, vertex_attribute<std::arra
         auto v2 = mesh.vertices().add();
         auto f = mesh.faces().add(v0, v1, v2);
 
-        input.read((char*)&f[normals], sizeof(std::array<ScalarT, 3>));
-        input.read((char*)&position[v0], sizeof(std::array<ScalarT, 3>));
-        input.read((char*)&position[v1], sizeof(std::array<ScalarT, 3>));
-        input.read((char*)&position[v2], sizeof(std::array<ScalarT, 3>));
+        std::array<float, 3> n;
+        input.read(reinterpret_cast<char*>(&n), sizeof(n));
+
+        if (normals)
+            f[normals] = {n[0], n[1], n[2]};
+
+        std::array<float, 3> p0;
+        std::array<float, 3> p1;
+        std::array<float, 3> p2;
+        input.read(reinterpret_cast<char*>(&p0), sizeof(p0));
+        input.read(reinterpret_cast<char*>(&p1), sizeof(p1));
+        input.read(reinterpret_cast<char*>(&p2), sizeof(p2));
+        // convert float to ScalarT
+        position[v0] = {ScalarT(p0[0]), ScalarT(p0[1]), ScalarT(p0[2])};
+        position[v1] = {ScalarT(p1[0]), ScalarT(p1[1]), ScalarT(p1[2])};
+        position[v2] = {ScalarT(p2[0]), ScalarT(p2[1]), ScalarT(p2[2])};
+
         uint16_t attr_cnt;
-        input.read((char*)&attr_cnt, sizeof(attr_cnt));
+        input.read(reinterpret_cast<char*>(&attr_cnt), sizeof(attr_cnt));
     }
 
     return true;
