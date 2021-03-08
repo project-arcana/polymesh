@@ -17,9 +17,6 @@ void polymesh::triangulate_naive(polymesh::Mesh& m)
         if (vs.size() <= 3)
             continue;
 
-        // remove
-        m.faces().remove(f);
-
         // find non-valence 2
         auto si = 0;
         for (auto i = 0u; i < vs.size(); ++i)
@@ -34,6 +31,10 @@ void polymesh::triangulate_naive(polymesh::Mesh& m)
         si--; // make sure v1 is never valence 2
         if (si < 0)
             si += int(vs.size());
+
+        // remove
+        // NOTE: AFTER finding start idx
+        m.faces().remove(f);
 
         // triangulate
         for (auto i = 2u; i < vs.size(); ++i)
