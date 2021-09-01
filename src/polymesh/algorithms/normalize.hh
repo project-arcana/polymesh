@@ -15,7 +15,7 @@ struct normalize_result
 };
 
 /// Applies a translation and a uniform rescaling such that the mesh is centerd at (0,0,0) and within the [-1 .. 1] cube
-/// Returns scale and center so that applying scale * p + center on a normalized point p yields in the original point
+/// Returns scale and center so that applying scale * p + center on a normalized point p yields the original point
 template <class Pos3>
 auto normalize(vertex_attribute<Pos3>& pos)
 {
