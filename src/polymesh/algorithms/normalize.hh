@@ -5,9 +5,19 @@
 
 namespace polymesh
 {
+template <class ScalarT>
+struct normalize_result
+{
+    ScalarT scale;
+    ScalarT center_x;
+    ScalarT center_y;
+    ScalarT center_z;
+};
+
 /// Applies a translation and a uniform rescaling such that the mesh is centerd at (0,0,0) and within the [-1 .. 1] cube
+/// Returns scale and center so that applying scale * p + center on a normalized point p yields the original point
 template <class Pos3>
-void normalize(vertex_attribute<Pos3>& pos)
+auto normalize(vertex_attribute<Pos3>& pos)
 {
     using ScalarT = std::decay_t<decltype(pos.first()[0])>;
 
@@ -27,12 +37,13 @@ void normalize(vertex_attribute<Pos3>& pos)
     auto sz = ma[2] - mi[2];
     auto s = std::max(sx, std::max(sy, sz)) * ScalarT(0.5);
     s = std::max(s, std::numeric_limits<ScalarT>::min());
-
+    auto s_inv = 1 / s;
     for (auto& p : pos)
     {
-        p[0] = (p[0] - cx) / s;
-        p[1] = (p[1] - cy) / s;
-        p[2] = (p[2] - cz) / s;
+        p[0] = (p[0] - cx) * s_inv;
+        p[1] = (p[1] - cy) * s_inv;
+        p[2] = (p[2] - cz) * s_inv;
     }
+    return normalize_result<ScalarT>{s, cx, cy, cz};
 }
 } // namespace polymesh
