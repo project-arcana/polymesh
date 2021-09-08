@@ -8,10 +8,10 @@ namespace polymesh
 template <class ScalarT>
 struct normalize_result
 {
-    ScalarT scale;
-    ScalarT center_x;
-    ScalarT center_y;
-    ScalarT center_z;
+    ScalarT scale = 1;
+    ScalarT center_x = 0;
+    ScalarT center_y = 0;
+    ScalarT center_z = 0;
 };
 
 /// Applies a translation and a uniform rescaling such that the mesh is centerd at (0,0,0) and within the [-1 .. 1] cube
@@ -22,7 +22,7 @@ auto normalize(vertex_attribute<Pos3>& pos)
     using ScalarT = std::decay_t<decltype(pos.first()[0])>;
 
     if (pos.mesh().vertices().size() == 0)
-        return;
+        return normalize_result<ScalarT>{};
 
     auto mm = pos.minmax();
     auto mi = mm.min;
