@@ -75,8 +75,17 @@ public:
         return {this->mData.get() + h.value * mStride, mStride};
     }
 
-    std::byte* data() { return mData.get(); }
-    std::byte const* data() const { return mData.get(); }
+    /// NOTE: this is puposely not data() so it's not confused with a contiguous range
+    std::byte* data_ptr() { return mData.get(); }
+    std::byte const* data_ptr() const { return mData.get(); }
+    [[deprecated("use data_ptr instead. data() is misleading for algorithms that expected contiguous ranges with .size().")]] std::byte* data()
+    {
+        return mData.get();
+    }
+    [[deprecated("use data_ptr instead. data() is misleading for algorithms that expected contiguous ranges with .size().")]] std::byte const* data() const
+    {
+        return mData.get();
+    }
 
     int size() const { return primitive<tag>::all_size(*this->mMesh); }
     int stride() const { return mStride; }
