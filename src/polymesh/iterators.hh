@@ -149,7 +149,7 @@ struct primitive_circulator : smart_iterator<this_t>
 
     primitive_circulator(halfedge_handle h, bool at_begin = true) : handle(h), end(h), at_begin(at_begin) {}
 
-    bool is_valid() const { return at_begin || handle != end; }
+    bool is_valid() const { return at_begin || handle.idx != end; }
 };
 
 struct face_vertex_circulator : primitive_circulator<face_vertex_circulator>
@@ -195,7 +195,7 @@ struct face_face_circulator : primitive_circulator<face_face_circulator>
         do // skip invalid faces
         {
             handle = handle.next();
-        } while (handle != end && handle.opposite_face().is_invalid());
+        } while (handle.idx != end && handle.opposite_face().is_invalid());
         at_begin = false;
     }
 };
@@ -243,7 +243,7 @@ struct vertex_face_circulator : primitive_circulator<vertex_face_circulator>
         do // skip invalid faces
         {
             handle = handle.prev().opposite();
-        } while (handle != end && handle.face().is_invalid());
+        } while (handle.idx != end && handle.face().is_invalid());
         at_begin = false;
     }
 };

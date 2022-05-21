@@ -17,6 +17,10 @@
 #error "Unknown compiler"
 #endif
 
+#if __cplusplus >= 202002L
+#define POLYMESH_CPP20
+#endif
+
 
 // =========
 // compiler specific builtins

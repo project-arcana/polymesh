@@ -24,6 +24,10 @@ struct primitive_index
     bool is_invalid() const { return value < 0; }
     static const index_t invalid;
 
+#ifdef POLYMESH_CPP20
+    bool operator==(primitive_index const&) const = default;
+    auto operator<=>(primitive_index const&) const = default;
+#else
     bool operator<(index_t const& rhs) const { return value < rhs.value; }
     bool operator<=(index_t const& rhs) const { return value <= rhs.value; }
     bool operator>(index_t const& rhs) const { return value > rhs.value; }
@@ -32,6 +36,7 @@ struct primitive_index
     bool operator!=(index_t const& rhs) const { return value != rhs.value; }
     bool operator==(handle_t const& rhs) const { return value == rhs.idx.value; }
     bool operator!=(handle_t const& rhs) const { return value != rhs.idx.value; }
+#endif
 
     explicit operator int() const { return value; }
 
@@ -73,10 +78,14 @@ struct primitive_handle
     primitive_handle() = default;
     primitive_handle(Mesh const* mesh, index_t idx) : mesh(mesh), idx(idx) {}
 
-    bool operator==(index_t const& rhs) const { return idx == rhs; }
-    bool operator!=(index_t const& rhs) const { return idx != rhs; }
+#ifdef POLYMESH_CPP20
+    bool operator==(primitive_handle const&) const = default;
+#else
     bool operator==(handle_t const& rhs) const { return mesh == rhs.mesh && idx == rhs.idx; }
     bool operator!=(handle_t const& rhs) const { return mesh != rhs.mesh || idx != rhs.idx; }
+#endif
+    bool operator==(index_t const& rhs) const { return idx == rhs; }
+    bool operator!=(index_t const& rhs) const { return idx != rhs; }
 
     explicit operator int() const { return (int)idx; }
     operator index_t() const { return idx; }

@@ -3,6 +3,12 @@
 #include <cstddef>
 #include <utility>
 
+#include <polymesh/macros.hh>
+
+#ifdef POLYMESH_CPP20
+#include <compare>
+#endif
+
 namespace polymesh
 {
 // small template metaprogramming
