@@ -247,4 +247,80 @@ auto attribute(Collection const& c, AttrT const& defaultValue = {}) -> decltype(
     return c.make_attribute(defaultValue);
 }
 
+namespace detail
+{
+template <class T>
+struct is_mesh_attribute_t : std::false_type
+{
+};
+template <class T>
+struct is_mesh_attribute_t<vertex_attribute<T>> : std::true_type
+{
+};
+template <class T>
+struct is_mesh_attribute_t<edge_attribute<T>> : std::true_type
+{
+};
+template <class T>
+struct is_mesh_attribute_t<halfedge_attribute<T>> : std::true_type
+{
+};
+template <class T>
+struct is_mesh_attribute_t<face_attribute<T>> : std::true_type
+{
+};
+template <class tag, class T>
+struct is_mesh_attribute_t<primitive_attribute<tag, T>> : std::true_type
+{
+};
+	
+template <class T>
+struct is_vertex_attribute_t : std::false_type
+{
+};
+template <class T>
+struct is_vertex_attribute_t<vertex_attribute<T>> : std::true_type
+{
+};
+	
+template <class T>
+struct is_face_attribute_t : std::false_type
+{
+};
+template <class T>
+struct is_face_attribute_t<face_attribute<T>> : std::true_type
+{
+};
+	
+template <class T>
+struct is_edge_attribute_t : std::false_type
+{
+};
+template <class T>
+struct is_edge_attribute_t<edge_attribute<T>> : std::true_type
+{
+};
+	
+template <class T>
+struct is_halfedge_attribute_t : std::false_type
+{
+};
+template <class T>
+struct is_halfedge_attribute_t<halfedge_attribute<T>> : std::true_type
+{
+};
+}
+
+/// true iff (decayed) T is vertex, face, edge, or halfedge attribute
+template <class T>
+constexpr bool is_mesh_attribute = detail::is_mesh_attribute_t<std::decay_t<T>>::value;
+template <class T>
+constexpr bool is_vertex_attribute = detail::is_vertex_attribute_t<std::decay_t<T>>::value;
+template <class T>
+constexpr bool is_face_attribute = detail::is_face_attribute_t<std::decay_t<T>>::value;
+template <class T>
+constexpr bool is_edge_attribute = detail::is_edge_attribute_t<std::decay_t<T>>::value;
+template <class T>
+constexpr bool is_halfedge_attribute = detail::is_halfedge_attribute_t<std::decay_t<T>>::value;
+
 } // namespace polymesh
