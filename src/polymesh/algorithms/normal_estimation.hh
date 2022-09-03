@@ -19,35 +19,41 @@ template <class Vec3, class IsHardEdgeF>
 
     auto const hard_edges = m.edges().map([&](edge_handle e) { return e.is_boundary() ? true : is_hard_edge(e); });
 
-    return m.halfedges().map([&](halfedge_handle h) {
-        Vec3 n = face_normals[h.face()];
-
-        auto h0 = h;
-        auto h1 = h.next().opposite();
-
-        // iterate over h0
-        auto hh = h0;
-        while (hh != h1 && !hard_edges[hh])
+    return m.halfedges().map(
+        [&](halfedge_handle h)
         {
-            hh = hh.opposite().prev();
-            n += face_normals[hh.face()];
-        }
+            if (h.is_boundary())
+                return Vec3{};
 
-        // iterate over h1 if not reached around
-        if (hh != h1)
-        {
-            hh = h1;
-            while (hh != h0 && !hard_edges[hh])
+            POLYMESH_ASSERT(h.face().is_valid());
+            Vec3 n = face_normals[h.face()];
+
+            auto h0 = h;
+            auto h1 = h.next().opposite();
+
+            // iterate over h0
+            auto hh = h0;
+            while (hh != h1 && !hard_edges[hh])
             {
+                hh = hh.opposite().prev();
                 n += face_normals[hh.face()];
-                hh = hh.next().opposite();
             }
-        }
 
-        // normalize
-        auto l = std::sqrt(n.x * n.x + n.y * n.y + n.z * n.z);
-        return n / (l + 1e-30f);
-    });
+            // iterate over h1 if not reached around
+            if (hh != h1)
+            {
+                hh = h1;
+                while (hh != h0 && !hard_edges[hh])
+                {
+                    n += face_normals[hh.face()];
+                    hh = hh.next().opposite();
+                }
+            }
+
+            // normalize
+            auto l = std::sqrt(n.x * n.x + n.y * n.y + n.z * n.z);
+            return n / (l + 1e-30f);
+        });
 }
 
 /// same as normal_estimation(face_attribute<Vec3>, ...)
