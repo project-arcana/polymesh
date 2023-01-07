@@ -104,7 +104,7 @@ struct filtering_iterator final : smart_iterator<filtering_iterator<IteratorT, P
 {
     filtering_iterator(IteratorT it, PredT p) : it(std::forward<IteratorT>(it)), pred(std::forward<PredT>(p))
     {
-        if (it.is_valid())
+        if (it.is_valid() && !pred(*it))
             advance(); // skip initially false elements
     }
 
