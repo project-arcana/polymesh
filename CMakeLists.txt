@@ -36,6 +36,11 @@ if (POLYMESH_ENABLE_ASSERTIONS)
     target_compile_definitions(polymesh PUBLIC $<$<CONFIG:RELWITHDEBINFO>:POLYMESH_ENABLE_ASSERTIONS>)
 endif()
 
+# is not always detected properly
+if (CMAKE_CXX_STANDARD GREATER_EQUAL 20)
+    target_compile_definitions(polymesh PUBLIC POLYMESH_CPP20)
+endif()
+
 # optional libs:
 if (TARGET glm)
     target_link_libraries(polymesh PUBLIC glm)
