@@ -3,13 +3,15 @@
 #include <vector>
 
 #include <polymesh/Mesh.hh>
+#include <polymesh/detail/noop_function.hh>
 #include <polymesh/fields.hh>
 
 namespace polymesh
 {
 /// Fills a hole given by the boundary halfdedge "boundary_start" using dynamic programming to compute the area minimizing triangulation
-template <class Pos3>
-void fill_hole(Mesh& m, vertex_attribute<Pos3> const& position, halfedge_handle boundary_start)
+/// on_face is called for every newly created face.
+template <class Pos3, class OnFace = detail::noop_function>
+void fill_hole(Mesh& m, vertex_attribute<Pos3> const& position, halfedge_handle boundary_start, OnFace&& on_face = {})
 {
     POLYMESH_ASSERT(boundary_start.is_boundary());
 
@@ -106,7 +108,8 @@ void fill_hole(Mesh& m, vertex_attribute<Pos3> const& position, halfedge_handle 
         auto const [a, c] = stack.back();
         stack.pop_back();
         auto const b = triangle_at(a, c);
-        m.faces().add(boundary[a].of(m), boundary[b].of(m), boundary[c].of(m));
+        auto f = m.faces().add(boundary[a].of(m), boundary[b].of(m), boundary[c].of(m));
+        on_face(f);
         if (a + 1 < b)
             stack.push_back({a, b});
         if (b + 1 < c)
