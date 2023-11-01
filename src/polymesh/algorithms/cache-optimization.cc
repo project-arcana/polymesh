@@ -318,7 +318,7 @@ void polymesh::optimize_faces_for_vertices(polymesh::Mesh& m)
     for (auto f : m.faces())
     {
         vertex_handle vv;
-        auto cnt = 0;
+        [[maybe_unused]] auto cnt = 0;
         for (auto v : f.vertices())
         {
             ++cnt;
@@ -346,7 +346,7 @@ void polymesh::optimize_vertices_for_faces(polymesh::Mesh& m)
     for (auto v : m.vertices())
     {
         face_handle ff;
-        auto cnt = 0;
+        [[maybe_unused]] auto cnt = 0;
         for (auto f : v.faces())
         {
             if (f.is_invalid())
