@@ -1,25 +1,18 @@
 cmake_minimum_required(VERSION 3.0)
 project(PolyMesh)
 
-include(cmake/UnityBuild.cmake)
-include(cmake/SourceGroup.cmake)
+if (NOT TARGET clean-core)
+    message(FATAL_ERROR "[${PROJECT_NAME}] clean-core must be available")
+endif()
 
 option(POLYMESH_ENABLE_ASSERTIONS "if true, enables assertions (even in RelWithDebug, not in Release)" ON)
-option(POLYMESH_ENABLE_UNITY_BUILD "If enabled, compiles this library as a single compilation unit" ON)
 
-file(GLOB_RECURSE SOURCE_FILES "src/*.cc")
-file(GLOB_RECURSE HEADER_FILES "src/*.hh")
+file(GLOB_RECURSE SOURCES "src/*.cc")
+file(GLOB_RECURSE HEADERS "src/*.hh")
 
-if(${CMAKE_VERSION} VERSION_GREATER "3.8.0")
-    arcana_source_group(SOURCE_FILES HEADER_FILES)
-endif()
-
-if (POLYMESH_ENABLE_UNITY_BUILD)
-    arcana_enable_unity_build(polymesh SOURCE_FILES 100 cc)
-endif()
-
-add_library(polymesh STATIC ${SOURCE_FILES} ${HEADER_FILES})
+arcana_add_library(POLYMESH polymesh SOURCES HEADERS)
 set_property(TARGET polymesh PROPERTY POSITION_INDEPENDENT_CODE ON)
+
 target_include_directories(polymesh PUBLIC src/)
 
 if (MSVC)

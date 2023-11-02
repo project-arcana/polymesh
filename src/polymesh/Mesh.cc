@@ -771,7 +771,7 @@ void Mesh::assert_consistency() const
     // check derived counts
     {
         auto v_e_sum = 0;
-        auto f_h_sum = 0;
+        [[maybe_unused]] auto f_h_sum = 0;
 
         for (auto v : vertices())
         {
