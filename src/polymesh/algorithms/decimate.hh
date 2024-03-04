@@ -35,6 +35,12 @@ struct decimate_config
     using scalar_t = scalar_of<Pos3>;
     using error_value_t = std::decay_t<decltype(std::declval<ErrorF>()(std::declval<Pos3>()))>;
 
+    static constexpr bool has_on_before_collapse = true;
+
+    /// true means execute the decimate
+    /// false means the decimate will not be executed
+    static bool on_before_collapse(pm::halfedge_handle /* h */) { return true; }
+
     /// decimation will stop once error > max_error
     error_value_t max_error = std::numeric_limits<error_value_t>::max();
 
@@ -148,7 +154,8 @@ void decimate(pm::Mesh& m, //
     auto edge_gen = m.halfedges().make_attribute(0);
     auto vreach = m.vertices().make_attribute(-1);
 
-    auto const enqueue = [&](pm::halfedge_handle h) {
+    auto const enqueue = [&](pm::halfedge_handle h)
+    {
         if (!config.is_collapse_allowed(h))
             return;
 
@@ -163,7 +170,8 @@ void decimate(pm::Mesh& m, //
         queue.push({config.eval(p, Q), h, edge_gen[h], p});
     };
 
-    auto const can_be_collapsed = [&](pm::halfedge_handle h, Pos3 q) -> bool {
+    auto const can_be_collapsed = [&](pm::halfedge_handle h, Pos3 q) -> bool
+    {
         auto const v_to = h.vertex_to();
         auto const v_from = h.vertex_from();
 
@@ -262,6 +270,11 @@ void decimate(pm::Mesh& m, //
         // check if collapse valid
         if (!can_be_collapsed(h, entry.pos))
             continue;
+
+        // notify user config
+        if constexpr (ConfigT::has_on_before_collapse)
+            if (!config.on_before_collapse(h))
+                continue;
 
         // perform collapse
         POLYMESH_ASSERT(!h.edge().is_boundary());
