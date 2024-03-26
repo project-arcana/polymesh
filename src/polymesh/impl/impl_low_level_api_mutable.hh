@@ -816,6 +816,119 @@ inline void low_level_api_mutable::halfedge_split(halfedge_index h, vertex_index
     // -> already ok
 }
 
+inline halfedge_index low_level_api_mutable::vertex_split(halfedge_index h_left, halfedge_index h_right) const
+{
+    auto v = add_vertex();
+    return vertex_split(h_left, h_right, v);
+}
+
+inline halfedge_index low_level_api_mutable::vertex_split(halfedge_index h_left, halfedge_index h_right, vertex_index v) const
+{
+    POLYMESH_ASSERT(is_isolated(v));
+    POLYMESH_ASSERT(!is_boundary(h_left) && !is_boundary(h_right) && "boundary faces not yet supported");
+    POLYMESH_ASSERT(to_vertex_of(h_left) == from_vertex_of(h_right) && "halfedges must be adjacent");
+
+    // old primitives
+    auto const v_from = to_vertex_of(h_left);
+    auto const v_right = to_vertex_of(h_right);
+    auto const v_left = from_vertex_of(h_left);
+    auto const h_right_prev = prev_halfedge_of(h_right);
+    auto const h_right_next = next_halfedge_of(h_right);
+    auto const h_left_prev = prev_halfedge_of(h_left);
+    auto const h_left_next = next_halfedge_of(h_left);
+    auto const f_left_old = face_of(h_left);
+    auto const f_right_old = face_of(h_right);
+
+    // new primitives
+    auto const v_to = v;
+
+    auto const f_left = alloc_face();
+    auto const f_right = alloc_face();
+
+    auto const e_center_new = alloc_edge();
+    auto const h_center_from_to = halfedge_of(e_center_new, 0);
+    auto const h_center_to_from = halfedge_of(e_center_new, 1);
+
+    auto const e_left_new = alloc_edge();
+    auto const h_left_new_to_v_to = halfedge_of(e_left_new, 0);
+    auto const h_left_new_from_v_to = halfedge_of(e_left_new, 1);
+
+    auto const e_right_new = alloc_edge();
+    auto const h_right_new_to_v_to = halfedge_of(e_right_new, 0);
+    auto const h_right_new_from_v_to = halfedge_of(e_right_new, 1);
+
+    { // connect edges to new vertex
+        auto h_curr = h_right_prev;
+        while (h_curr != h_left)
+        {
+            to_vertex_of(h_curr) = v_to;
+            h_curr = prev_halfedge_of(opposite(h_curr));
+        }
+
+        to_vertex_of(h_center_from_to) = v_to;
+        to_vertex_of(h_center_to_from) = v_from;
+
+        to_vertex_of(h_left_new_to_v_to) = v_to;
+        to_vertex_of(h_left_new_from_v_to) = v_left;
+
+        to_vertex_of(h_right_new_to_v_to) = v_to;
+        to_vertex_of(h_right_new_from_v_to) = v_right;
+    }
+
+    // connect halfedges correctly
+    // right side
+    connect_prev_next(h_right, h_right_new_to_v_to);
+    connect_prev_next(h_right_new_to_v_to, h_center_to_from);
+    connect_prev_next(h_center_to_from, h_right);
+
+    connect_prev_next(h_right_new_from_v_to, h_right_next);
+    connect_prev_next(h_right_prev, h_right_new_from_v_to);
+
+    // left side
+    connect_prev_next(h_left, h_center_from_to);
+    connect_prev_next(h_center_from_to, h_left_new_from_v_to);
+    connect_prev_next(h_left_new_from_v_to, h_left);
+
+    connect_prev_next(h_left_new_to_v_to, h_left_next);
+    connect_prev_next(h_left_prev, h_left_new_to_v_to);
+
+    // connect faces
+    // right side
+    face_of(h_center_to_from) = f_right;
+    face_of(h_right) = f_right;
+    face_of(h_right_new_to_v_to) = f_right;
+
+    face_of(h_right_new_from_v_to) = f_right_old;
+    halfedge_of(f_right_old) = h_right_new_from_v_to;
+
+    halfedge_of(f_right) = h_center_to_from;
+
+    // left side
+    face_of(h_center_from_to) = f_left;
+    face_of(h_left) = f_left;
+    face_of(h_left_new_from_v_to) = f_left;
+
+    face_of(h_left_new_to_v_to) = f_left_old;
+    halfedge_of(f_left_old) = h_left_new_to_v_to;
+
+    halfedge_of(f_left) = h_center_from_to;
+
+    // connect vertices to halfedges
+    outgoing_halfedge_of(v_from) = h_center_from_to;
+    outgoing_halfedge_of(v_to) = h_center_to_from;
+
+    // fix boundary states
+    fix_boundary_state_of(v_from);
+    fix_boundary_state_of(v_to);
+    fix_boundary_state_of(v_right); // not sure if necessary
+    fix_boundary_state_of(v_left);  // not sure if necessary
+
+    fix_boundary_state_of(f_left_old);
+    fix_boundary_state_of(f_right_old);
+
+    return h_center_from_to;
+}
+
 inline face_index low_level_api_mutable::face_fill(halfedge_index h) const
 {
     POLYMESH_ASSERT(is_boundary(h));

@@ -282,6 +282,18 @@ struct vertex_collection : smart_collection<Mesh*, vertex_tag, iterator>
     /// p[curr_idx] = new_idx
     /// NOTE: invalidates all affected handles/iterators
     void permute(std::vector<int> const& p) const;
+
+    /// Performs a vertex split, the opposite of a halfedges().collapse(...)
+    /// Creates a new vertex, two new triangle faces, and three new edges
+    /// h_left.vertex_to() must be the same vertex as h_right.vertex_from()
+    /// Returns a new halfedge that points from the vertex between h_left and h_right towards the new vertex
+    /// h_left and h_right are left and right when looking from the old vertex between them towards the new vertex
+    /// The new faces are adjacent to the returned (half)edge, as well as h_left and h_right
+    /// For the returned halfedge h, h.next() and h.opposite().prev() are also new (half)edges
+    halfedge_handle split(halfedge_handle h_left, halfedge_handle h_right) const;
+    /// same as before but splits at a given ISOLATED vertex
+    halfedge_handle split(halfedge_handle h_left, halfedge_handle h_right, pm::vertex_handle v) const;
+
 };
 
 /// Collection of all faces of a mesh

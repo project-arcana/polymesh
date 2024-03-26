@@ -273,8 +273,7 @@ auto smart_range<this_t, ElementT>::weighted_avg(FuncT&& f, WeightT&& w) const -
 
 template <class this_t, class ElementT>
 template <class FuncT, class FuncInvT>
-auto smart_range<this_t, ElementT>::f_mean(FuncT&& f, FuncInvT&& f_inv) const
-    -> tmp::decayed_result_type_of<FuncInvT, tmp::decayed_result_type_of<FuncT, ElementT>>
+auto smart_range<this_t, ElementT>::f_mean(FuncT&& f, FuncInvT&& f_inv) const -> tmp::decayed_result_type_of<FuncInvT, tmp::decayed_result_type_of<FuncT, ElementT>>
 {
     return f_inv(this->avg(f));
 }
@@ -614,6 +613,17 @@ void vertex_collection<iterator>::permute(std::vector<int> const& p) const
     low_level_api(this->m).permute_vertices(p);
 }
 
+template <class iterator>
+halfedge_handle vertex_collection<iterator>::split(halfedge_handle h_left, halfedge_handle h_right) const
+{
+    return this->m->handle_of(low_level_api(this->m).vertex_split(h_left, h_right));
+}
+
+template <class iterator>
+halfedge_handle vertex_collection<iterator>::split(halfedge_handle h_left, halfedge_handle h_right, pm::vertex_handle v) const
+{
+    return this->m->handle_of(low_level_api(this->m).vertex_split(h_left, h_right, v));
+}
 
 inline valid_vertex_collection Mesh::vertices()
 {

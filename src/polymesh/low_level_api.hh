@@ -308,6 +308,8 @@ public:
     vertex_index edge_split_and_triangulate(edge_index e) const;
     /// splits a half-edge
     vertex_index halfedge_split(halfedge_index h) const;
+    /// splits a vertex, opposite of halfedge_collapse
+    halfedge_index vertex_split(halfedge_index h_left, halfedge_index h_right) const;
 
     /// splits a face at a given ISOLATED vertex
     void face_split(face_index f, vertex_index v) const;
@@ -317,6 +319,8 @@ public:
     void edge_split_and_triangulate(edge_index e, vertex_index v) const;
     /// splits a half-edge at a given ISOLATED vertex
     void halfedge_split(halfedge_index h, vertex_index v) const;
+    /// splits a vertex at a given ISOLATED vertex, opposite of halfedge_collapse
+    halfedge_index vertex_split(halfedge_index h_left, halfedge_index h_right, vertex_index v) const;
 
     /// cuts a face along two given vertices (indicated by halfedges)
     halfedge_index face_cut(face_index f, halfedge_index h0, halfedge_index h1) const;
