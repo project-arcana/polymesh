@@ -827,6 +827,7 @@ inline halfedge_index low_level_api_mutable::vertex_split(halfedge_index h_left,
     POLYMESH_ASSERT(is_isolated(v));
     POLYMESH_ASSERT(!is_boundary(h_left) && !is_boundary(h_right) && "boundary faces not yet supported");
     POLYMESH_ASSERT(to_vertex_of(h_left) == from_vertex_of(h_right) && "halfedges must be adjacent");
+    POLYMESH_ASSERT(opposite(h_left) != h_right && "h_left and h_right must not be opposite of each other. Use a halfedge_split instead.");
 
     // old primitives
     auto const v_from = to_vertex_of(h_left);
