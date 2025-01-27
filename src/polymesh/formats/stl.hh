@@ -2,20 +2,19 @@
 
 #include <array>
 #include <iosfwd>
-#include <string>
+
+#include <clean-core/string_view.hh>
 
 #include <polymesh/Mesh.hh>
 
 namespace polymesh
 {
 template <class ScalarT>
-void write_stl_binary(std::string const& filename,
-                      vertex_attribute<std::array<ScalarT, 3>> const& position,
-                      face_attribute<std::array<ScalarT, 3>> const* normals = nullptr);
+void write_stl_binary(cc::string_view filename, vertex_attribute<std::array<ScalarT, 3>> const& position, face_attribute<std::array<ScalarT, 3>> const* normals = nullptr);
 template <class ScalarT>
 void write_stl_binary(std::ostream& out, vertex_attribute<std::array<ScalarT, 3>> const& position, face_attribute<std::array<ScalarT, 3>> const* normals = nullptr);
 template <class ScalarT>
-bool read_stl(std::string const& filename, Mesh& mesh, vertex_attribute<std::array<ScalarT, 3>>& position, face_attribute<std::array<ScalarT, 3>>* normals = nullptr);
+bool read_stl(cc::string_view filename, Mesh& mesh, vertex_attribute<std::array<ScalarT, 3>>& position, face_attribute<std::array<ScalarT, 3>>* normals = nullptr);
 template <class ScalarT>
 bool read_stl(std::istream& input, Mesh& mesh, vertex_attribute<std::array<ScalarT, 3>>& position, face_attribute<std::array<ScalarT, 3>>* normals = nullptr);
 template <class ScalarT>

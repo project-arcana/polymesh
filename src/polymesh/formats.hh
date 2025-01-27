@@ -1,8 +1,8 @@
 #pragma once
 
 #include <array>
-#include <cstring>
-#include <string>
+
+#include <clean-core/string_view.hh>
 
 #include "Mesh.hh"
 
@@ -10,10 +10,10 @@ namespace polymesh
 {
 /// loads a mesh from a file
 template <class Pos3>
-bool load(std::string const& filename, Mesh& m, vertex_attribute<Pos3>& pos);
+bool load(cc::string_view filename, Mesh& m, vertex_attribute<Pos3>& pos);
 /// saves a mesh to a file
 template <class Pos3>
-void save(std::string const& filename, vertex_attribute<Pos3> const& pos);
+void save(cc::string_view filename, vertex_attribute<Pos3> const& pos);
 
 template <class Pos3>
 struct load_result
@@ -24,7 +24,7 @@ struct load_result
 };
 
 template <class Pos3>
-load_result<Pos3> load(std::string const& filename)
+load_result<Pos3> load(cc::string_view filename)
 {
     auto m = Mesh::create();
     auto pos = vertex_attribute<Pos3>(*m);
@@ -37,13 +37,13 @@ load_result<Pos3> load(std::string const& filename)
 namespace detail
 {
 template <class ScalarT>
-bool load(std::string const& filename, Mesh& m, vertex_attribute<std::array<ScalarT, 3>>& pos);
+bool load(cc::string_view filename, Mesh& m, vertex_attribute<std::array<ScalarT, 3>>& pos);
 template <class ScalarT>
-void save(std::string const& filename, vertex_attribute<std::array<ScalarT, 3>> const& pos);
+void save(cc::string_view filename, vertex_attribute<std::array<ScalarT, 3>> const& pos);
 } // namespace detail
 
 template <class Pos3>
-bool load(std::string const& filename, Mesh& m, vertex_attribute<Pos3>& pos)
+bool load(cc::string_view filename, Mesh& m, vertex_attribute<Pos3>& pos)
 {
     static_assert(sizeof(Pos3) == sizeof(float) * 3 || sizeof(Pos3) == sizeof(double) * 3, "position type must be 3 floats or 3 doubles");
     POLYMESH_ASSERT(&m == &pos.mesh() && "wrong mesh");
@@ -66,7 +66,7 @@ bool load(std::string const& filename, Mesh& m, vertex_attribute<Pos3>& pos)
 }
 
 template <class Pos3>
-void save(std::string const& filename, vertex_attribute<Pos3> const& pos)
+void save(cc::string_view filename, vertex_attribute<Pos3> const& pos)
 {
     static_assert(sizeof(Pos3) == sizeof(float) * 3 || sizeof(Pos3) == sizeof(double) * 3, "position type must be 3 floats or 3 doubles");
 

@@ -10,21 +10,22 @@
 #include "formats/stl.hh"
 
 template <class ScalarT>
-bool polymesh::detail::load(const std::string& filename, polymesh::Mesh& m, vertex_attribute<std::array<ScalarT, 3>>& pos)
+bool polymesh::detail::load(cc::string_view filename, polymesh::Mesh& m, vertex_attribute<std::array<ScalarT, 3>>& pos)
 {
-    if (!std::ifstream(filename).good())
+    auto filename_str = std::string(filename.begin(), filename.end());
+    if (!std::ifstream(filename_str).good())
     {
-        std::cerr << "File does not exist or is not readable: " << filename << std::endl;
+        std::cerr << "File does not exist or is not readable: " << filename_str << std::endl;
         return false;
     }
 
-    if (filename.find('.') == std::string::npos)
+    if (!filename.contains('.'))
     {
-        std::cerr << "could not find extension of " << filename << std::endl;
+        std::cerr << "could not find extension of " << filename_str << std::endl;
         return false;
     }
 
-    auto ext = filename.substr(filename.rfind('.') + 1);
+    auto ext = filename_str.substr(filename_str.rfind('.') + 1);
     std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
 
     if (ext == "obj")
@@ -41,15 +42,16 @@ bool polymesh::detail::load(const std::string& filename, polymesh::Mesh& m, vert
     }
     else
     {
-        std::cerr << "unknown/unsupported extension: " << ext << " (of " << filename << ")" << std::endl;
+        std::cerr << "unknown/unsupported extension: " << ext << " (of " << filename_str << ")" << std::endl;
         return false;
     }
 }
 
 template <class ScalarT>
-void polymesh::detail::save(std::string const& filename, vertex_attribute<std::array<ScalarT, 3>> const& pos)
+void polymesh::detail::save(cc::string_view filename, vertex_attribute<std::array<ScalarT, 3>> const& pos)
 {
-    auto ext = filename.substr(filename.rfind('.') + 1);
+    auto filename_str = std::string(filename.begin(), filename.end());
+    auto ext = filename_str.substr(filename_str.rfind('.') + 1);
     std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
 
     if (ext == "obj")
@@ -66,12 +68,12 @@ void polymesh::detail::save(std::string const& filename, vertex_attribute<std::a
     }
     else
     {
-        std::cerr << "unknown/unsupported extension: " << ext << " (of " << filename << ")" << std::endl;
+        std::cerr << "unknown/unsupported extension: " << ext << " (of " << filename_str << ")" << std::endl;
     }
 }
 
-template bool polymesh::detail::load<float>(std::string const& filename, Mesh& m, vertex_attribute<std::array<float, 3>>& pos);
-template bool polymesh::detail::load<double>(std::string const& filename, Mesh& m, vertex_attribute<std::array<double, 3>>& pos);
+template bool polymesh::detail::load<float>(cc::string_view filename, Mesh& m, vertex_attribute<std::array<float, 3>>& pos);
+template bool polymesh::detail::load<double>(cc::string_view filename, Mesh& m, vertex_attribute<std::array<double, 3>>& pos);
 
-template void polymesh::detail::save<float>(std::string const& filename, vertex_attribute<std::array<float, 3>> const& pos);
-template void polymesh::detail::save<double>(std::string const& filename, vertex_attribute<std::array<double, 3>> const& pos);
+template void polymesh::detail::save<float>(cc::string_view filename, vertex_attribute<std::array<float, 3>> const& pos);
+template void polymesh::detail::save<double>(cc::string_view filename, vertex_attribute<std::array<double, 3>> const& pos);

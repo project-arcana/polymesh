@@ -1,21 +1,22 @@
 #pragma once
 
 #include <iosfwd>
-#include <string>
+
+#include <clean-core/string_view.hh>
 
 #include <polymesh/Mesh.hh>
 
 namespace polymesh
 {
 template <class ScalarT>
-void write_obj(std::string const& filename, vertex_attribute<std::array<ScalarT, 3>> const& position);
+void write_obj(cc::string_view filename, vertex_attribute<std::array<ScalarT, 3>> const& position);
 template <class ScalarT>
-bool read_obj(std::string const& filename, Mesh& mesh, vertex_attribute<std::array<ScalarT, 3>>& position);
+bool read_obj(cc::string_view filename, Mesh& mesh, vertex_attribute<std::array<ScalarT, 3>>& position);
 
 template <class ScalarT>
 struct obj_writer
 {
-    obj_writer(std::string const& filename);
+    obj_writer(cc::string_view filename);
     obj_writer(std::ostream& out);
     ~obj_writer();
 
@@ -44,7 +45,7 @@ private:
 template <class ScalarT>
 struct obj_reader
 {
-    obj_reader(std::string const& filename, Mesh& mesh);
+    obj_reader(cc::string_view filename, Mesh& mesh);
     obj_reader(std::istream& in, Mesh& mesh);
 
     // get properties of the obj

@@ -2,14 +2,13 @@
 
 #include <fstream>
 #include <iostream>
-#include <sstream>
 
 namespace polymesh
 {
 template <class ScalarT>
-void write_off(const std::string& filename, vertex_attribute<std::array<ScalarT, 3>> const& position)
+void write_off(cc::string_view filename, vertex_attribute<std::array<ScalarT, 3>> const& position)
 {
-    std::ofstream file(filename);
+    std::ofstream file(std::string(filename.begin(), filename.end()));
     write_off(file, position);
 }
 
@@ -63,9 +62,9 @@ void write_off(std::ostream& out, vertex_attribute<std::array<ScalarT, 3>> const
 }
 
 template <class ScalarT>
-bool read_off(const std::string& filename, Mesh& mesh, vertex_attribute<std::array<ScalarT, 3>>& position)
+bool read_off(cc::string_view filename, Mesh& mesh, vertex_attribute<std::array<ScalarT, 3>>& position)
 {
-    std::ifstream file(filename);
+    std::ifstream file(std::string(filename.begin(), filename.end()));
     if (!file.good())
         return false;
 
@@ -126,13 +125,13 @@ bool read_off(std::istream& input, Mesh& mesh, vertex_attribute<std::array<Scala
     return non_manifold == 0;
 }
 
-template void write_off<float>(std::string const& filename, vertex_attribute<std::array<float, 3>> const& position);
+template void write_off<float>(cc::string_view filename, vertex_attribute<std::array<float, 3>> const& position);
 template void write_off<float>(std::ostream& out, vertex_attribute<std::array<float, 3>> const& position);
-template bool read_off<float>(std::string const& filename, Mesh& mesh, vertex_attribute<std::array<float, 3>>& position);
+template bool read_off<float>(cc::string_view filename, Mesh& mesh, vertex_attribute<std::array<float, 3>>& position);
 template bool read_off<float>(std::istream& input, Mesh& mesh, vertex_attribute<std::array<float, 3>>& position);
 
-template void write_off<double>(std::string const& filename, vertex_attribute<std::array<double, 3>> const& position);
+template void write_off<double>(cc::string_view filename, vertex_attribute<std::array<double, 3>> const& position);
 template void write_off<double>(std::ostream& out, vertex_attribute<std::array<double, 3>> const& position);
-template bool read_off<double>(std::string const& filename, Mesh& mesh, vertex_attribute<std::array<double, 3>>& position);
+template bool read_off<double>(cc::string_view filename, Mesh& mesh, vertex_attribute<std::array<double, 3>>& position);
 template bool read_off<double>(std::istream& input, Mesh& mesh, vertex_attribute<std::array<double, 3>>& position);
 } // namespace polymesh

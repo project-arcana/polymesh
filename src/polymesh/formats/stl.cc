@@ -22,9 +22,9 @@
 namespace polymesh
 {
 template <class ScalarT>
-void write_stl_binary(std::string const& filename, vertex_attribute<std::array<ScalarT, 3>> const& position, face_attribute<std::array<ScalarT, 3>> const* normals)
+void write_stl_binary(cc::string_view filename, vertex_attribute<std::array<ScalarT, 3>> const& position, face_attribute<std::array<ScalarT, 3>> const* normals)
 {
-    std::ofstream file(filename, std::ios_base::binary);
+    std::ofstream file(std::string(filename.begin(), filename.end()), std::ios_base::binary);
     write_stl_binary(file, position, normals);
 }
 
@@ -67,9 +67,10 @@ void write_stl_binary(std::ostream& out, vertex_attribute<std::array<ScalarT, 3>
 }
 
 template <class ScalarT>
-bool read_stl(const std::string& filename, Mesh& mesh, vertex_attribute<std::array<ScalarT, 3>>& position, face_attribute<std::array<ScalarT, 3>>* normals)
+bool read_stl(cc::string_view filename, Mesh& mesh, vertex_attribute<std::array<ScalarT, 3>>& position, face_attribute<std::array<ScalarT, 3>>* normals)
 {
-    std::ifstream file(filename);
+    auto const filename_str = std::string(filename.begin(), filename.end());
+    std::ifstream file(filename_str);
     if (!file.good())
         return false;
 
@@ -81,7 +82,7 @@ bool read_stl(const std::string& filename, Mesh& mesh, vertex_attribute<std::arr
     {
         // Windows interprets binary files differently from ascii which messes with the parsing.
         // Therefore we create a new stream in binary mode.
-        file = std::ifstream(filename, std::ios::binary);
+        file = std::ifstream(filename_str, std::ios::binary);
         return read_stl_binary(file, mesh, position, normals);
     }
 }
@@ -286,20 +287,20 @@ bool is_ascii_stl(std::istream& input)
     return false;
 }
 
-template void write_stl_binary<float>(std::string const& filename,
+template void write_stl_binary<float>(cc::string_view filename,
                                       vertex_attribute<std::array<float, 3>> const& position,
                                       face_attribute<std::array<float, 3>> const* normals);
 template void write_stl_binary<float>(std::ostream& out, vertex_attribute<std::array<float, 3>> const& position, face_attribute<std::array<float, 3>> const* normals);
-template bool read_stl<float>(std::string const& filename, Mesh& mesh, vertex_attribute<std::array<float, 3>>& position, face_attribute<std::array<float, 3>>* normals);
+template bool read_stl<float>(cc::string_view filename, Mesh& mesh, vertex_attribute<std::array<float, 3>>& position, face_attribute<std::array<float, 3>>* normals);
 template bool read_stl<float>(std::istream& input, Mesh& mesh, vertex_attribute<std::array<float, 3>>& position, face_attribute<std::array<float, 3>>* normals);
 template bool read_stl_binary<float>(std::istream& input, Mesh& mesh, vertex_attribute<std::array<float, 3>>& position, face_attribute<std::array<float, 3>>* normals);
 template bool read_stl_ascii<float>(std::istream& input, Mesh& mesh, vertex_attribute<std::array<float, 3>>& position, face_attribute<std::array<float, 3>>* normals);
 
-template void write_stl_binary<double>(std::string const& filename,
+template void write_stl_binary<double>(cc::string_view filename,
                                        vertex_attribute<std::array<double, 3>> const& position,
                                        face_attribute<std::array<double, 3>> const* normals);
 template void write_stl_binary<double>(std::ostream& out, vertex_attribute<std::array<double, 3>> const& position, face_attribute<std::array<double, 3>> const* normals);
-template bool read_stl<double>(std::string const& filename, Mesh& mesh, vertex_attribute<std::array<double, 3>>& position, face_attribute<std::array<double, 3>>* normals);
+template bool read_stl<double>(cc::string_view filename, Mesh& mesh, vertex_attribute<std::array<double, 3>>& position, face_attribute<std::array<double, 3>>* normals);
 template bool read_stl<double>(std::istream& input, Mesh& mesh, vertex_attribute<std::array<double, 3>>& position, face_attribute<std::array<double, 3>>* normals);
 template bool read_stl_binary<double>(std::istream& input, Mesh& mesh, vertex_attribute<std::array<double, 3>>& position, face_attribute<std::array<double, 3>>* normals);
 template bool read_stl_ascii<double>(std::istream& input, Mesh& mesh, vertex_attribute<std::array<double, 3>>& position, face_attribute<std::array<double, 3>>* normals);
