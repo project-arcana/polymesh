@@ -160,7 +160,7 @@ void obj_writer<ScalarT>::write_mesh(vertex_attribute<std::array<ScalarT, 4>> co
 
     for (auto e : mesh.edges())
     {
-        if (e.faceA().is_valid() || e.faceB().is_valid())
+        if (e.is_isolated())
             continue;
 
         *out << "l " << base_v + e.vertexA().idx.value << " " << base_v + e.vertexB().idx.value << "\n";
