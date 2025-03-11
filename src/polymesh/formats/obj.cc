@@ -157,6 +157,14 @@ void obj_writer<ScalarT>::write_mesh(vertex_attribute<std::array<ScalarT, 4>> co
         }
         *out << "\n";
     }
+
+    for (auto e : mesh.edges())
+    {
+        if (e.faceA().is_valid() && e.faceB().is_valid())
+            continue;
+
+        *out << "l " << base_v + e.vertexA().idx.value << " " << base_v + e.vertexB().idx.value << "\n";
+    }
 }
 
 template <class ScalarT>
