@@ -1217,6 +1217,11 @@ inline void low_level_api_mutable::halfedge_collapse(halfedge_index h) const
         }
         else
         {
+            if (!is_h0_boundary && halfedge_of(face_of(h0)) == h0)
+            {
+                halfedge_of(face_of(h0)) = h0_prev;
+            }
+
             if (is_valence_2_from && is_h1_triangle)
             {
                 // left empty?
@@ -1239,6 +1244,11 @@ inline void low_level_api_mutable::halfedge_collapse(halfedge_index h) const
         }
         else
         {
+            if (!is_h1_boundary && halfedge_of(face_of(h1)) == h1)
+            {
+                halfedge_of(face_of(h1)) = h1_prev;
+            }
+
             if (is_valence_2_from && is_h0_triangle)
                 connect_prev_next(h1_prev, h0_next);
             else
