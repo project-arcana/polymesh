@@ -20,7 +20,7 @@ struct obj_writer
     obj_writer(std::ostream& out);
     ~obj_writer();
 
-    void write_object_name(std::string object_name);
+    void write_object_name(cc::string_view object_name);
     void write_mesh(vertex_attribute<std::array<ScalarT, 4>> const& position,
                     halfedge_attribute<std::array<ScalarT, 3>> const* tex_coord = nullptr,
                     halfedge_attribute<std::array<ScalarT, 3>> const* normal = nullptr);
