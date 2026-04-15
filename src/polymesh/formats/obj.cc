@@ -41,9 +41,9 @@ obj_writer<ScalarT>::~obj_writer()
 }
 
 template <class ScalarT>
-void obj_writer<ScalarT>::write_object_name(std::string object_name)
+void obj_writer<ScalarT>::write_object_name(cc::string_view object_name)
 {
-    *out << "o " << object_name << "\n";
+    *out << "o " << std::string_view(object_name.data(), object_name.size()) << "\n";
 }
 
 template <class ScalarT>
