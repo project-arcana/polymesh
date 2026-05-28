@@ -16,7 +16,8 @@ set_property(TARGET polymesh PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_include_directories(polymesh PUBLIC src/)
 
 if (MSVC)
-    target_compile_options(polymesh PUBLIC /MP)
+    # /MP is an MSVC-only flag; clang-cl reports it as an unused argument
+    target_compile_options(polymesh PUBLIC $<$<CXX_COMPILER_ID:MSVC>:/MP>)
 else()
     target_compile_options(polymesh PRIVATE -Wall)
 endif()
